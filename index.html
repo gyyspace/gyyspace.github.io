@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+</head>
+<body>
+	<h3>xxx like xxx</h3>
+</body>
+
+
+<script>
+	var h3 = document.getElementsByTagName('h3')[0];
+	var time = setInterval(function (){
+		var h = document.createElement('h4');
+		h.innerText = 'xxx like xxx';
+		h3.appendChild(h);
+	}, 3000);
+</script>
+</html>
