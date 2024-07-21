@@ -22,9 +22,9 @@
             array_is_text=[intersect_text];  //加载自定义内容
         }else{  //设置默认值
             array_is_text=['我知道遇见你不容易，错过会很可惜，我不希望余生都是回忆，我想余生每天都是你，我爱你。'];
-            // array_str_temp=[];
-            // random_text_array(array_str_temp,3);
-            // array_is_text[0]=array_is_text[0]+'<br>'+array_str_temp.join('<br>');
+             array_str_temp=[];
+             random_text_array(array_str_temp,3);
+             array_is_text[0]=array_is_text[0]+'<br>'+array_str_temp.join('<br>');
             console.log(array_is_text);
         }
     }  
