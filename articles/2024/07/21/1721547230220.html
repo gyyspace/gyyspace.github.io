@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8"/><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"/><meta name="theme-color" content="#3b3e43"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"/><meta name="apple-mobile-web-app-status-bar-style" content="black"><meta name="format-detection" content="telephone=no"/><title>算法：排序算法 - echo洋</title><meta name="description" content="常见排序算法的实现以及时间复杂度。"/><meta property="og:description" content="常见排序算法的实现以及时间复杂度。"/>    <meta name="keywords" content="Solo,Java,博客,开源"/><link rel="dns-prefetch" href="https://gyyspace.github.io"/><link rel="dns-prefetch" href="https://cdn.jsdelivr.net"/><link rel="preconnect" href="https://gyyspace.github.io"><link rel="icon" type="image/png" href="https://b3log.org/images/brand/solo-128.png"/><link rel="apple-touch-icon" href="https://b3log.org/images/brand/solo-128.png"><link rel="shortcut icon" type="image/x-icon" href="https://b3log.org/images/brand/solo-128.png"><meta name="copyright" content="B3log"/><meta http-equiv="Window-target" content="_top"/><meta property="og:locale" content="zh_CN"/><meta property="og:title" content="算法：排序算法 - echo洋"/><meta property="og:site_name" content="echo洋"/><meta property="og:url"      content="https://gyyspace.github.io/articles/2024/07/21/1721547230220.html?"/><meta property="og:image" content="https://b3log.org/images/brand/solo-128.png"/><link rel="search" type="application/opensearchdescription+xml" title="算法：排序算法 - echo洋" href="/opensearch.xml"><link href="https://gyyspace.github.io/rss.xml" title="RSS" type="application/rss+xml" rel="alternate"/><link rel="manifest" href="https://gyyspace.github.io/manifest.json">        <link rel="canonical" href="https://gyyspace.github.io/articles/2024/07/21/1721547230220.html">        <link rel="stylesheet"
+              href="https://gyyspace.github.io/skins/next/css/base.css?1721540580809"/>
+            <link rel="prev" title="算法：红黑树" href="https://gyyspace.github.io/articles/2024/07/21/1721547131201.html">
+    <script src="https://gyyspace.github.io/js/lib/vditor/dist/js/icons/ant.js?v=3.9.7" async="" id="vditorIconScript"></script></head>
+<body>
+<header class="header">
+    <div class="header-line"></div>
+    <div class="fn-clear wrapper">
+        <div class="logo-wrap">
+            <a href="https://gyyspace.github.io" rel="start">
+                <span class="logo-line-before"><i></i></span>
+                <span class="site-title">echo洋</span>
+                <span class="logo-line-after"><i></i></span>
+            </a>
+        </div>
+
+        <div class="site-nav-toggle fn-right"
+             onclick="$('.header-line').toggle();$('nav').children('.menu').slideToggle();">
+            <span class="btn-bar"></span>
+            <span class="btn-bar"></span>
+            <span class="btn-bar"></span>
+        </div>
+
+        <nav>
+            <ul class="menu">
+                    <li class="menu-item">
+                        <a href="/tags/Redis" target="_blank" rel="section">
+                            Redis 的设计与实现
+                        </a>
+                    </li>
+            </ul>
+
+        </nav>
+    </div>
+</header><main class="main">
+    <div class="wrapper">
+        <div class="content">
+            <article class="posts-expand">
+                <header class="post-header">
+                    <h2 class="post-title">
+                        算法：排序算法
+                    </h2>
+                    <div class="post-meta">
+                            <span class="post-time">
+                                    发表于
+                                <time>
+                                    2024-07-21
+                                </time>
+                            </span>
+                        <span class="post-comments-count">
+                                &nbsp; | &nbsp;
+                                <a href="https://gyyspace.github.io/articles/2024/07/21/1721547230220.html#b3logsolocomments">
+                                    <span data-uvstatcmt="1721547230220">0</span> 条评论</a>
+                        </span>
+                        &nbsp; | &nbsp; 热度
+                        <span data-uvstaturl="https://gyyspace.github.io/articles/2024/07/21/1721547230220.html">0</span>°C
+                    </div>
+                </header>
+
+                <div class="post-body post-body--article vditor-reset">
+                    <p><img src="https://b3logfile.com/bing/20231115.jpg?imageView2/1/w/960/h/540/interlace/1/q/100" alt=""></p>
+<p><strong>测试数组是：</strong></p>
+<pre><code>int[] arr = new int[8000];
+ &nbsp; &nbsp; &nbsp; &nbsp;for (int i = 0; i &lt; arr.length; i++) {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;arr[i] = new Random().nextInt(8000);
+ &nbsp; &nbsp; &nbsp;  }
+</code></pre>
+<h1 id="toc_h1_0">排序的分类</h1>
+<ol>
+<li><strong>内部排序：指将需要处理的所有数据都加载到内部存储器（内存）中进行排序</strong></li>
+<li><strong>外部排序法：数据量过大，无法全部加载到内存中，需要借助外部存储（文件等）进行排序</strong></li>
+<li><strong>常见的排序算法：</strong><img src="https://b3logfile.com/file/2021/08/image-80d3ed48.png?imageView2/2/w/1280/format/jpg/interlace/1/q/100" alt=""></li>
+</ol>
+<h1 id="toc_h1_1">算法的时间复杂度</h1>
+<p><strong>时间频度：一个算法花费的时间与算法中语句的执行次数成正比例，一个算法中的语句执行次数称为语句频度或时间频度。记为T(n)。</strong></p>
+<p><strong>时间复杂度：</strong></p>
+<p><strong>一般情况下，算法中的基本操作语句的重复执行次数是问题规模n的某个函数，用T(n)表示，若有某个辅助函数f(n)，使得当n趋于无穷大时，T(n)/f(n)的极限值为不等于0的常数，则称f(n)是T(n)的同数量级函数。记作T(n)=O( f(n) )，称O(f(n))是算法的渐进时间复杂度，简称时间复杂度。</strong></p>
+<p><strong>常见时间复杂度：</strong></p>
+<p><strong>对数阶：O(log2n)</strong></p>
+<p><strong>线性对数阶：O(nlog2n)</strong></p>
+<p><img src="https://b3logfile.com/file/2021/08/image-78419684.png?imageView2/2/w/1280/format/jpg/interlace/1/q/100" alt=""></p>
+<p><img src="https://b3logfile.com/file/2021/08/image-85bb2bf8.png?imageView2/2/w/1280/format/jpg/interlace/1/q/100" alt=""></p>
+<p><img src="https://b3logfile.com/file/2021/08/image-2653c75f.png?imageView2/2/w/1280/format/jpg/interlace/1/q/100" alt=""></p>
+<h1 id="toc_h1_2">冒泡排序（Bubble Sorting）</h1>
+<p><strong>冒泡排序的基本思想是：通过对待排序序列从前向后（从下标较小的元素开始），依次比较相邻元素的值，若发现逆序则交换，使值较大的元素逐渐从前移向后部，就像水底的气泡一样逐渐向上冒。</strong></p>
+<p><strong>优化：因为排序过程总，各元素不断接近自己的位置，如果一趟下来没有进行过交换，就说明序列有序，因此可以在排序过程总设置一个标志flag判断元素是否进行过交换。从而减少不必要的比较。</strong></p>
+<p><strong>代码：</strong></p>
+<p><strong>测试时间：135ms</strong></p>
+<pre><code>for (int i = 0; i &lt; arr.length; i++) {
+ &nbsp; &nbsp; for (int j = 0; j &lt; arr.length - 1 - i; j++) {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; if (arr[j] &gt; arr[j+1]){
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; flag = false;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; int temp = arr[j];
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; arr[j] = arr[j+1];
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; arr[j+1] = temp;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; }
+ &nbsp; &nbsp;  }
+}
+</code></pre>
+<p><strong>进行循环，每一次都会将最大的数放到数组的末尾，如果一次循环中没有发生交换说明已经排好序了，直接break。</strong></p>
+<p><strong>优化后时间：91ms</strong></p>
+<pre><code>boolean flag = true;
+ &nbsp; &nbsp; &nbsp; &nbsp;for (int i = 0; i &lt; arr.length; i++) {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;for (int j = 0; j &lt; arr.length - 1 - i; j++) {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;if (arr[j] &gt; arr[j+1]){
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;flag = false;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;int temp = arr[j];
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;arr[j] = arr[j+1];
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;arr[j+1] = temp;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;if (flag){
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;break;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }else{
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;flag = true;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp;  }
+</code></pre>
+<h1 id="toc_h1_3">选择排序（select sorting）</h1>
+<p><strong>选择排序也是内部排序发，是从欲排序的数据中，按照指定的规则选出某一元素，在依规定交换位置后达到排序的目的。</strong></p>
+<p><strong>基本思想：第一次从arr[0] ~ arr[n-1]总选取最小值，与arr[0]交换，第二次从arr[1]~arr[n-1]中选取最小值，与arr[1]交换，第n-1次从arr[n-2] ~ arr[n-1]中选取最小值与arr[n-2]交换，总共通过n-1次。</strong></p>
+<p><strong>时间：39</strong></p>
+<pre><code>int k, temp;
+ &nbsp; &nbsp; &nbsp; &nbsp;for (int i = 0; i &lt; arr.length; i++) {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;k = i;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;for (int j = i+1; j &lt; arr.length; j++) {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;if (arr[k] &gt; arr[j]){
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;k = j;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;if (k != i){
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;temp = arr[k];
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;arr[k] = arr[i];
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;arr[i] = temp;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp;  }
+</code></pre>
+<h1 id="toc_h1_4">插入排序（insertion sorting）</h1>
+<p><strong>插入式排序属于内部排序算法，是对于欲排序的元素以插入的方式找寻该元素的适当位置，达到排序的目的。</strong></p>
+<p><strong>算法思想：把n个待排序的元素看成为一个有序表和一个无序表，开始时有序表中只含一个元素，无序表中包含n-1个元素，排序过程中每次从无序表中取出第一个元素，把它的排序码一次与有序表元素的排序码进行比较，将它插入有序表中的适当位置，使之成为新的有序表。</strong></p>
+<p><strong>时间：27ms</strong></p>
+<pre><code>int k,current;
+ &nbsp; &nbsp; &nbsp; &nbsp;for (int i = 1; i &lt; arr.length; i++) {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;k = i;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;current = arr[i];
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;for (int j = i-1; j &gt;= 0; j--) {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;if (current &lt; arr[j]){
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;arr[k] = arr[j];
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;k = j;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }else{
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;break;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;arr[k] = current;
+ &nbsp; &nbsp; &nbsp;  }
+</code></pre>
+<p><strong>当前数与之前的数一一比较，如果小于arr[j]向后退一步，k占该位置，如果大于break，将当前数放入合适位置。</strong></p>
+<p><img src="https://b3logfile.com/file/2021/08/image-c15b161f.png?imageView2/2/w/1280/format/jpg/interlace/1/q/100" alt=""></p>
+<h1 id="toc_h1_5">希尔排序（donald shell sortiong）</h1>
+<p><strong>希尔排序也是一种****插入排序</strong>，他是简单插入排序改进之后的一个更有效的版本，也称缩小增量排序。</p>
+<p><strong>基本思想：希尔排序是把记录按下标的一定增量分组，对每组使用直接插入排序算法排序；</strong></p>
+<p><strong>随着增量逐渐减少，每组包含的关键词越来越多，当增量减至1时，整个文件恰被分成一组，算法便终止。</strong></p>
+<pre><code>int temp;
+ &nbsp; &nbsp; &nbsp; &nbsp;//分组
+ &nbsp; &nbsp; &nbsp; &nbsp;for (int group = arr.length / 2; group &gt; 0; group /= 2) {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;for (int i = group; i &lt; arr.length; i++) {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;//遍历各组的元素
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;for (int j = i - group; j &gt;= 0; j -= group) {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;if (arr[j] &gt; arr[j + group]){
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;temp = arr[j];
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;arr[j] = arr[j+group];
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;arr[j+group] = temp;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp;  }
+</code></pre>
+<p><strong>优化算法：使用移动的方式</strong></p>
+<pre><code>for (int group = arr.length / 2; group &gt; 0; group /= 2) {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;//从第group个元素开始,逐个对其所在的组进行直接插入排序
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;for (int i = group; i &lt; arr.length; i++) {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;int j = i;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;int tp = arr[j];
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;if (arr[j] &lt; arr[j-group]){
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;while (j-group &gt;= 0 &amp;&amp; tp &lt;arr[j-group]){
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;//移动
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;arr[j] = arr[j-group];
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;j -= group;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;//当退出 while 后，就给tp找到插入的位置
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;arr[j] = tp;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp;  }
+</code></pre>
+<h1 id="toc_h1_6">快速排序（quick sorting）</h1>
+<p><strong>对冒泡排序的一种改进。</strong></p>
+<p><strong>基本思想是：通过一趟排序将要排序的数据分割成独立的两部分，其中一部分的所有数据都比另外一部分的所有数据都要小，然后在按此方法对这两部分数据分别进行快速排序，整个过程可以递归进行。</strong></p>
+<p><strong>解法一：</strong></p>
+<pre><code>private static void quickSort(int[] arr, int i, int j) {
+ &nbsp; &nbsp; &nbsp; &nbsp;if (i == j){
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;return;
+ &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp; &nbsp;int limit = arr[j];
+ &nbsp; &nbsp; &nbsp; &nbsp;int m = i, n = j, temp;
+ &nbsp; &nbsp; &nbsp; &nbsp;for (int k = i; k &lt;= n; k++) {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;if (arr[k] &lt; limit){
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;temp = arr[k];
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;arr[k] = arr[m];
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;arr[m++] = temp;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }else if (arr[k] &gt; limit){
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;temp= arr[k];
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;arr[k--] = arr[n];
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;arr[n--] = temp;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp; &nbsp;if (m-1 &gt;= i){
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;quickSort(arr,i,m-1);
+ &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp; &nbsp;if (j &gt;= n+1){
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;quickSort(arr,n+1,j);
+ &nbsp; &nbsp; &nbsp;  }
+ &nbsp;  }
+//优化
+private static void quickSort(int[] arr, int i, int j) {
+ &nbsp; &nbsp; &nbsp; &nbsp;if (i &gt;= j){
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;return;
+ &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp; &nbsp;int limit = arr[j];
+ &nbsp; &nbsp; &nbsp; &nbsp;int m = i, n = j, temp;
+ &nbsp; &nbsp; &nbsp; &nbsp;for (int k = i; k &lt;= n; k++) {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;if (arr[k] &lt; limit){
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;temp = arr[k];
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;arr[k] = arr[m];
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;arr[m++] = temp;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }else if (arr[k] &gt; limit){
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;temp= arr[k];
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;arr[k--] = arr[n];
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;arr[n--] = temp;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp; &nbsp;quickSort(arr,i,m-1);
+ &nbsp; &nbsp; &nbsp; &nbsp;quickSort(arr,n+1,j);
+ &nbsp;  }
+
+</code></pre>
+<p><strong>解法二：</strong></p>
+<pre><code>private static void quickSort1(int[] arr, int low, int high){
+ &nbsp; &nbsp; &nbsp; &nbsp;int i,j,temp,t;
+ &nbsp; &nbsp; &nbsp; &nbsp;if(low&gt;high){
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;return;
+ &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp; &nbsp;i=low;
+ &nbsp; &nbsp; &nbsp; &nbsp;j=high;
+ &nbsp; &nbsp; &nbsp; &nbsp;//temp就是基准位
+ &nbsp; &nbsp; &nbsp; &nbsp;temp = arr[low];
+
+ &nbsp; &nbsp; &nbsp; &nbsp;while (i&lt;j) {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;//先看右边，依次往左递减
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;while (temp&lt;=arr[j]&amp;&amp;i&lt;j) {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;j--;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;//再看左边，依次往右递增
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;while (temp&gt;=arr[i]&amp;&amp;i&lt;j) {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;i++;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;//如果满足条件则交换
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;if (i&lt;j) {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;t = arr[j];
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;arr[j] = arr[i];
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;arr[i] = t;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+
+ &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp; &nbsp;//最后将基准为与i和j相等位置的数字交换
+ &nbsp; &nbsp; &nbsp; &nbsp;arr[low] = arr[i];
+ &nbsp; &nbsp; &nbsp; &nbsp;arr[i] = temp;
+ &nbsp; &nbsp; &nbsp; &nbsp;//递归调用左半数组
+ &nbsp; &nbsp; &nbsp; &nbsp;quickSort1(arr, low, j-1);
+ &nbsp; &nbsp; &nbsp; &nbsp;//递归调用右半数组
+ &nbsp; &nbsp; &nbsp; &nbsp;quickSort1(arr, j+1, high);
+ &nbsp;  }
+</code></pre>
+<p><strong>时间：3ms</strong></p>
+<h1 id="toc_h1_7">归并排序（merge sorting）</h1>
+<p><strong>该算法采用经典的分治（divide and conquer）策略。</strong></p>
+<p><strong>分治法将问题分（divide）成一些小的问题然后进行递归求解，而治（conquer）的阶段则将分的阶段得到的各答案修补在一起，即分而治之。</strong></p>
+<p><strong>对左右部分分别排序，排好序的左右部分组合到一起。</strong></p>
+<pre><code> &nbsp; public static void mergeSort(int[] arr, int l, int r){
+ &nbsp; &nbsp; &nbsp; &nbsp;if (l == r){
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;return;
+ &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp; &nbsp;//分成左右去排序
+ &nbsp; &nbsp; &nbsp; &nbsp;int mid = (r - l) / 2 + l;
+ &nbsp; &nbsp; &nbsp; &nbsp;mergeSort(arr, l, mid);
+ &nbsp; &nbsp; &nbsp; &nbsp;mergeSort(arr, mid + 1, r);
+ &nbsp; &nbsp; &nbsp; &nbsp;//将排好序的左右部分 有序的组合到一起
+ &nbsp; &nbsp; &nbsp; &nbsp;merge(arr, l, mid, r);
+ &nbsp;  }
+
+ &nbsp; &nbsp;public static void merge(int[] arr, int l, int mid, int r) {
+ &nbsp; &nbsp; &nbsp; &nbsp;int m = l,n = mid+1,index=0;
+ &nbsp; &nbsp; &nbsp; &nbsp;int[] a = new int[r - l + 1];
+ &nbsp; &nbsp; &nbsp; &nbsp;while (m &lt;= mid &amp;&amp; n &lt;= r){
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;if (arr[m] &gt; arr[n]){
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;a[index++] = arr[n++];
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }else{
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;a[index++] = arr[m++];
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp; &nbsp;while (m &lt;= mid){
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;a[index++] = arr[m++];
+ &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp; &nbsp;while (n &lt;= r){
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;a[index++] = arr[n++];
+ &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp; &nbsp;for (int i = r; i &gt;= l; i--) {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;arr[i] = a[--index];
+ &nbsp; &nbsp; &nbsp;  }
+ &nbsp;  }
+</code></pre>
+<p><strong>时间：4ms</strong></p>
+<h1 id="toc_h1_8">桶排序</h1>
+<p><strong>一句话总结：划分多个范围相同的区间，每个子区间自排序，最后合并。</strong></p>
+<p><strong>桶排序是计数排序的扩展版本，计数排序可以看成每个桶只存储相同元素，而桶排序每个桶存储一定范围的元素，通过映射函数，将待排序数组中的元素映射到各个对应的桶中，对每个桶中的元素进行排序，最后将非空桶中的元素逐个放入原序列中。</strong></p>
+<p><strong>桶排序需要尽量保证元素分散均匀，否则当所有数据集中在同一个桶中时，桶排序失效。</strong><img src="https://b3logfile.com/file/2021/08/image-cfbffdbb.png?imageView2/2/w/1280/format/jpg/interlace/1/q/100" alt=""></p>
+<pre><code>public static void bucketSort(int[] arr){
+ &nbsp;
+ &nbsp; &nbsp;// 计算最大值与最小值
+ &nbsp; &nbsp;int max = Integer.MIN_VALUE;
+ &nbsp; &nbsp;int min = Integer.MAX_VALUE;
+ &nbsp; &nbsp;for(int i = 0; i &lt; arr.length; i++){
+ &nbsp; &nbsp; &nbsp; &nbsp;max = Math.max(max, arr[i]);
+ &nbsp; &nbsp; &nbsp; &nbsp;min = Math.min(min, arr[i]);
+ &nbsp;  }
+ &nbsp;
+ &nbsp; &nbsp;// 计算桶的数量
+ &nbsp; &nbsp;int bucketNum = (max - min) / arr.length + 1;
+ &nbsp; &nbsp;ArrayList&lt;ArrayList&lt;Integer&gt;&gt; bucketArr = new ArrayList&lt;&gt;(bucketNum);
+ &nbsp; &nbsp;for(int i = 0; i &lt; bucketNum; i++){
+ &nbsp; &nbsp; &nbsp; &nbsp;bucketArr.add(new ArrayList&lt;Integer&gt;());
+ &nbsp;  }
+ &nbsp;
+ &nbsp; &nbsp;// 将每个元素放入桶
+ &nbsp; &nbsp;for(int i = 0; i &lt; arr.length; i++){
+ &nbsp; &nbsp; &nbsp; &nbsp;int num = (arr[i] - min) / (arr.length);
+ &nbsp; &nbsp; &nbsp; &nbsp;bucketArr.get(num).add(arr[i]);
+ &nbsp;  }
+ &nbsp;
+ &nbsp; &nbsp;// 对每个桶进行排序
+ &nbsp; &nbsp;for(int i = 0; i &lt; bucketArr.size(); i++){
+ &nbsp; &nbsp; &nbsp; &nbsp;Collections.sort(bucketArr.get(i));
+ &nbsp;  }
+ &nbsp;
+ &nbsp; &nbsp;// 将桶中的元素赋值到原序列
+    int index = 0;
+    for(int i = 0; i &lt; bucketArr.size(); i++){
+        for(int j = 0; j &lt; bucketArr.get(i).size(); j++){
+            arr[index++] = bucketArr.get(i).get(j);
+        }
+    } &nbsp;
+}
+
+</code></pre>
+<h1 id="toc_h1_9">基数排序（radix sorting）</h1>
+<p><strong>基数排序属于 分配式排序，又称桶子法，通过键值的各个位的值，将要排序的元素分配至某些“桶”中，达到排序的作用。</strong></p>
+<p><strong>基数排序法是属于稳定性的排序，基数排序法的是效率高的稳定性排序法。</strong></p>
+<p><strong>基数排序是桶排序的扩展</strong></p>
+<p><strong>基本思想：将所有待比较数值统一为同样的数位长度，数位较短的数前面补零。然后，从最低位开始，一次进行一次排序。这样从最低位排序一直到最高位排序完成以后，数列就变成一个有序序列。</strong></p>
+<pre><code>public static void radix(int[] arr){
+ &nbsp; &nbsp; &nbsp; &nbsp;int max = arr[0];
+ &nbsp; &nbsp; &nbsp; &nbsp;for (int i : arr) {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;max = Math.max(max,i);
+ &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp; &nbsp;//取出最大数的位数，要进行几次桶排序
+ &nbsp; &nbsp; &nbsp; &nbsp;int maxLen = (max+"").length();
+ &nbsp; &nbsp; &nbsp; &nbsp;for (int i = 1,n=1; i &lt;= maxLen; i++,n*=10) {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;//使用10个桶
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;int[][] radix = new int[10][arr.length];
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;for (int value : arr) {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;//从个位开始，取出每一位上的数
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;int index = value / n % 10;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;//这里使用数组中的第一位作为记录数组中有数据的长度，其他位记录数据
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;radix[index][radix[index][0] + 1] = value;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;radix[index][0]++;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;//从桶中按照顺序取出来，放回原数组，进行下一轮排序
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;int idx = 0;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;for (int[] ints : radix) {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;int len = ints[0];
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;for (int j = 1; j &lt;= len; j++) {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;arr[idx++] = ints[j];
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp;  }
+ &nbsp;  }
+</code></pre>
+<p><strong>基数排序是对传统桶排序的扩展，速度很快。</strong></p>
+<h1 id="toc_h1_10">堆排序（heap sorting）</h1>
+<p><strong>堆的结构：</strong></p>
+<blockquote>
+<p><strong>1，堆结构就是用数组实现的完全二叉树结构</strong></p>
+<p><strong>2，完全二叉树中如果每棵子树的最大值都在顶部就是大根堆</strong></p>
+<p><strong>3，完全二叉树中如果每棵子树的最小值都在顶部就是小根堆</strong></p>
+<p><strong>4，堆结构的heapInsert与heapify操作</strong></p>
+<p><strong>5，堆结构的增大和减少</strong></p>
+<p><strong>6，优先级队列结构，就是堆结构</strong></p>
+</blockquote>
+<p><strong>特性：</strong></p>
+<p><strong>第n个元素的左子节点为 2 * n + 1</strong> <strong>第n个元素的右子节点为 2 * n + 2</strong> <strong>第n个元素的父节点为（n-1）/ 2</strong></p>
+<p><strong>堆排序的步骤：</strong></p>
+<blockquote>
+<p><strong>1，先让整个数组都变成大根堆结构，建立堆的过程:</strong></p>
+<pre><code>1)从上到下的方法，时间复杂度为O(N*logN)
+</code></pre>
+<pre><code>2)从下到上的方法，时间复杂度为O(N)
+</code></pre>
+<p><strong>2，把堆的最大值和堆末尾的值交换，然后减少堆的大小之后，再去调整堆，一直周而复始，时间复杂度为O(N*logN)</strong></p>
+<p><strong>3，堆的大小减小成0之后，排序完成</strong></p>
+</blockquote>
+<pre><code>public static void heapSort(int[] arr) {
+        if (arr == null || arr.length &lt; 2) {
+            return;
+        }
+        //首先将数组成为一个大根堆
+        for (int i = 0; i &lt; arr.length; i++) {
+            heapInsert(arr, i);
+        }
+        int size = arr.length;
+        swap(arr, 0, --size);
+        //依次将堆顶元素放到最后，保证堆顶元素为未排序的部分的最大值
+        while (size &gt; 0) {
+            heapify(arr, 0, size);
+            swap(arr, 0, --size);
+        }
+    }
+
+    public static void heapInsert(int[] arr, int index) {
+        while (arr[index] &gt; arr[(index - 1) / 2]) {
+            swap(arr, index, (index - 1) /2);
+            index = (index - 1)/2 ;
+        }
+    }
+
+    public static void heapify(int[] arr, int index, int size) {
+        int left = index * 2 + 1;
+        while (left &lt; size) {
+            int largest = left + 1 &lt; size &amp;&amp; arr[left + 1] &gt; arr[left] ? left + 1 : left;
+            largest = arr[largest] &gt; arr[index] ? largest : index;
+            if (largest == index) {
+                break;
+            }
+            swap(arr, largest, index);
+            index = largest;
+            left = index * 2 + 1;
+        }
+    }
+</code></pre>
+<h1 id="toc_h1_11">总结</h1>
+<p><img src="https://b3logfile.com/file/2021/08/image-8179b2f9.png?imageView2/2/w/1280/format/jpg/interlace/1/q/100" alt=""></p>
+<p><strong>稳定和不稳定指的是：如果 a= b, a在b之前 排序之后a还是在b之前，那么就是稳定的，否则不稳定。</strong></p>
+<p><strong>k：是“桶”的个数。</strong></p>
+<p><strong>In-place 不占用额外内存，Out-place：占用额外内存。</strong></p>
+                        <div>
+                            <hr>
+
+标题：算法：排序算法<br>
+作者：<a href="https://gyyspace.github.io" target="_blank">function001</a><br>
+地址：<a href="https://gyyspace.github.io/articles/2024/07/21/1721547230220.html" target="_blank">https://gyyspace.github.io/articles/2024/07/21/1721547230220.html</a><br>
+
+<!-- 签名档内可使用 HTML、JavaScript -->
+<br>
+                        </div>
+                </div>
+                <footer>
+                    <div class="post-tags">
+                            <a rel="tag" href="https://gyyspace.github.io/tags/%E5%BE%85%E5%88%86%E7%B1%BB">
+                                待分类</a>
+                    </div>
+                    <div class="post-nav fn-clear">
+                            <div class="post-nav-prev post-nav-item fn-right">
+                                <a href="https://gyyspace.github.io/articles/2024/07/21/1721547131201.html" rel="prev"
+                                   title="算法：红黑树">
+                                    算法：红黑树 >
+                                </a>
+                            </div>
+                    </div>
+                </footer>
+            </article>
+        </div>
+            <div id="gitalk-container"></div>
+            <div id="b3logsolocomments"></div>
+            <div id="vcomment" data-name="function001" data-postId="1721547230220"></div>
+            <div id="relevantArticles"></div>
+            <div id="randomArticles"></div>
+<div class="sidebar-toggle">
+    <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+    <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+    <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+</div>
+
+<aside class="sidebar">
+<ul class="article__toc">
+        <li class="toc__h1">
+            <a href="#toc_h1_0">排序的分类</a>
+        </li>
+        <li class="toc__h1">
+            <a href="#toc_h1_1">算法的时间复杂度</a>
+        </li>
+        <li class="toc__h1">
+            <a href="#toc_h1_2">冒泡排序（Bubble Sorting）</a>
+        </li>
+        <li class="toc__h1">
+            <a href="#toc_h1_3">选择排序（select sorting）</a>
+        </li>
+        <li class="toc__h1">
+            <a href="#toc_h1_4">插入排序（insertion sorting）</a>
+        </li>
+        <li class="toc__h1">
+            <a href="#toc_h1_5">希尔排序（donald shell sortiong）</a>
+        </li>
+        <li class="toc__h1">
+            <a href="#toc_h1_6">快速排序（quick sorting）</a>
+        </li>
+        <li class="toc__h1">
+            <a href="#toc_h1_7">归并排序（merge sorting）</a>
+        </li>
+        <li class="toc__h1">
+            <a href="#toc_h1_8">桶排序</a>
+        </li>
+        <li class="toc__h1">
+            <a href="#toc_h1_9">基数排序（radix sorting）</a>
+        </li>
+        <li class="toc__h1">
+            <a href="#toc_h1_10">堆排序（heap sorting）</a>
+        </li>
+        <li class="toc__h1">
+            <a href="#toc_h1_11">总结</a>
+        </li>
+</ul></aside>
+    </div>
+</main>
+<footer class="footer">
+    <div class="wrapper">
+        <div class="fn-clear">
+            <a href="https://gyyspace.github.io">echo洋</a>
+            
+            <div class="fn-right">
+            </div>
+        </div>
+        <div class="fn-clear">
+            &copy; 2024
+            <a href="https://gyyspace.github.io">echo洋</a>
+            
+        </div>
+    </div>
+</footer>
+<div class="back-to-top" onclick="Util.goTop()"></div>
+
+<script>
+  var Label = {
+    speech: true,
+    servePath: "https://gyyspace.github.io",
+    staticServePath: "https://gyyspace.github.io",
+    luteAvailable: false,
+    hljsStyle: 'github',
+    langLabel: "zh_CN",
+    version: "4.4.0",
+    staticSite: true,
+    showCodeBlockLn: false,
+    articleId: "1721547230220",
+  }
+</script>
+<script src="https://gyyspace.github.io/skins/next/js/common.min.js?1721540580809"></script>
+<script type="text/javascript">
+    Label.tocLabel = "目录"
+    Label.siteViewLabel = "站点概览"
+</script>
+
+<script type="text/javascript">
+    Util.addScript('https://gyyspace.github.io/js/page.min.js?1721540580809', 'soloPageScript')
+    var page = new Page({
+        "commentContentCannotEmptyLabel": "评论不能为空",
+        "oId": "1721547230220",
+        "blogHost": "https://gyyspace.github.io",
+        "randomArticles1Label": "随机阅读：",
+        "externalRelevantArticles1Label": "站外相关阅读："
+    });
+    $(document).ready(function () {
+        page.load();
+    page.tips.externalRelevantArticlesDisplayCount = "0";
+        page.loadRandomArticles();
+        page.loadRelevantArticles('1721547230220', '<h4>相关阅读：</h4>');
+    NexT.initArticle()
+    });
+</script>
+</body>
+</html>
+
+<!-- Generated by Latke (https://github.com/88250/latke) in 8ms, 2024/07/21 15:56:20 -->

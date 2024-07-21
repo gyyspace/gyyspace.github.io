@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8"/><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"/><meta name="theme-color" content="#3b3e43"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"/><meta name="apple-mobile-web-app-status-bar-style" content="black"><meta name="format-detection" content="telephone=no"/><title>算法：二叉树 - echo洋</title><meta name="description" content="递归算法的关键要明确函数的定义，相信这个定义，而不要跳进递归细节。 写二叉树的算法题，都是基于递归框架的，我们先要搞清楚 root 节点它自己要做什么，然后根据题目要求选择使用前序，中序，后续的递归框架。 二叉树题目的难点在于如何通过题目的要求思考出每一个节点需要做什么，这个只能通过多刷题进行练习了。"/><meta property="og:description" content="递归算法的关键要明确函数的定义，相信这个定义，而不要跳进递归细节。 写二叉树的算法题，都是基于递归框架的，我们先要搞清楚 root 节点它自己要做什么，然后根据题目要求选择使用前序，中序，后续的递归框架。 二叉树题目的难点在于如何通过题目的要求思考出每一个节点需要做什么，这个只能通过多刷题进行练习了。"/>    <meta name="keywords" content="Solo,Java,博客,开源"/><link rel="dns-prefetch" href="https://gyyspace.github.io"/><link rel="dns-prefetch" href="https://cdn.jsdelivr.net"/><link rel="preconnect" href="https://gyyspace.github.io"><link rel="icon" type="image/png" href="https://b3log.org/images/brand/solo-128.png"/><link rel="apple-touch-icon" href="https://b3log.org/images/brand/solo-128.png"><link rel="shortcut icon" type="image/x-icon" href="https://b3log.org/images/brand/solo-128.png"><meta name="copyright" content="B3log"/><meta http-equiv="Window-target" content="_top"/><meta property="og:locale" content="zh_CN"/><meta property="og:title" content="算法：二叉树 - echo洋"/><meta property="og:site_name" content="echo洋"/><meta property="og:url"      content="https://gyyspace.github.io/articles/2024/07/21/1721542137927.html?"/><meta property="og:image" content="https://b3log.org/images/brand/solo-128.png"/><link rel="search" type="application/opensearchdescription+xml" title="算法：二叉树 - echo洋" href="/opensearch.xml"><link href="https://gyyspace.github.io/rss.xml" title="RSS" type="application/rss+xml" rel="alternate"/><link rel="manifest" href="https://gyyspace.github.io/manifest.json">        <link rel="canonical" href="https://gyyspace.github.io/articles/2024/07/21/1721542137927.html">        <link rel="stylesheet"
+              href="https://gyyspace.github.io/skins/next/css/base.css?1721540580809"/>
+            <link rel="prev" title="Redis：集群cluster" href="https://gyyspace.github.io/articles/2024/06/09/1717937447426.html">
+            <link rel="next" title="算法：链表" href="https://gyyspace.github.io/articles/2024/07/21/1721542283762.html">
+    <script src="https://gyyspace.github.io/js/lib/vditor/dist/js/icons/ant.js?v=3.9.7" async="" id="vditorIconScript"></script></head>
+<body>
+<header class="header">
+    <div class="header-line"></div>
+    <div class="fn-clear wrapper">
+        <div class="logo-wrap">
+            <a href="https://gyyspace.github.io" rel="start">
+                <span class="logo-line-before"><i></i></span>
+                <span class="site-title">echo洋</span>
+                <span class="logo-line-after"><i></i></span>
+            </a>
+        </div>
+
+        <div class="site-nav-toggle fn-right"
+             onclick="$('.header-line').toggle();$('nav').children('.menu').slideToggle();">
+            <span class="btn-bar"></span>
+            <span class="btn-bar"></span>
+            <span class="btn-bar"></span>
+        </div>
+
+        <nav>
+            <ul class="menu">
+                    <li class="menu-item">
+                        <a href="/tags/Redis" target="_blank" rel="section">
+                            Redis 的设计与实现
+                        </a>
+                    </li>
+            </ul>
+
+        </nav>
+    </div>
+</header><main class="main">
+    <div class="wrapper">
+        <div class="content">
+            <article class="posts-expand">
+                <header class="post-header">
+                    <h2 class="post-title">
+                        算法：二叉树
+                    </h2>
+                    <div class="post-meta">
+                            <span class="post-time">
+                                    更新于
+                                <time>
+                                    2024-07-21
+                                </time>
+                            </span>
+                        <span class="post-comments-count">
+                                &nbsp; | &nbsp;
+                                <a href="https://gyyspace.github.io/articles/2024/07/21/1721542137927.html#b3logsolocomments">
+                                    <span data-uvstatcmt="1721542137927">0</span> 条评论</a>
+                        </span>
+                        &nbsp; | &nbsp; 热度
+                        <span data-uvstaturl="https://gyyspace.github.io/articles/2024/07/21/1721542137927.html">0</span>°C
+                    </div>
+                </header>
+
+                <div class="post-body post-body--article vditor-reset">
+                    <p><img src="https://b3logfile.com/bing/20230823.jpg?imageView2/1/w/960/h/540/interlace/1/q/100" alt=""></p>
+<h1 id="toc_h1_0">二叉树</h1>
+<blockquote>
+<p><strong>递归算法的关键要明确函数的定义，相信这个定义，而不要跳进递归细节。</strong></p>
+<p>**写二叉树的算法题，都是基于递归框架的，我们先要搞清楚 **<code>root</code> 节点它自己要做什么，然后根据题目要求选择使用前序，中序，后续的递归框架。</p>
+<p><strong>二叉树题目的难点在于如何通过题目的要求思考出每一个节点需要做什么，这个只能通过多刷题进行练习了。</strong></p>
+</blockquote>
+<p><strong>二叉树遍历框架：</strong></p>
+<pre><code>/* 二叉树遍历框架 */
+void traverse(TreeNode root) {
+ &nbsp; &nbsp;// 前序遍历
+ &nbsp; &nbsp;traverse(root.left)
+ &nbsp; &nbsp;// 中序遍历
+ &nbsp; &nbsp;traverse(root.right)
+ &nbsp; &nbsp;// 后序遍历
+}
+</code></pre>
+<p><strong>1，2，3，4，5，6，7</strong></p>
+<p><strong>前序遍历：先输出父节点，再遍历左子树和右子树。1, 2, 4, 5, 3, 6, 7</strong></p>
+<p><strong>中序遍历：先遍历左子树，在输出父节点，再遍历右子树。4, 2, 5, 1, 6, 3, 7</strong></p>
+<p><strong>后序遍历：先遍历左子树，再遍历右子树，最后输出父节点。4, 5, 2, 6, 7, 3, 1</strong></p>
+<h2 id="toc_h2_1">镜像翻转二叉树</h2>
+<p><a href="https://leetcode-cn.com/problems/er-cha-shu-de-jing-xiang-lcof/" target="_blank">剑指 Offer 27. 二叉树的镜像</a></p>
+<blockquote>
+<p><strong>这个函数的定义就是给我一个节点，我把他的左右子节点翻转</strong> <strong>只去想一个节点翻转需要怎么做，这是一个二叉树的前序遍历</strong></p>
+</blockquote>
+<pre><code>
+public TreeNode invertTree(TreeNode root) {
+ &nbsp; &nbsp; &nbsp; &nbsp;if (root == null) {
+        return root;
+    }
+    //翻转
+    TreeNode tempNode = root.left;
+    root.left = root.right;
+    root.right = tempNode;
+    //子节点也去翻转
+    invertTree(root.left);
+    invertTree(root.right);
+    return root;
+}
+</code></pre>
+<h2 id="toc_h2_2"><a href="https://leetcode-cn.com/problems/populating-next-right-pointers-in-each-node/" target="_blank">116. 填充每个节点的下一个右侧节点指针</a></h2>
+<blockquote>
+<p><strong>我辅助函数定义就是将你传给我的两个节点，进行连接。</strong> <strong>采用前序遍历，然后需要把这两个节点各自的左右节点连接&amp;&amp;这一个节点的左和一个节点的有连接。</strong></p>
+</blockquote>
+<pre><code>// 主函数
+Node connect(Node root) {
+ &nbsp; &nbsp;if (root == null) return null;
+ &nbsp; &nbsp;connectTwoNode(root.left, root.right);
+ &nbsp; &nbsp;return root;
+}
+
+// 辅助函数
+void connectTwoNode(Node node1, Node node2) {
+ &nbsp; &nbsp;if (node1 == null || node2 == null) {
+ &nbsp; &nbsp; &nbsp; &nbsp;return;
+ &nbsp;  }
+ &nbsp; &nbsp;/**** 前序遍历位置 ****/
+ &nbsp; &nbsp;// 将传入的两个节点连接
+ &nbsp; &nbsp;node1.next = node2;
+
+ &nbsp; &nbsp;// 连接相同父节点的两个子节点
+ &nbsp; &nbsp;connectTwoNode(node1.left, node1.right);
+ &nbsp; &nbsp;connectTwoNode(node2.left, node2.right);
+ &nbsp; &nbsp;// 连接跨越父节点的两个子节点
+ &nbsp; &nbsp;connectTwoNode(node1.right, node2.left);
+}
+</code></pre>
+<h2 id="toc_h2_3"><a href="https://leetcode-cn.com/problems/flatten-binary-tree-to-linked-list/" target="_blank">114. 二叉树展开为链表</a></h2>
+<blockquote>
+<p><strong>这个函数的定义是：以传给我的头节点的二叉树拉平成一个链表。</strong></p>
+<p><strong>进行后序遍历</strong></p>
+<p><strong>具体：把他的左右先进行拉平，然后把左树当做右树，左边为null，最后把原来的右树放到现在右树的下面。</strong></p>
+</blockquote>
+<pre><code>// 定义：将以 root 为根的树拉平为链表
+void flatten(TreeNode root) {
+ &nbsp; &nbsp;// base case
+ &nbsp; &nbsp;if (root == null) return;
+
+ &nbsp; &nbsp;flatten(root.left);
+ &nbsp; &nbsp;flatten(root.right);
+
+ &nbsp; &nbsp;/**** 后序遍历位置 ****/
+ &nbsp; &nbsp;// 1、左右子树已经被拉平成一条链表
+ &nbsp; &nbsp;TreeNode left = root.left;
+ &nbsp; &nbsp;TreeNode right = root.right;
+
+ &nbsp; &nbsp;// 2、将左子树作为右子树
+ &nbsp; &nbsp;root.left = null;
+ &nbsp; &nbsp;root.right = left;
+
+ &nbsp; &nbsp;// 3、将原先的右子树接到当前右子树的末端
+ &nbsp; &nbsp;TreeNode p = root;
+ &nbsp; &nbsp;while (p.right != null) {
+ &nbsp; &nbsp; &nbsp; &nbsp;p = p.right;
+ &nbsp;  }
+ &nbsp; &nbsp;p.right = right;
+}
+</code></pre>
+<h2 id="toc_h2_4"><a href="https://leetcode-cn.com/problems/maximum-binary-tree/" target="_blank">654. 最大二叉树</a></h2>
+<blockquote>
+<p><strong>test函数的定义：返回给定的数组中的最大值new出的节点。</strong></p>
+<p><strong>采用前序遍历，</strong></p>
+</blockquote>
+<pre><code>public TreeNode constructMaximumBinaryTree(int[] nums) {
+        return test(nums, 0, nums.length - 1);
+ &nbsp;  }
+
+    public TreeNode test(int[] nums, int start, int end){
+        if (start &gt; end) {
+            return null;
+        }
+        int index = start;
+        int max = nums[start];
+        for (int i = start + 1; i &lt;= end; i++) {
+            if (max &lt; nums[i]) {
+                max = nums[i];
+                index = i;
+            }
+        }
+        TreeNode node = new TreeNode(max);
+
+        node.left = test(nums, start, index - 1);
+        node.right = test(nums, index +1, end);
+        return node;
+    }
+</code></pre>
+<h2 id="toc_h2_5"><a href="https://leetcode-cn.com/problems/construct-binary-tree-from-preorder-and-inorder-traversal/" target="_blank">105. 从前序与中序遍历序列构造二叉树</a></h2>
+<blockquote>
+<p><strong>辅助函数的定义：通过给定的前序，中序数组找到根节点。</strong></p>
+<p><strong>流程：根据前序遍历可以知道，根节点就是前序遍历的首位，根节点的下一位就是前序遍历数组的下一位，在通过中序遍历数组就可以确定是左右哪个节点。然后分开去求左右子树。</strong></p>
+</blockquote>
+<pre><code>class Solution {
+ &nbsp; &nbsp;public TreeNode buildTree(int[] preorder, int[] inorder) {
+        return test(preorder, 0, preorder.length -1 , inorder, 0 , inorder.length-1);
+ &nbsp;  }
+
+    public TreeNode test(int[] preorder,int prestart, int preend, int[] inorder, int instart, int inend) {
+        if (prestart &gt; preend) {
+            return null;
+        }
+        int index = 0;
+        for (int i = instart; i &lt;= inend; i++) {
+            if (preorder[prestart] == inorder[i]) {
+                index = i;
+                break;
+            }
+        }
+        TreeNode node = new TreeNode(preorder[prestart]);
+        int size = index - instart;
+        node.left = test(preorder, prestart + 1, size + prestart, inorder, instart, index -1);
+        node.right = test(preorder, size +prestart + 1, preend, inorder, index + 1, inend);
+        return node;
+    }
+}
+</code></pre>
+<h2 id="toc_h2_6"><a href="https://leetcode-cn.com/problems/construct-binary-tree-from-inorder-and-postorder-traversal/" target="_blank">106. 从中序与后序遍历序列构造二叉树</a></h2>
+<blockquote>
+<p><strong>和上一题原理相同。</strong></p>
+<p><strong>根节点的遍历从后序遍历的末尾开始。</strong></p>
+</blockquote>
+<pre><code>class Solution {
+ &nbsp; &nbsp;public TreeNode buildTree(int[] inorder, int[] postorder) {
+        return build(inorder, 0, inorder.length-1, postorder, postorder.length - 1, 0);
+ &nbsp;  }
+
+    public TreeNode build(int[] inorder,int instart, int inend, int[] postorder, int postend, int poststart) {
+        if (postend &lt; poststart) {
+            return null;
+        }
+        int index = 0;
+        for (int i = 0; i &lt; inorder.length; i++) {
+            if (postorder[postend] == inorder[i]) {
+                index = i;
+                break;
+            }
+        }
+        int size = index - instart;
+        TreeNode node = new TreeNode(postorder[postend]);
+        node.left = build(inorder, instart, index - 1, postorder, poststart + size-1, poststart);
+        node.right = build(inorder, index + 1, inend, postorder, postend - 1, poststart +size);
+
+        return node;
+    }
+}
+</code></pre>
+<h2 id="toc_h2_7"><a href="https://leetcode-cn.com/problems/find-duplicate-subtrees/" target="_blank">652. 寻找重复的子树</a></h2>
+<blockquote>
+<p><strong>思考：我想要查看有没有重复的子树，首先我要获取到所有的子树，在获取的途中，进行查看是否已经获取过了，获取过了我就放到集合里。</strong></p>
+<p><strong>如何获取一个子树呢？</strong></p>
+<p><strong>获取自己下面的所有节点，在加上自己不就是一个子树了（所以用后序遍历）。然后放到集合里。</strong></p>
+<p><strong>怎样把一个子树串联起来呢，-&gt;序列化，用字符串拼接。</strong></p>
+</blockquote>
+<pre><code>class Solution {
+ &nbsp; &nbsp;public List&lt;TreeNode&gt; findDuplicateSubtrees(TreeNode root) {
+ &nbsp; &nbsp; &nbsp; &nbsp;if (root == null) {
+            return null;
+        }
+ &nbsp; &nbsp; &nbsp; &nbsp;findMap(root);
+ &nbsp;
+ &nbsp; &nbsp; &nbsp; &nbsp;return list;
+ &nbsp;  }
+    Map&lt;String, Integer&gt; map = new HashMap&lt;&gt;();
+ &nbsp; &nbsp;List&lt;TreeNode&gt; list = new ArrayList&lt;&gt;();
+
+    public String findMap(TreeNode root){
+        if (root == null) {
+            return "#";
+        }
+        String s1 = findMap(root.left);
+        String s2 = findMap(root.right);
+        String s = root.val+"," + s1+"," + s2;
+        if (map.containsKey(s)) {
+            if (map.get(s) == 1) {
+                list.add(root);
+            }
+            map.put(s, map.get(s) + 1);
+        }else {
+            map.put(s, 1);
+        }
+        return s;
+    }
+}
+</code></pre>
+<h2 id="toc_h2_8"><a href="https://leetcode-cn.com/problems/lowest-common-ancestor-of-a-binary-tree/" target="_blank">难理解236. 二叉树的最近公共祖先</a></h2>
+<p><strong>遇到任何递归型的问题，无非就是灵魂三问</strong>：</p>
+<p><strong>1、这个函数是干嘛的</strong>？</p>
+<p><strong>2、这个函数参数中的变量是什么的是什么</strong>？</p>
+<p><strong>3、得到函数的递归结果，你应该干什么</strong>？</p>
+<pre><code>TreeNode lowestCommonAncestor(TreeNode root, TreeNode p, TreeNode q) {
+    // base case
+    if (root == null) return null;
+    if (root == p || root == q) return root;
+
+    TreeNode left = lowestCommonAncestor(root.left, p, q);
+    TreeNode right = lowestCommonAncestor(root.right, p, q);
+    // 情况 1
+    if (left != null &amp;&amp; right != null) {
+        return root;
+    }
+    // 情况 2
+    if (left == null &amp;&amp; right == null) {
+        return null;
+    }
+    // 情况 3
+    return left == null ? right : left;
+}
+</code></pre>
+<p><strong>有点难理解。。。</strong></p>
+<h2 id="toc_h2_9">计算二叉树的总节点数（三种 ）</h2>
+<pre><code>/**
+	 * 普通二叉树计算节点总数
+	 * @param node
+	 * @return
+	 */
+	public static int getCount1(TreeNode node) {
+		if (node == null) {
+			return 0;
+		}
+		return 1 + getCount1(node.left) + getCount1(node.right);
+	}
+	/**
+	 * 满二叉树计算节点总数, 满二叉树就是每一层的节点数都是满的
+	 * @param node
+	 * @return
+	 */
+	public static int getCount2(TreeNode node) {
+		int high = 0;
+		while (node != null) {
+			high ++;
+			node = node.left;
+		}
+		return (int)Math.pow(2, high) - 1;
+	}
+	/**
+	 * 计算完全二叉树的节点总数
+	 * @param node
+	 * @return
+	 */
+	public static int getCount3(TreeNode node) {
+		TreeNode lNode = node;
+		TreeNode rNode = node;
+		int l = 0;
+		while (lNode != null) {
+			l ++;
+			lNode = lNode.left;
+		}
+		int r = 0;
+		while (rNode != null) {
+			l ++;
+			rNode = rNode.left;
+		}
+		if (l == r) {
+			return (int)Math.pow(2, l) - 1;
+		}
+		return 1+getCount3(node.left) + getCount3(node.right);
+	}
+</code></pre>
+<h1 id="toc_h1_10">二叉搜索树</h1>
+<p><strong>从做算法题的角度来看 BST，除了它的定义，还有一个重要的性质：BST 的中序遍历结果是有序的（升序）</strong>。如果先进行右边的递归，就会是降序。（例题：寻找第k小的值，转化为累加树）</p>
+<p><strong>二叉搜索树衍生框架：</strong></p>
+<pre><code>void BST(TreeNode root, int target) {
+    if (root.val == target)
+        // 找到目标，做点什么
+    if (root.val &lt; target) 
+        BST(root.right, target);
+    if (root.val &gt; target)
+        BST(root.left, target);
+}
+</code></pre>
+<h2 id="toc_h2_11"><a href="https://leetcode-cn.com/problems/validate-binary-search-tree/" target="_blank">98. 验证二叉搜索树</a></h2>
+<blockquote>
+<p><strong>因为只有一个根节点只能判断左右孩子的是否符合，所以需要一个辅助函数。</strong></p>
+<p><strong>辅助函数定义：验证当前节点是否是大于min小于max。</strong></p>
+</blockquote>
+<pre><code>public boolean isValidBST(TreeNode root) {
+		return judge(root, null, null);
+    }
+	/**
+	 * 要求：max.min &gt; root.val &gt; min.val
+	 * @param root
+	 * @param min
+	 * @param max
+	 * @return
+	 */
+	public boolean judge(TreeNode root, TreeNode min, TreeNode max) {
+		if (root == null) {
+			return true;
+		}
+		if (min != null &amp;&amp; min.val &gt;= root.val) {
+			return false;
+		}
+		if (max != null &amp;&amp; max.val &lt;= root.val) {
+			return false;
+		}
+		return judge(root.left, min, root) &amp;&amp; judge(root.right, root, max);
+	}
+</code></pre>
+<h2 id="toc_h2_12"><a href="https://leetcode-cn.com/problems/delete-node-in-a-bst/" target="_blank">450. 删除二叉搜索树中的节点</a></h2>
+<blockquote>
+<p><strong>删除分为三种情况，1，要删除的节点是末尾节点。2，只有一个非空节点，3，有两个孩子。分别讨论。</strong></p>
+<p><strong>第三种情况的时候：先找到要删除节点的右子树的最小值，记录下值，然后删掉，然后把值给要删除的节点。</strong></p>
+</blockquote>
+<pre><code>class Solution {
+    public TreeNode deleteNode(TreeNode root, int key) {
+		if (root == null) {
+			return null;
+		}
+        if (root.val == key) {
+			//删除 分为两种删除，在末尾直接删除，在中间(左右都存在和存在一个孩子)就要判断了
+        	if (root.left == null &amp;&amp; root.right == null) {
+				return null;
+			}
+        	if (root.left == null || root.right == null) {
+				if (root.left == null) {
+					return root.right;
+				}else {
+					return root.left;
+				}
+			}
+        	//左右孩子都存在
+        	//首先找到右子树中最小的节点
+        	TreeNode minNode = getMin(root.right);
+        	//删除最小的节点
+        	root.right = deleteNode1(root.right, minNode.val);
+        	root.val = minNode.val;
+		}else if(root.val &gt; key) {
+			root.left = deleteNode(root.left, key);
+		}else {
+			root.right = deleteNode(root.right, key);
+		}
+        return root;
+    }
+
+	public TreeNode getMin(TreeNode node) {
+		if (node.left == null) {
+			return node;
+		}
+		return getMin(node.left);
+	}
+
+	public TreeNode deleteNode1(TreeNode node, int val) {
+		if (node == null) {
+			return null;
+		}
+        if (node.val == val) {
+			if (node.right != null) {
+				return node.right;
+			}
+			return null;
+		}else if(node.val &gt; val) {
+			node.left = deleteNode1(node.left, val);
+		}
+        return node;
+	}
+}
+</code></pre>
+<h2 id="toc_h2_13"><a href="https://leetcode-cn.com/problems/er-cha-sou-suo-shu-yu-shuang-xiang-lian-biao-lcof/" target="_blank">剑指 Offer 36. 二叉搜索树与双向链表</a></h2>
+<p><strong>说明：使用辅助指针记录上一个节点和头结点。</strong></p>
+<pre><code>class Solution {
+    Node pre,head;
+    public Node treeToDoublyList(Node root) {
+        if(root == null){
+            return null;
+        }
+        dfs(root);
+        head.left = pre;
+        pre.right = head;
+        return head;
+    }
+
+    private void dfs(Node root) {
+        if(root == null){
+            return;
+        }
+        dfs(root.left);
+        if (pre == null){
+            head = root;
+        }else{
+            pre.right = root;
+        }
+        root.left = pre;
+        pre = root;
+        dfs(root.right);
+    }
+}
+</code></pre>
+<h1 id="toc_h1_14">二叉树的序列化</h1>
+<h2 id="toc_h2_15">前序遍历实现</h2>
+<blockquote>
+<p><strong>先进行序列化，然后在反序列化</strong></p>
+</blockquote>
+<pre><code>public class Codec {
+
+    // Encodes a tree to a single string.
+    public  String serialize(TreeNode root) {
+        if (root == null) {
+			return "#";
+		}
+        String str = root.val+",";
+        String left = serialize(root.left);
+        String right =  serialize(root.right);
+        str = str + left + "," + right;
+        return str;
+    }
+
+    // Decodes your encoded data to tree.
+    LinkedList&lt;Integer&gt; linkedList = new LinkedList&lt;&gt;();
+    public  TreeNode deserialize(String data) {
+    	String[] arr = data.split(",");
+    	for (String string : arr) {
+    		if (string.equals("#")) {
+				linkedList.add(null);
+			}else {
+				linkedList.add(Integer.parseInt(string));
+			}
+		} 
+        return getTreeNode();
+    }
+    public  TreeNode getTreeNode() {
+    	if (linkedList.isEmpty()) {
+			return null;
+		}
+    	Integer numInteger = linkedList.removeFirst();
+    	if (numInteger == null) {
+			return null;
+		}
+    	TreeNode rootNode = new TreeNode(numInteger);
+    	rootNode.left = getTreeNode();
+    	rootNode.right = getTreeNode();
+    	return rootNode;
+    }
+}
+</code></pre>
+<p><strong>后序遍历实现道理相同，就不写代码了。</strong></p>
+<p><strong>中序遍历可以序列化，但是序列化后的字符串不能反序列化。</strong></p>
+<h2 id="toc_h2_16">层级遍历实现</h2>
+<p><strong>层序遍历的代码框架</strong></p>
+<pre><code>void traverse(TreeNode root) {
+    if (root == null) return;
+    // 初始化队列，将 root 加入队列
+    Queue&lt;TreeNode&gt; q = new LinkedList&lt;&gt;();
+    q.offer(root);
+
+    while (!q.isEmpty()) {
+        TreeNode cur = q.poll();
+
+        /* 层级遍历代码位置 */
+        System.out.println(root.val);
+        /*****************/
+
+        if (cur.left != null) {
+            q.offer(cur.left);
+        }
+
+        if (cur.right != null) {
+            q.offer(cur.right);
+        }
+    }
+}
+</code></pre>
+<p><strong>用层序遍历实现序列化：</strong></p>
+<pre><code>public static String serialize(TreeNode root) {
+        if (root == null) {
+			return "#";
+		}
+        String str = "";
+        Queue&lt;TreeNode&gt; queue = new LinkedList&lt;&gt;();
+        queue.offer(root);
+        while (!queue.isEmpty()) {
+			TreeNode curNode = queue.poll();
+			if (curNode == null) {
+				str += "#,";
+				continue;
+			}
+			str += curNode.val + ",";
+			queue.offer(curNode.left);
+			queue.offer(curNode.right);
+
+		}
+        return str;
+    }
+</code></pre>
+<p><strong>反序列化实现需要使用两个队列</strong></p>
+<pre><code>static LinkedList&lt;TreeNode&gt; linkedList = new LinkedList&lt;&gt;();
+    public static TreeNode deserialize(String data) {
+    	String[] arr = data.split(",");
+    	for (String string : arr) {
+    		if (string.equals("#")) {
+				linkedList.add(null);
+			}else {
+				linkedList.add(new TreeNode(Integer.parseInt(string)));
+			}
+		} 
+        return getTreeNode();
+    }
+    public static TreeNode getTreeNode() {
+    	Queue&lt;TreeNode&gt; queue1 = new LinkedList&lt;&gt;();
+    	TreeNode node = linkedList.poll();
+    	queue1.offer(node);
+    	while (!queue1.isEmpty()) {
+			TreeNode root = queue1.poll();
+			root.left = linkedList.poll();
+			root.right = linkedList.poll();
+			if (root.left != null) {
+				queue1.offer(root.left);
+			}
+			if (root.right != null) {
+				queue1.offer(root.right);
+			}
+		}
+    	return node;
+  
+    }
+</code></pre>
+<h1 id="toc_h1_17">N叉树</h1>
+<pre><code>class NestedInteger {
+    Integer val;
+    List&lt;NestedInteger&gt; list;
+}
+
+/* 基本的 N 叉树节点 */
+class TreeNode {
+    int val;
+    TreeNode[] children;
+}
+</code></pre>
+<p><strong>n叉树遍历框架</strong></p>
+<pre><code>void traverse(TreeNode root) {
+    for (TreeNode child : root.children)
+        traverse(child);
+</code></pre>
+<h2 id="toc_h2_18"><a href="https://leetcode-cn.com/problems/flatten-nested-list-iterator/" target="_blank">341. 扁平化嵌套列表迭代器</a></h2>
+<p><a href="https://mp.weixin.qq.com/s/uEmD5YVGG5LHQEmJQ2GSfw" target="_blank">解析地址</a></p>
+<h1 id="toc_h1_19">赫夫曼树</h1>
+<h2 id="toc_h2_20">概念</h2>
+<p><strong>给定n个权值作为n个****叶子结点</strong>，构造一颗二叉树，若该树的<strong>带权路径长度(wpl</strong>达到最小，称这样的二叉树为<strong>最优二叉树</strong>，也称为哈夫曼树。</p>
+<p><strong>赫夫曼树是带权路径长度最短的树，权值较大的节点离根较近。</strong></p>
+<p><strong>路径和路径长度：在一棵数中，从一个节点往下可以达到的孩子或孙子节点之间的通路，称为路径。通路中分支的数目称为路径长度，若规定根节点的层数为1，则从根节点到第L层节点的路径长度为L-1;</strong></p>
+<p><strong>节点的权和带权路径长度：若将树中节点赋给一个有着某种含义的数值，则这个数值称为该****节点的权</strong>，<strong>节点的带权路径长度为</strong>：从根节点到改节点之间的路径长度与该节点的权的乘积。</p>
+<p><strong>树的带权路径长度</strong>：树的带权路径长度是所有<strong>叶子结点的带权路径长度之和</strong>，记为wpl，权值越大的节点离根节点越近的二叉树才是最优二叉树。<strong>wpl最小的就是赫夫曼树。</strong></p>
+<p><strong>节点的带权路径之和就是该树的带权路径长度wpl。</strong></p>
+<h2 id="toc_h2_21">构键赫夫曼树代码：</h2>
+<p><img src="https://b3logfile.com/file/2021/08/image-95eba68c.png?imageView2/2/w/1280/format/jpg/interlace/1/q/100" alt=""></p>
+<pre><code> /**
+     * 构建赫夫曼树
+     * @param arr  要构建的赫夫曼树的叶子结点的权值数组
+     * @return 返回赫夫曼树的头结点
+     */
+    public static TreeNode createHuffmanTree(int[] arr){
+        List&lt;TreeNode&gt; nodes = new ArrayList&lt;&gt;();
+        for (int i : arr) {
+            nodes.add(new TreeNode(i));
+        }
+
+        while (nodes.size() &gt; 1){
+            //1，排序从小到大
+            nodes.sort(Comparator.comparingInt(x -&gt; x.val));
+            //取出根节点最小的两颗树
+            TreeNode left = nodes.get(0);
+            TreeNode right = nodes.get(1);
+            //构建一个新的二叉树
+            TreeNode parent = new TreeNode(left.val + right.val);
+            parent.left = left;
+            parent.right = right;
+            //从list中删除处理过的二叉树
+            nodes.remove(left);
+            nodes.remove(right);
+            //将parent放入list中
+            nodes.add(parent);
+        }
+        System.out.println(nodes);
+        return nodes.get(0);
+    }
+//输入：{32，2，42}
+//结果：
+/**
+          76
+       34    42
+     2   32
+*/
+
+</code></pre>
+<h2 id="toc_h2_22">赫夫曼编码</h2>
+<h3 id="toc_h3_23">概念</h3>
+<p><strong>赫夫曼编码也称 哈夫曼编码，又称霍夫曼编码，是一种编码方式，属于一种程序算法。</strong></p>
+<p><strong>赫夫曼编码是赫夫曼树在电讯通信中的经典应用之一。</strong></p>
+<p><strong>赫夫曼编码广泛的用于数据文件压缩，压缩率在20%-90%之间</strong></p>
+<p><strong>赫夫曼码是可变字长编码(VLC)的一种。</strong></p>
+                        <div>
+                            <hr>
+
+标题：算法：二叉树<br>
+作者：<a href="https://gyyspace.github.io" target="_blank">function001</a><br>
+地址：<a href="https://gyyspace.github.io/articles/2024/07/21/1721542137927.html" target="_blank">https://gyyspace.github.io/articles/2024/07/21/1721542137927.html</a><br>
+
+<!-- 签名档内可使用 HTML、JavaScript -->
+<br>
+                        </div>
+                </div>
+                <footer>
+                    <div class="post-tags">
+                            <a rel="tag" href="https://gyyspace.github.io/tags/%E7%AE%97%E6%B3%95">
+                                算法</a>
+                            <a rel="tag" href="https://gyyspace.github.io/tags/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84">
+                                数据结构</a>
+                    </div>
+                    <div class="post-nav fn-clear">
+                            <div class="post-nav-prev post-nav-item fn-right">
+                                <a href="https://gyyspace.github.io/articles/2024/06/09/1717937447426.html" rel="prev"
+                                   title="Redis：集群cluster">
+                                    Redis：集群cluster >
+                                </a>
+                            </div>
+                            <div class="post-nav-next post-nav-item fn-left">
+                                <a href="https://gyyspace.github.io/articles/2024/07/21/1721542283762.html" rel="next" title="算法：链表">
+                                    < 算法：链表
+                                </a>
+                            </div>
+                    </div>
+                </footer>
+            </article>
+        </div>
+            <div id="gitalk-container"></div>
+            <div id="b3logsolocomments"></div>
+            <div id="vcomment" data-name="function001" data-postId="1721542137927"></div>
+            <div id="relevantArticles"></div>
+            <div id="randomArticles"></div>
+<div class="sidebar-toggle">
+    <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+    <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+    <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+</div>
+
+<aside class="sidebar">
+<ul class="article__toc">
+        <li class="toc__h1">
+            <a href="#toc_h1_0">二叉树</a>
+        </li>
+        <li class="toc__h2">
+            <a href="#toc_h2_1">镜像翻转二叉树</a>
+        </li>
+        <li class="toc__h2">
+            <a href="#toc_h2_2">116. 填充每个节点的下一个右侧节点指针</a>
+        </li>
+        <li class="toc__h2">
+            <a href="#toc_h2_3">114. 二叉树展开为链表</a>
+        </li>
+        <li class="toc__h2">
+            <a href="#toc_h2_4">654. 最大二叉树</a>
+        </li>
+        <li class="toc__h2">
+            <a href="#toc_h2_5">105. 从前序与中序遍历序列构造二叉树</a>
+        </li>
+        <li class="toc__h2">
+            <a href="#toc_h2_6">106. 从中序与后序遍历序列构造二叉树</a>
+        </li>
+        <li class="toc__h2">
+            <a href="#toc_h2_7">652. 寻找重复的子树</a>
+        </li>
+        <li class="toc__h2">
+            <a href="#toc_h2_8">难理解236. 二叉树的最近公共祖先</a>
+        </li>
+        <li class="toc__h2">
+            <a href="#toc_h2_9">计算二叉树的总节点数（三种 ）</a>
+        </li>
+        <li class="toc__h1">
+            <a href="#toc_h1_10">二叉搜索树</a>
+        </li>
+        <li class="toc__h2">
+            <a href="#toc_h2_11">98. 验证二叉搜索树</a>
+        </li>
+        <li class="toc__h2">
+            <a href="#toc_h2_12">450. 删除二叉搜索树中的节点</a>
+        </li>
+        <li class="toc__h2">
+            <a href="#toc_h2_13">剑指 Offer 36. 二叉搜索树与双向链表</a>
+        </li>
+        <li class="toc__h1">
+            <a href="#toc_h1_14">二叉树的序列化</a>
+        </li>
+        <li class="toc__h2">
+            <a href="#toc_h2_15">前序遍历实现</a>
+        </li>
+        <li class="toc__h2">
+            <a href="#toc_h2_16">层级遍历实现</a>
+        </li>
+        <li class="toc__h1">
+            <a href="#toc_h1_17">N叉树</a>
+        </li>
+        <li class="toc__h2">
+            <a href="#toc_h2_18">341. 扁平化嵌套列表迭代器</a>
+        </li>
+        <li class="toc__h1">
+            <a href="#toc_h1_19">赫夫曼树</a>
+        </li>
+        <li class="toc__h2">
+            <a href="#toc_h2_20">概念</a>
+        </li>
+        <li class="toc__h2">
+            <a href="#toc_h2_21">构键赫夫曼树代码：</a>
+        </li>
+        <li class="toc__h2">
+            <a href="#toc_h2_22">赫夫曼编码</a>
+        </li>
+        <li class="toc__h3">
+            <a href="#toc_h3_23">概念</a>
+        </li>
+</ul></aside>
+    </div>
+</main>
+<footer class="footer">
+    <div class="wrapper">
+        <div class="fn-clear">
+            <a href="https://gyyspace.github.io">echo洋</a>
+            
+            <div class="fn-right">
+            </div>
+        </div>
+        <div class="fn-clear">
+            &copy; 2024
+            <a href="https://gyyspace.github.io">echo洋</a>
+            
+        </div>
+    </div>
+</footer>
+<div class="back-to-top" onclick="Util.goTop()"></div>
+
+<script>
+  var Label = {
+    speech: true,
+    servePath: "https://gyyspace.github.io",
+    staticServePath: "https://gyyspace.github.io",
+    luteAvailable: false,
+    hljsStyle: 'github',
+    langLabel: "zh_CN",
+    version: "4.4.0",
+    staticSite: true,
+    showCodeBlockLn: false,
+    articleId: "1721542137927",
+  }
+</script>
+<script src="https://gyyspace.github.io/skins/next/js/common.min.js?1721540580809"></script>
+<script type="text/javascript">
+    Label.tocLabel = "目录"
+    Label.siteViewLabel = "站点概览"
+</script>
+
+<script type="text/javascript">
+    Util.addScript('https://gyyspace.github.io/js/page.min.js?1721540580809', 'soloPageScript')
+    var page = new Page({
+        "commentContentCannotEmptyLabel": "评论不能为空",
+        "oId": "1721542137927",
+        "blogHost": "https://gyyspace.github.io",
+        "randomArticles1Label": "随机阅读：",
+        "externalRelevantArticles1Label": "站外相关阅读："
+    });
+    $(document).ready(function () {
+        page.load();
+    page.tips.externalRelevantArticlesDisplayCount = "0";
+        page.loadRandomArticles();
+        page.loadRelevantArticles('1721542137927', '<h4>相关阅读：</h4>');
+    NexT.initArticle()
+    });
+</script>
+</body>
+</html>
+
+<!-- Generated by Latke (https://github.com/88250/latke) in 6ms, 2024/07/21 15:56:20 -->

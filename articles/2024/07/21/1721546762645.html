@@ -1,0 +1,1454 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8"/><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"/><meta name="theme-color" content="#3b3e43"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"/><meta name="apple-mobile-web-app-status-bar-style" content="black"><meta name="format-detection" content="telephone=no"/><title>并发编程：进程、线程 - echo洋</title><meta name="description" content="程序，进程，线程，协程。"/><meta property="og:description" content="程序，进程，线程，协程。"/>    <meta name="keywords" content="Solo,Java,博客,开源"/><link rel="dns-prefetch" href="https://gyyspace.github.io"/><link rel="dns-prefetch" href="https://cdn.jsdelivr.net"/><link rel="preconnect" href="https://gyyspace.github.io"><link rel="icon" type="image/png" href="https://b3log.org/images/brand/solo-128.png"/><link rel="apple-touch-icon" href="https://b3log.org/images/brand/solo-128.png"><link rel="shortcut icon" type="image/x-icon" href="https://b3log.org/images/brand/solo-128.png"><meta name="copyright" content="B3log"/><meta http-equiv="Window-target" content="_top"/><meta property="og:locale" content="zh_CN"/><meta property="og:title" content="并发编程：进程、线程 - echo洋"/><meta property="og:site_name" content="echo洋"/><meta property="og:url"      content="https://gyyspace.github.io/articles/2024/07/21/1721546762645.html?"/><meta property="og:image" content="https://b3log.org/images/brand/solo-128.png"/><link rel="search" type="application/opensearchdescription+xml" title="并发编程：进程、线程 - echo洋" href="/opensearch.xml"><link href="https://gyyspace.github.io/rss.xml" title="RSS" type="application/rss+xml" rel="alternate"/><link rel="manifest" href="https://gyyspace.github.io/manifest.json">        <link rel="canonical" href="https://gyyspace.github.io/articles/2024/07/21/1721546762645.html">        <link rel="stylesheet"
+              href="https://gyyspace.github.io/skins/next/css/base.css?1721540580809"/>
+            <link rel="prev" title="算法：数组" href="https://gyyspace.github.io/articles/2024/07/21/1721546193766.html">
+            <link rel="next" title="算法：查找算法" href="https://gyyspace.github.io/articles/2024/07/21/1721547059362.html">
+    <script src="https://gyyspace.github.io/js/lib/vditor/dist/js/icons/ant.js?v=3.9.7" async="" id="vditorIconScript"></script></head>
+<body>
+<header class="header">
+    <div class="header-line"></div>
+    <div class="fn-clear wrapper">
+        <div class="logo-wrap">
+            <a href="https://gyyspace.github.io" rel="start">
+                <span class="logo-line-before"><i></i></span>
+                <span class="site-title">echo洋</span>
+                <span class="logo-line-after"><i></i></span>
+            </a>
+        </div>
+
+        <div class="site-nav-toggle fn-right"
+             onclick="$('.header-line').toggle();$('nav').children('.menu').slideToggle();">
+            <span class="btn-bar"></span>
+            <span class="btn-bar"></span>
+            <span class="btn-bar"></span>
+        </div>
+
+        <nav>
+            <ul class="menu">
+                    <li class="menu-item">
+                        <a href="/tags/Redis" target="_blank" rel="section">
+                            Redis 的设计与实现
+                        </a>
+                    </li>
+            </ul>
+
+        </nav>
+    </div>
+</header><main class="main">
+    <div class="wrapper">
+        <div class="content">
+            <article class="posts-expand">
+                <header class="post-header">
+                    <h2 class="post-title">
+                        并发编程：进程、线程
+                    </h2>
+                    <div class="post-meta">
+                            <span class="post-time">
+                                    发表于
+                                <time>
+                                    2024-07-21
+                                </time>
+                            </span>
+                        <span class="post-comments-count">
+                                &nbsp; | &nbsp;
+                                <a href="https://gyyspace.github.io/articles/2024/07/21/1721546762645.html#b3logsolocomments">
+                                    <span data-uvstatcmt="1721546762645">0</span> 条评论</a>
+                        </span>
+                        &nbsp; | &nbsp; 热度
+                        <span data-uvstaturl="https://gyyspace.github.io/articles/2024/07/21/1721546762645.html">0</span>°C
+                    </div>
+                </header>
+
+                <div class="post-body post-body--article vditor-reset">
+                    <p><img src="https://b3logfile.com/bing/20231115.jpg?imageView2/1/w/960/h/540/interlace/1/q/100" alt=""></p>
+<p><strong>并发编程笔记</strong></p>
+<p><img src="https://b3logfile.com/file/2021/06/image-32c06d24.png?imageView2/2/w/1280/format/jpg/interlace/1/q/100" alt=""></p>
+<h1 id="toc_h1_0">基础知识</h1>
+<blockquote>
+<p><strong>1）程序、进程、线程、协程（纤程）；</strong> <strong>2）线程有哪些状态；</strong> <strong>3）进程间的通信方法、线程间的通信方法。</strong></p>
+</blockquote>
+<h2 id="toc_h2_1">程序，进程，线程，协程</h2>
+<h3 id="toc_h3_2"><strong>程序：</strong></h3>
+<p><strong>编译好的二进制文件，不占用资源。是含有指令和数据的文件 比如qq.exe</strong></p>
+<h3 id="toc_h3_3"><strong>进程：</strong></h3>
+<p><strong>进程指正在运行的程序。确切的来说，当****一个程序进入内存运行，即变成一个进程</strong>，进程是处于运行过程中的程序，并且具有一定独立功能。</p>
+<p><strong>进程是****操作系统进行资源分配的最小单位</strong>，其中资源包括:<strong>CPU、内存空间、磁盘IO</strong>等, 同一进程中的多条线程共享该进程中的全部系统资源, 而进程和进程之间是相互独立的。</p>
+<p><strong>进程是程序在计算机上的一次执行活动。当你运行一个程序,你就启动了一个进程。显然,程序是死的、静态的,进程是活的、动态的。进程可以分为系统进程和用户进程。凡是用于完成操作系统的各种功能的进程就是系统进程,它们就是处于运行状态下的操作系统本身, 用户进程就是所有由你启动的进程。</strong></p>
+<h3 id="toc_h3_4"><strong>线程：</strong></h3>
+<p><strong>线程是进程的一个实体,是CPU调度和分派的基本单位,它是比进程更小的、能独立运行的基本单位</strong>。线程自己基本上不拥有系统资源,只拥有一点在运行中必不可少的资源(如程序计数器,一组寄存器和栈),但是它可与同属一个进程的其他的线程共享进程所拥有的全部资源。</p>
+<p><strong>现代操作系统调度的最小单元是线程，也叫轻量级进程（Light Weight Process），在一个进程里可以创建多个线程，这些线程都拥有各自的计数器、局部变量等属性，并且能够访问共享的内存变量。处理器在这些线程上高速切换，让使用者感觉到这些线程在同时执行。</strong></p>
+<p><strong>线程无处不在</strong>，任何一个程序都必须要创建线程,特别是Java不管任何程序都必须启动一个main函数的主线程; Java Web开发里面的定时任务、定时器、JSP和 Servlet、异步消息处理机制,远程访问接口RM等,任何一个监听事件, onclick的触发事件等都离不开线程和并发的知识。</p>
+<p><strong>在 windows 中进程是不活动的，只是作为线程的容器</strong></p>
+<h4 id="toc_h4_5">进程和线程的区别：</h4>
+<blockquote>
+<p><strong>根本区别：进程是操作系统资源分配的基本单位，线程是处理器任务调度，执行的基本单位。</strong></p>
+<p><strong>资源开销：每个进程都有独立的代码和数据空间（程序上下文），程序之间的切换会有较大的开销 线程可以看做轻量级的进程，同一类线程共享代码和数据空间，每个线程都有自己独立的运行栈和程序计数器，线程之间切换的开销小。</strong></p>
+<p><strong>包含关系：进程基本上是相互独立的，而线程存在于进程内，是进程的一个子集。</strong></p>
+<p><strong>内存分配：同一进程的线程共享本进程的地址和资源（方法区，堆），而进程之间的地址和资源是相互独立的。</strong></p>
+</blockquote>
+<p><img src="https://b3logfile.com/file/2021/06/image-c27cfb74.png?imageView2/2/w/1280/format/jpg/interlace/1/q/100" alt=""></p>
+<pre><code>//使用JMX来查看一个普通的Java程序包含哪些线程，如代码清单4-1所示。
+&nbsp;public static void main(String[] args) {
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;//获取java线程管理 MXBean
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;//不需要获取同步的monitor 和 synchronizer 信息，仅获取线程和程序堆栈信息
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;ThreadInfo[] threadInfos = threadMXBean.dumpAllThreads(false, false);
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;//遍历线程信息，仅打印线程id和线程名称
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;for (ThreadInfo threadInfo : threadInfos) {
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;System.out.println(threadInfo.getThreadId()+"=============="+threadInfo.getThreadName());
+&nbsp; &nbsp; &nbsp; &nbsp;  }
+&nbsp; &nbsp;  }
+&nbsp;//结果：
+&nbsp;6==============Monitor Ctrl-Break
+&nbsp;5==============Attach Listener
+&nbsp;4==============Signal Dispatcher
+&nbsp;3==============Finalizer
+&nbsp;2==============Reference Handler
+&nbsp;1==============main
+</code></pre>
+<h4 id="toc_h4_6">线程上下文切换：</h4>
+<p><strong>在多线程编程中,线程个数一般都大于CPU个数,而每个CPU同一时刻只能被一个线程使用,为了让用户感觉多个线程是在同时执行的, CPU资源的分配采用了时间片轮转的策略,也就是给每个线程分配一个时间片,线程在时间片内占用CPU执行任务。当前线程使用完时间片后,就会处于就绪状态并让出CPU让其他线程占用,这就是上下文切换,从当前线程的上下文切换到了其他线程。那么就有一个问题,让出CPU的线程等下次轮到自己占有CPU时如何知道自己之前运行到哪里了?所以在切换线程上下文时需要保存当前线程的执行现场,当再次执行时根据保存的执行现场信息恢复执行现场。</strong></p>
+<p><strong>线程上下文切换时机有:当前线程的CPU时间片使用完处于就绪状态时,当前线程被其他线程中断时。</strong></p>
+<h4 id="toc_h4_7">什么是线程死锁</h4>
+<p><strong>死锁是指两个或两个以上的线程在执行过程中,因争夺资源而造成的互相等待的现象，在无外力作用的情况下，这些线程会- -直相互等待而无法继续运行下去，如图1-2所示。</strong></p>
+<p><img src="https://b3logfile.com/file/2021/06/image-e4cb34f6.png?imageView2/2/w/1280/format/jpg/interlace/1/q/100" alt=""></p>
+<p><strong>在图1-2中,线程A已经持有了资源2,它同时还想申请资源1,线程B已经持有了资源1,它同时还想申请资源2,所以线程1和线程2就因为相互等待对方已经持有的资源,而进入了死锁状态。</strong></p>
+<p><strong>那么为什么会产生死锁呢?</strong></p>
+<p><strong>死锁的产生****必须具备以下四个条件。</strong></p>
+<p><strong>互斥条件</strong>:指线程对已经获取到的资源进行排它性使用,即该资源同时只由一个线程占用。如果此时还有其他线程请求获取该资源,则请求者只能等待,直至占有资源的线程释放该资源。</p>
+<p><strong>请求并持有条件</strong>:指一个线程已经持有了至少一个资源,但又提出了新的资源请求,而新资源已被其他线程占有,所以当前线程会被阻塞,但阻塞的同时并不释放自己已经获取的资源。</p>
+<p><strong>不可剥夺条件</strong>:指线程获取到的资源在自己使用完之前不能被其他线程抢占,只有在自己使用完毕后才由自己释放该资源。</p>
+<p><strong>环路等待条件</strong>:指在发生死锁时,必然存在一个线程一资源的环形链,即线程集合(TO, TI, T2, .., Tn);中的TO正在等待一个TI占用资源, T1正在等待T2占用的资源, .T正在等待已被TO占用的资源。</p>
+<pre><code>public class DeadLockTest2//创建资源
+&nbsp; &nbsp; &nbsp;private static Object resourceA = new Object ();
+&nbsp; &nbsp; &nbsp;private static Object resourceB = new Object ();
+&nbsp;public static void main (string [] args) {
+&nbsp; &nbsp; &nbsp;//创建线程A
+&nbsp; &nbsp; &nbsp;Thread threadA = new Thread (
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;new Runnable(){
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;public void run () synchronized (resourceA) {
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;System.out.println(Thread.currentThread() + " get ResourceA");
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;try {
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;Thread. sleep (1000);
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }cath (InterruptedException e) {
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;e.printstackTrace();
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;System.out.println(Thread.currentThread() + "waiting get sourceB") ;
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;synchronized (resourceB){
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;System.out.println(Thread.currentThread() + "get esourceB");
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+&nbsp; &nbsp; &nbsp; &nbsp;  } 
+&nbsp; &nbsp; &nbsp; &nbsp;//创建线程B
+&nbsp; &nbsp; &nbsp; Thread threadB = new Thread (new Runnable() {
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; public void run() {
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; synchronized (resourceB) {System.out.printIn (Thread.currentThread() + " get ResourceB");
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; try { 
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Thread.sleep (1000);
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; }catch (InterruptedException e){
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; e.printStackTrace();
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; System.out.println (Thread.currentThread () + "waiting get esourceA");
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;synchronized (resourceA) {System. out.println (Thread.currentThread() + "get ResourceA");
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; }
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+&nbsp; &nbsp; &nbsp;  });
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; threadA.start();
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; threadB.start();
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; }
+&nbsp; &nbsp; &nbsp; }
+</code></pre>
+<p><strong>如何避免死锁：</strong></p>
+<p><strong>目前只有请求并持有和环路等待条件是可以被破坏的。</strong></p>
+<p><strong>造成死锁的原因其实和申请资源的顺序有很大关系，使用资源申请的有序性原则就可以避免死锁，那么什么是资源申请的有序性呢?我们对上面线程B的代码进行如下修改。</strong></p>
+<p><strong>让在线程B中获取资源的顺序和在线程A中获取资源的顺序保持一致,其·实资源分配有序性就是指,假如线程A和线程B都需要资源1, 2, 3,..., n时,对资源进行排序,线程A和线程B只有在获取了资源n-1时才能去获取资源n。</strong></p>
+<h4 id="toc_h4_8">一些线程的方法：</h4>
+<h6 id="toc_h6_9">Thread.sleep()的使用</h6>
+<p><strong>Thread类中有--个静态的sleep方法，当--个执行中的线程调用了Thread的sleep方法后，调用线程会暂时让出指定时间的执行权，也就是在这期间不参与CPU的调度，但.是该线程所拥有的监视器资源，比如锁还是持有不让出的。指定的睡眠时间到了后该函数会正常返回，线程就处于就绪状态，然后参与CPU的调度，获取到CPU资源后就可以继续运行了。如果在睡眠期间其他线程调用了该线程的interrupt()方法中断了该线程,则该线程会在调用sleep方法的地方抛出InterruptedException异常而返回。</strong></p>
+<h6 id="toc_h6_10">Thread.yield()的使用：</h6>
+<p><strong>Thread类中有一个静态的yield方法,当一个线程调用yield方法时,实际就是在暗示线程调度器当前线程请求让出自己的CPU使用,但是线程调度器可以无条件忽略这个暗示。我们知道操作系统是为每个线程分配一个时间片来占有CPU的,正常情况下当一个线程把分配给自己的时间片使用完后,线程调度器才会进行下一轮的线程调度,而当一个线程调用了Thread类的静态方法yield时,是在告诉线程调度器自己占有的时间片中还没有使用完的部分自己不想使用了,这暗示线程调度器现在就可以进行下一轮的线程调度。当一个线程调用yield方法时,当前线程会让出CPU使用权,然后处于就绪状态,线程调度器会从线程就绪队列里面获取一个线程优先级最高的线程,当然也有可能会调度到刚刚让出CPU的那个线程来获取CPU执行权。</strong></p>
+<p><strong>总结: sleep与yield方法的区别在于,当线程调用sleep方法时调用线程会被阻塞挂起指定的时间,在这期间线程调度器不会去调度该线程。而调用yield方法时,线程只是让出自己剩余的时间片,并没有被阻塞挂起,而是处于就绪状态,线程调度器下一次调度时就有可能调度到当前线程执行。</strong></p>
+<h6 id="toc_h6_11">Thread.join()的使用</h6>
+<p><strong>如果一个线程A执行了thread.join()语句，其含义是：当前线程A等待thread线程终止之后才从thread.join()返回（也就是线程A必须要等Thread线程执行完之后才可以继续执行）。线程Thread除了提供join()方法之外，还提供了join(long millis)和join(long millis,int nanos)两个具备超时特性的方法。这两个超时方法表示，如果线程thread在给定的超时时间里没有终止，那么将会从该超时方法中返回。</strong></p>
+<p><strong>在下面代码所示的例子中，创建了10个线程，编号0~9，每个线程调用前一个线程的join()方法，也就是线程0结束了，线程1才能从join()方法中返回，而线程0需要等待main线程结束。</strong></p>
+<pre><code>package com.pingfa.demo.course;
+&nbsp;
+&nbsp;/**
+&nbsp; * @Author: gyy
+&nbsp; * @Description:
+&nbsp; * @Date: 2021/6/7 16:43
+&nbsp; */
+&nbsp;public class Join {
+&nbsp;
+&nbsp; &nbsp; &nbsp;public static void main(String[] args) {
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;Thread pre = Thread.currentThread();
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;for (int i = 1; i &lt; 10; i++) {
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;Thread thread = new Thread(new JoinThread(pre),"joinThread=="+i);
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;pre = thread;
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;thread.start();
+&nbsp; &nbsp; &nbsp; &nbsp;  }
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;System.out.println(Thread.currentThread().getName()+" terminate");
+&nbsp; &nbsp;  }
+&nbsp; &nbsp; &nbsp;static class JoinThread implements Runnable{
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;private Thread last;
+&nbsp;
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;public JoinThread(Thread last){
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;this.last = last;
+&nbsp; &nbsp; &nbsp; &nbsp;  }
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;@Override
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;public void run() {
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;try {
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;last.join();
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  } catch (InterruptedException e) {
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;e.printStackTrace();
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;System.out.println(Thread.currentThread().getName()+" terminate");
+&nbsp; &nbsp; &nbsp; &nbsp;  }
+&nbsp; &nbsp;  }
+&nbsp;}
+&nbsp;//结果：
+&nbsp;main terminate
+&nbsp;joinThread==1 terminate
+&nbsp;joinThread==2 terminate
+&nbsp;joinThread==3 terminate
+&nbsp;joinThread==4 terminate
+&nbsp;joinThread==5 terminate
+&nbsp;joinThread==6 terminate
+&nbsp;joinThread==7 terminate
+&nbsp;joinThread==8 terminate
+&nbsp;joinThread==9 terminate
+</code></pre>
+<p><strong>从上述输出可以看到，每个线程终止的前提是前驱线程的终止，每个线程等待前驱线程终止后，才从join()方法返回，这里涉及了等待/通知机制（等待前驱线程结束，接收前驱线程结束通知）。</strong></p>
+<p><strong>看一下join中的源码：</strong></p>
+<pre><code>public final void join() throws InterruptedException {
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;join(0);
+&nbsp;}
+public final synchronized void join(long millis)
+&nbsp; &nbsp; &nbsp;throws InterruptedException {
+//核心代码
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;if (millis == 0) {
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;while (isAlive()) {
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;wait(0);
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+&nbsp; &nbsp; &nbsp; &nbsp;  }
+&nbsp; &nbsp;  }
+&nbsp;
+</code></pre>
+<p><strong>当线程终止时，会调用线程自身的notifyAll()方法，会通知所有等待在该线程对象上的线程。可以看到join()方法的逻辑结构和等待/通知经典范式一致，即加锁、循环和处理逻辑3个步骤。</strong></p>
+<blockquote>
+<ul>
+<li><strong>synchronized 关键字很关键，表明此方法是线程安全的，线程进入此方法需要获取锁。</strong> <strong>那么这里的锁是什么呢？是本线程实例对象，也就是语法上synchronized 关键字省略(this)的写法。</strong> <strong>InterruptedException 说明此过程可以被打断，如有必要需要处理InterruptedException异常</strong> <strong>isAlive()判断线程的存活状态，如果线程存活则是true，否则是false，也就是不能是终结态TERMINATED，是一个final 的 native方法</strong></li>
+<li><strong>while，而不是if，这里是为了防上虚假唤醒，虚假唤醒是操作系统的权衡性能和健壮性之后的处理方案，具体参考</strong><a href="https://www.jianshu.com/p/0eff666a4875" target="_blank">虚假唤醒（spurious wakeup）</a></li>
+</ul>
+</blockquote>
+<p><strong>核心代码逻辑：</strong></p>
+<blockquote>
+<p><strong>线程A调用线程B.join()方法，重载方法调用到join(long millis)方法</strong> <strong>循环检查条件线程B.isAlive()，如果是存活状态则释放锁，线程A进入等待状态，等待线程B执行完成</strong> <strong>为防止虚假唤醒，使用while循环方式来检查条件</strong> <strong>如果线程B终结了，则跳出while循环，join方法执行结束，回到线程A继续执行</strong></p>
+</blockquote>
+<p><strong>注意：</strong></p>
+<blockquote>
+<p><strong>另外，线程A调用线程B的join方法后会被阻塞，当其他线程调用了线程A的</strong> <strong>interrupt()方法中断了线程A时，线程A会抛出InterruptedException 异常而返回。下 面通</strong> <strong>过一个例子来加深理解。</strong></p>
+</blockquote>
+<h3 id="toc_h3_12">协程：</h3>
+<p>**协程，英文Coroutines，是一种比线程更加轻量级的存在。**正如一个进程可以拥有多个线程一样，一个线程也可以拥有多个协程。</p>
+<p><img src="https://b3logfile.com/file/2021/06/image-e6978d6a.png?imageView2/2/w/1280/format/jpg/interlace/1/q/100" alt=""></p>
+<p><strong>协程的特点在于是一个线程执行，那和多线程比，协程有何优势？</strong></p>
+<p><strong>最大的优势就是协程极高的执行效率。因为子程序切换不是线程切换，而是由程序自身控制，因此，没有线程切换的开销，和多线程比，线程数量越多，协程的性能优势就越明显。</strong></p>
+<p><strong>第二大优势就是不需要多线程的锁机制，因为只有一个线程，也不存在同时写变量冲突，在协程中控制共享资源不加锁，只需要判断状态就好了，所以执行效率比多线程高很多。</strong></p>
+<p><strong>用在generator中的yield可以一定程度上实现协程。虽然支持不完全，但已经可以发挥相当大的威力了。</strong></p>
+<p><strong>来看例子：</strong> <strong>传统的生产者-消费者模型是一个线程写消息，一个线程取消息，通过锁机制控制队列和等待，但一不小心就可能死锁。</strong> <strong>如果改用协程，生产者生产消息后，直接通过 yield 跳转到消费者开始执行，待消费者执行完毕后，切换回生产者继续生产，效率极高：</strong></p>
+<pre><code>import time
+&nbsp;
+&nbsp;def consumer():
+&nbsp; &nbsp; &nbsp;r = ''
+&nbsp; &nbsp; &nbsp;while True:
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;n = yield r
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;if not n:
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;return
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;print('[CONSUMER] Consuming %s...' % n)
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;time.sleep(1)
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;r = '200 OK'
+&nbsp;
+&nbsp;def produce(c):
+&nbsp; &nbsp; &nbsp;c.next()
+&nbsp; &nbsp; &nbsp;n = 0
+&nbsp; &nbsp; &nbsp;while n &lt; 5:
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;n = n + 1
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;print('[PRODUCER] Producing %s...' % n)
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;r = c.send(n)
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;print('[PRODUCER] Consumer return: %s' % r)
+&nbsp; &nbsp; &nbsp;c.close()
+&nbsp;//主线程
+&nbsp;if __name__=='__main__':
+&nbsp; &nbsp; &nbsp;c = consumer()
+&nbsp; &nbsp; &nbsp;produce(c)
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+&nbsp;//解释：
+&nbsp;注意到consumer函数是一个 generator（生成器），把一个consumer传入produce后：
+&nbsp;首先调用c.next()启动生成器；
+&nbsp;然后，一旦生产了东西，通过c.send(n)切换到consumer执行；
+&nbsp;consumer通过yield拿到消息，处理，又通过yield把结果传回；
+&nbsp;produce拿到consumer处理的结果，继续生产下一条消息；
+&nbsp;produce决定不生产了，通过c.close()关闭consumer，整个过程结束。
+&nbsp;整个流程无锁，由一个线程执行，produce和consumer协作完成任务，所以称为“协程”，而非线程的抢占式多任务。
+&nbsp;//执行结果
+&nbsp;[PRODUCER] Producing 1...
+&nbsp;[CONSUMER] Consuming 1...
+&nbsp;[PRODUCER] Consumer return: 200 OK
+&nbsp;[PRODUCER] Producing 2...
+&nbsp;[CONSUMER] Consuming 2...
+&nbsp;[PRODUCER] Consumer return: 200 OK
+&nbsp;[PRODUCER] Producing 3...
+&nbsp;[CONSUMER] Consuming 3...
+&nbsp;[PRODUCER] Consumer return: 200 OK
+&nbsp;[PRODUCER] Producing 4...
+&nbsp;[CONSUMER] Consuming 4...
+&nbsp;[PRODUCER] Consumer return: 200 OK
+&nbsp;[PRODUCER] Producing 5...
+&nbsp;[CONSUMER] Consuming 5...
+&nbsp;[PRODUCER] Consumer return: 200 OK
+</code></pre>
+<p><strong>最后套用Donald Knuth的一句话总结协程的特点：“子程序就是协程的一种特例。”</strong></p>
+<p><strong>协程的应用</strong></p>
+<blockquote>
+<p><strong>有哪些编程语言应用到了协程呢？我们举几个栗子：</strong></p>
+<p><strong>Lua语言</strong></p>
+<p><strong>Lua从5.0版本开始使用协程，通过扩展库coroutine来实现。</strong></p>
+<p><strong>Python语言</strong></p>
+<p><strong>正如刚才所写的代码示例，python可以通过 yield/send 的方式实现协程。在python 3.5以后，async/await 成为了更好的替代方案。</strong></p>
+<p><strong>Go语言</strong></p>
+<p><strong>Go语言对协程的实现非常强大而简洁，可以轻松创建成百上千个协程并发执行。</strong></p>
+<p><strong>Java语言</strong></p>
+<p><strong>如上文所说，Java语言并没有对协程的原生支持，但是某些开源框架模拟出了协程的功能，有兴趣的小伙伴可以看一看****Kilim框架</strong>的源码：</p>
+</blockquote>
+<h2 id="toc_h2_13">线程简介</h2>
+<h3 id="toc_h3_14">线程的优先级</h3>
+<p><strong>现代操作系统基本采用时分的形式调度运行的线程，操作系统会分出一个个时间片，线程会分配到若干时间片，当线程的时间片用完了就会发生线程调度，并等待着下次分配。<strong><strong>线程分配到的时间片多少也就决定了线程使用处理器资源的多少</strong>，而</strong>线程优先级就是决定线程需要多或者少分配一些处理器资源的线程属性。</strong></p>
+<p>**在Java线程中，通过一个整型成员变量 priority 来控制优先级，优先级的范围从1~10，在线程构建的时候可以通过setPriority(int)方法来修改优先级，默认优先级是5，**<strong>优先级高的线程分配时间片的数量要多于优先级低的线程</strong>。设置线程优先级时，针对频繁阻塞（休眠或者I/O操作）的线程需要设置较高优先级，而偏重计算（需要较多CPU时间或者偏运算）的线程则设置较低的优先级，确保处理器不会被独占。在不同的JVM以及操作系统上，线程规划会存在差异，有些操作系统甚至会忽略对线程优先级的设定，</p>
+<pre><code>package com.pingfa.demo.course;
+&nbsp;
+&nbsp;import java.util.ArrayList;
+&nbsp;import java.util.List;
+&nbsp;import java.util.concurrent.TimeUnit;
+&nbsp;
+&nbsp;/**
+&nbsp; * @Author: gyy
+&nbsp; * @Description:
+&nbsp; * @Date: 2021/6/7 9:20
+&nbsp; */
+&nbsp;public class Priority {
+&nbsp; &nbsp; &nbsp;private static volatile boolean notStart = true;
+&nbsp; &nbsp; &nbsp;private static volatile boolean notEnd = true;
+&nbsp; &nbsp; &nbsp;public static void main(String[] args) throws Exception {
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;List&lt;Job&gt; jobs = new ArrayList&lt;Job&gt;();
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;for (int i = 0; i &lt; 10; i++) {
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;int priority = i &lt; 5 ? Thread.MIN_PRIORITY : Thread.MAX_PRIORITY;
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;Job job = new Job(priority);
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;jobs.add(job);
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;Thread thread = new Thread(job, "Thread:" + i);
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;thread.setPriority(priority);
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;thread.start();
+&nbsp; &nbsp; &nbsp; &nbsp;  }
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;notStart = false;
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;TimeUnit.SECONDS.sleep(10);
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;notEnd = false;
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;for (Job job : jobs) {
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;System.out.println("Job Priority : " + job.priority + " , Count : " + job.jobCount);
+&nbsp; &nbsp; &nbsp; &nbsp;  }
+&nbsp; &nbsp;  }
+&nbsp; &nbsp; &nbsp;static class Job implements Runnable {
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;private int priority;
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;private long jobCount;
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;public Job(int priority) {
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;this.priority = priority;
+&nbsp; &nbsp; &nbsp; &nbsp;  }
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;@Override
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;public void run() {
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;while (notStart) {
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;//Thread.yield() 方法，使当前线程由执行状态，变成为就绪状态，让出cpu时间，让其他或者自己的线程执行（也就是谁先抢到谁执行）
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;Thread.yield();
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;while (notEnd) {
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;Thread.yield();
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;jobCount++;
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+&nbsp; &nbsp; &nbsp; &nbsp;  }
+&nbsp; &nbsp;  }
+&nbsp;}
+&nbsp;//执行结果：优先级高的，count 比较高
+&nbsp;Job Priority : 1 , Count : 2957171
+&nbsp;Job Priority : 1 , Count : 3076423
+&nbsp;Job Priority : 1 , Count : 2992661
+&nbsp;Job Priority : 1 , Count : 2981865
+&nbsp;Job Priority : 1 , Count : 3187338
+&nbsp;Job Priority : 10 , Count : 3829924
+&nbsp;Job Priority : 10 , Count : 3766922
+&nbsp;Job Priority : 10 , Count : 3625486
+&nbsp;Job Priority : 10 , Count : 3789090
+&nbsp;Job Priority : 10 , Count : 3805380
+</code></pre>
+<p><strong>线程有哪些状态</strong></p>
+<p><strong>Java线程在运行的生命周期中可能处于下图所示的6种不同的状态，在给定的一个时刻，线程只能处于其中的一个状态。</strong></p>
+<table>
+<thead>
+<tr><th><strong>状态名称</strong></th><th><strong>说明</strong></th></tr>
+</thead>
+<tbody>
+<tr><td><strong>NEW</strong></td><td><strong>初识状态，线程被创建但是还没有调用start()方法</strong></td></tr>
+<tr><td><strong>RUNNABLE</strong></td><td><strong>运行状态，java线程将操作系统中的就绪和运行两种状态笼统地称为 运行中</strong></td></tr>
+<tr><td><strong>BLOCKED</strong></td><td><strong>阻塞状态，表示线程阻塞与锁</strong></td></tr>
+<tr><td><strong>WAITING</strong></td><td><strong>等待状态，表示线程进入等待状态，进入该状态表示当前线程需要等待其他线程做出一些特定的动作（通知或中断）</strong></td></tr>
+<tr><td><strong>TIME_WAITING</strong></td><td><strong>超时等待状态，该状态不同于WAITING，他是可以在指定的时间自行返回的</strong></td></tr>
+<tr><td><strong>TERMINATED</strong></td><td><strong>终止状态，表示当前线程已经执行完毕</strong></td></tr>
+</tbody>
+</table>
+<p><strong>下面我们使用jstack工具（可以选择打开终端，键入jstack或者到JDK安装目录的bin目录下执行命令），尝试查看示例代码运行时的线程信息，更加深入地理解线程状态，示例如代码如下：</strong></p>
+<pre><code>package com.pingfa.demo.course;
+&nbsp;
+&nbsp;/**
+&nbsp; * @Author: gyy
+&nbsp; * @Description:
+&nbsp; * @Date: 2021/6/7 10:10
+&nbsp; */
+&nbsp;public class ThreadState {
+&nbsp; &nbsp; &nbsp;public static void main(String[] args) {
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;new Thread(new TimeWaiting(), "TimeWaitionThread").start();
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;new Thread(new Waiting(),"WaitingThread").start();
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;//使用两个BLocked线程，一个取锁成功，另一个阻塞
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;new Thread(new Blocked(),"BlockedThread-1").start();
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;new Thread(new Blocked(),"BlockedThread-2").start();
+&nbsp; &nbsp;  }
+&nbsp; &nbsp; &nbsp;//该线程不断的进行休眠
+&nbsp; &nbsp; &nbsp;static class TimeWaiting implements Runnable{
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;@Override
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;public void run() {
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;while (true){
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; SleepUtils.second(100);
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+&nbsp; &nbsp; &nbsp; &nbsp;  }
+&nbsp; &nbsp;  }
+&nbsp; &nbsp; &nbsp;//该线程在Waiting.class实例上等待
+&nbsp; &nbsp; &nbsp;static class Waiting implements Runnable{
+&nbsp;
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;@Override
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;public void run() {
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;while (true){
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;synchronized (Waiting.class){
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;try {
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;Waiting.class.wait();
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }catch (InterruptedException e){
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;e.printStackTrace();
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+&nbsp; &nbsp; &nbsp; &nbsp;  }
+&nbsp; &nbsp;  }
+&nbsp; &nbsp; &nbsp;//该线程在Blocked.class实例后，不会释放该锁
+&nbsp; &nbsp; &nbsp;static class Blocked implements Runnable{
+&nbsp;
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;@Override
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;public void run() {
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;synchronized(Blocked.class){
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;while (true){
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;SleepUtils.second(100);
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+&nbsp; &nbsp; &nbsp; &nbsp;  }
+&nbsp; &nbsp;  }
+&nbsp;}
+</code></pre>
+<p><strong>通过jstack 查看线程的状态：</strong></p>
+<p><img src="https://b3logfile.com/file/2021/06/image-186c99ba.png?imageView2/2/w/1280/format/jpg/interlace/1/q/100" alt=""></p>
+<p><strong>通过示例，我们了解到Java程序运行中线程状态的具体含义。线程在自身的生命周期中，并不是固定地处于某个状态，而是随着代码的执行在不同的状态之间进行切换，Java线程状态变迁如图所示：</strong></p>
+<p><img src="https://b3logfile.com/file/2021/06/image-ffd077c9.png?imageView2/2/w/1280/format/jpg/interlace/1/q/100" alt=""></p>
+<p><strong>由图4-1中可以看到，线程创建之后，调用start()方法开始运行。当线程执行wait()方法之后，线程进入等待状态。进入等待状态的线程需要依靠其他线程的通知才能够返回到运行状态，而超时等待状态相当于在等待状态的基础上增加了超时限制，也就是超时时间到达时将会返回到运行状态。当线程调用同步方法时，在没有获取到锁的情况下，线程将会进入到阻塞状态。线程在执行Runnable的run()方法之后将会进入到终止状态。</strong></p>
+<blockquote>
+<p><strong>注意 Java将操作系统中的运行和就绪两个状态合并称为运行状态。阻塞状态是线程阻塞在进入synchronized关键字修饰的方法或代码块（获取锁）时的状态，但是阻塞在java.concurrent包中Lock接口的线程状态却是等待状态，因为java.concurrent包中Lock接口对于阻塞的实现均使用了LockSupport类中的相关方法。</strong></p>
+</blockquote>
+<h3 id="toc_h3_15">Daemon线程------守护线程</h3>
+<p><strong>Daemon线程是一种支持型线程，因为它主要被用作程序中后台调度以及支持性工作。这意味着，当一个Java虚拟机中不存在非Daemon线程的时候，守护线程会随着Java虚拟机一起结束工作。可以通过调用Thread.setDaemon(true)将线程设置为Daemon线程。</strong></p>
+<blockquote>
+<p><strong>注意 Daemon属性需要在启动线程之前设置，不能在启动线程之后设置。</strong></p>
+</blockquote>
+<p><strong>Daemon线程被用作完成支持性工作，但是在Java虚拟机退出时Daemon线程中的finally块并不一定会执行，示例如代码如下所示。</strong></p>
+<pre><code>/**
+&nbsp; * @Author: gyy
+&nbsp; * @Description:
+&nbsp; * @Date: 2021/6/7 10:55
+&nbsp; */
+&nbsp;public class Daemon {
+&nbsp; &nbsp; &nbsp;public static void main(String[] args) {
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;Thread thread = new Thread(new DaemonTest(), "DaemonTest");
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;thread.setDaemon(true);
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;thread.start();
+&nbsp; &nbsp;  }
+&nbsp; &nbsp; &nbsp;static class DaemonTest implements Runnable{
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;@Override
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;public void run() {
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;try {
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;SleepUtils.second(10);
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }finally {
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;System.out.println("Daemon finally run");
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+&nbsp; &nbsp; &nbsp; &nbsp;  }
+&nbsp; &nbsp;  }
+&nbsp;}
+&nbsp;//执行后 finally块中的代码并不会执行
+</code></pre>
+<p><strong>运行Daemon程序，可以看到在终端或者命令提示符上没有任何输出。main线程（非Daemon线程）在启动了线程DaemonRunner之后随着main方法执行完毕而终止，而此时Java虚拟机中已经没有非Daemon线程，虚拟机需要退出。Java虚拟机中的所有Daemon线程都需要立即终止，因此DaemonTest立即终止，但是DaemonTest中的finally块并没有执行。</strong></p>
+<blockquote>
+<p><strong>注意 在构建Daemon线程时，不能依靠finally块中的内容来确保执行关闭或清理资源的逻辑。</strong></p>
+</blockquote>
+<p><strong>守护线程和用户线程的区别：</strong></p>
+<blockquote>
+<p><strong>用户线程：有一个没有结束，JVM就不会结束</strong></p>
+<p><strong>守护线程：一旦非守护线程全部结束，守护线程会随着JVM一起结束工作，</strong></p>
+</blockquote>
+<p><strong>守护线程特点和注意点：</strong></p>
+<p><img src="https://b3logfile.com/file/2021/06/image-2b89bd5b.png?imageView2/2/w/1280/format/jpg/interlace/1/q/100" alt=""></p>
+<h2 id="toc_h2_16">启动和终止线程</h2>
+<h3 id="toc_h3_17">构造线程</h3>
+<p><strong>在运行线程之前首先要构造一个线程对象，线程对象在构造的时候需要提供线程所需要的属性，如线程所属的线程组、线程优先级、是否是Daemon线程等信息。如图：代码摘自java.lang.Thread中对线程进行初始化的部分。</strong></p>
+<p><img src="https://b3logfile.com/file/2021/06/image-71f71a20.png?imageView2/2/w/1280/format/jpg/interlace/1/q/100" alt=""></p>
+<p><strong>在上述过程中，一个新构造的线程对象是由其parent线程来进行空间分配的，而child线程继承了parent是否为Daemon、优先级和加载资源的contextClassLoader以及可继承的ThreadLocal，同时还会分配一个唯一的ID来标识这个child线程。至此，一个能够运行的线程对象就初始化好了，在堆内存中等待着运行。</strong></p>
+<h3 id="toc_h3_18">启动线程</h3>
+<p><strong>线程对象在初始化完成之后，调用start()方法就可以启动这个线程。线程start()方法的含义</strong> <strong>是：当前线程（即parent线程）同步告知Java虚拟机，只要线程规划器空闲，应立即启动调用</strong> <strong>start()方法的线程。</strong></p>
+<h3 id="toc_h3_19">中断操作</h3>
+<p><strong>中断可以理解为线程的一个标识位属性，它表示一个运行中的线程是否被其他线程进行了中断操作。中断好比其他线程对该线程打了个招呼，其他线程通过调用该线程的interrupt()方法对其进行中断操作。</strong></p>
+<p><strong>线程通过检查自身是否被中断来进行响应，线程通过方法isInterrupted()来进行判断是否被中断，也可以调用静态方法Thread.interrupted()对当前线程的中断标识位进行复位。如果该线程已经处于终结状态，即使该线程被中断过，在调用该线程对象的isInterrupted()时依旧会返回false。</strong></p>
+<p><strong>从Java的API中可以看到，许多声明抛出InterruptedException的方法（例如Thread.sleep(longmillis)方法）这些方法在抛出InterruptedException之前，Java虚拟机会先将该线程的中断标识位清除，然后抛出InterruptedException，此时调用isInterrupted()方法将会返回false。</strong></p>
+<pre><code>//代码示例：
+&nbsp;package com.pingfa.demo.course;
+&nbsp;
+&nbsp;/**
+&nbsp; * @Author: gyy
+&nbsp; * @Description:
+&nbsp; * @Date: 2021/6/7 11:42
+&nbsp; */
+&nbsp;public class Interrupt {
+&nbsp;
+&nbsp; &nbsp; &nbsp;public static void main(String[] args) {
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;Thread sleepThread = new Thread(new SleepThread(), "SleepThread");
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;Thread busyThread = new Thread(new BusyThread(), "BusyThread");
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;sleepThread.start();
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;busyThread.start();
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;SleepUtils.second(2);
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;sleepThread.interrupt();
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;busyThread.interrupt();
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;SleepUtils.second(2);
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;System.out.println("SleepThread:"+sleepThread.isInterrupted()); //false
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;System.out.println("busyThread:"+busyThread.isInterrupted());//true
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;SleepUtils.second(5);
+&nbsp; &nbsp;  }
+&nbsp; &nbsp; &nbsp;static class SleepThread implements Runnable{
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;@Override
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;public void run() {
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;while (true){
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;SleepUtils.second(10);
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+&nbsp; &nbsp; &nbsp; &nbsp;  }
+&nbsp; &nbsp;  }
+&nbsp; &nbsp; &nbsp;static class BusyThread implements Runnable{
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;@Override
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;public void run() {
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;while(true){
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+&nbsp; &nbsp; &nbsp; &nbsp;  }
+&nbsp; &nbsp;  }
+&nbsp;}
+&nbsp;//SleepThread:false
+&nbsp;//busyThread:true
+&nbsp;//从结果可以看出，抛出InterruptedException的线程SleepThread，其中断标识位被清除了，而一直忙碌运作的线程BusyThread，中断标识位没有被清除。
+</code></pre>
+<h3 id="toc_h3_20">安全终止线程</h3>
+<p><strong>在上面提到的中断状态是线程的一个标识位，而****中断操作</strong>是一种简便的线程间交互方式，而这种交互方式最适合用来取消或停止任务。除了中断以外，还可以<strong>利用一个boolean变量来控制是否需要停止任务并终止该线程</strong>。</p>
+<p><strong>interrupt()，其他线程通过调用某个线程 A 的 interrupt()方法对其进行中断操作,本质上只是改变线程A的中断标志位由false改变成true,但是****改变线程A的中断标志位不代表线程A一定会立即停止自己的工作</strong>，如果A中没有检查中断标志位是否为true并作出相应的处理,即线程A完全没有理会这种中断请求。则其他线程调用线程A的interrupt()对线程A是毫无影响的。然而java里的线程是协作式的，而非抢占式的。正常情况下开发者会根据具体的业务需求通过对线程A检查自身的中断标志位是否被置为true来进行相关的业务操作，以此完成多线程之间的协调工作用以来高效的实现自身的业务需求。</p>
+<p><strong>如下代码，创建了一个线程CountThread，它不断地进行变量累加，而主线程尝试对其进行中断操作和停止操作。</strong></p>
+<pre><code>package com.pingfa.demo.course;
+&nbsp;
+&nbsp;import java.util.concurrent.TimeUnit;
+&nbsp;
+&nbsp;/**
+&nbsp; * @Author: gyy
+&nbsp; * @Description:
+&nbsp; * @Date: 2021/6/7 11:55
+&nbsp; */
+&nbsp;public class Shutdown {
+&nbsp; &nbsp; &nbsp;public static void main(String[] args) throws Exception {
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;Runner one = new Runner();
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;Thread countThread = new Thread(one, "CountThread");
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;countThread.start();
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;// 睡眠1秒，main线程对CountThread进行中断，使CountThread能够感知中断而结束
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;TimeUnit.SECONDS.sleep(1);
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;countThread.interrupt();
+&nbsp;
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;Runner two = new Runner();
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;countThread = new Thread(two, "CountThread");
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;countThread.start();
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;// 睡眠1秒，main线程对Runner two进行取消，使CountThread能够感知on为false而结束
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;TimeUnit.SECONDS.sleep(1);
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;two.cancel();
+&nbsp; &nbsp;  }
+&nbsp; &nbsp; &nbsp;private static class Runner implements Runnable {
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;private long i;
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;private volatile boolean on = true;
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;@Override
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;public void run() {
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;while (on &amp;&amp; !Thread.currentThread().isInterrupted()){
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;i++;
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;System.out.println("Count i = " + i);
+&nbsp; &nbsp; &nbsp; &nbsp;  }
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;public void cancel() {
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;on = false;
+&nbsp; &nbsp; &nbsp; &nbsp;  }
+&nbsp; &nbsp;  }
+&nbsp;}
+&nbsp;//Count i = 407222090
+&nbsp;//Count i = 496555320
+</code></pre>
+<p><strong>在执行过程中，main线程通过中断操作和cancel()方法均可使CountThread得以终止。这种通过标识位或者中断操作的方式能够使线程在终止时有机会去清理资源，而不是武断地将线程停止，因此这种终止线程的做法显得更加安全和优雅。</strong></p>
+<h2 id="toc_h2_21">进程间的通信方法、线程间的通信方法</h2>
+<h3 id="toc_h3_22">进程间的通信</h3>
+<p><a href="https://blog.csdn.net/violet_echo_0908/article/details/51201278" target="_blank">参考资料</a></p>
+<p><a href="https://blog.csdn.net/csdn_kou/article/details/82908922" target="_blank">参考资料</a></p>
+<p><strong>进程通信：</strong> <strong>每个进程各自有不同的用户地址空间,任何一个进程的全局变量在另一个进程中都看不到，所以进程之间要交换数据必须通过内核,在内核中开辟一块缓冲区,进程A把数据从用户空间拷到内核缓冲区,进程B再从内核缓冲区把数据读走,内核提供的这种机制称为进程间通信</strong></p>
+<table>
+<thead>
+<tr><th><strong>通信方法</strong></th><th><strong>无法介于内核态与用户态的原因</strong></th></tr>
+</thead>
+<tbody>
+<tr><td><strong>管道（不包括命名管道）</strong></td><td><strong>局限于父子进程间的通信。</strong></td></tr>
+<tr><td><strong>消息队列</strong></td><td><strong>在硬、软中断中无法无阻塞地接收数据。</strong></td></tr>
+<tr><td><strong>信号量</strong></td><td><strong>无法介于内核态和用户态使用。</strong></td></tr>
+<tr><td><strong>共享内存</strong></td><td><strong>需要信号量辅助，而信号量又无法使用。</strong></td></tr>
+</tbody>
+</table>
+<p><strong>1 匿名管道通信</strong></p>
+<p><strong>匿名管道( pipe )：<strong>管道是一种半双工的通信方式，数据只能</strong>单向流动</strong>，而且只能在具有亲缘关系的进程间使用。进程的亲缘关系通常是指<strong>父子进程关系</strong>。</p>
+<pre><code>// 需要的头文件
+&nbsp;#include &lt;unistd.h&gt;
+&nbsp;
+&nbsp;// 通过pipe()函数来创建匿名管道
+&nbsp;// 返回值：成功返回0，失败返回-1
+&nbsp;// fd参数返回两个文件描述符
+&nbsp;// fd[0]指向管道的读端，fd[1]指向管道的写端
+&nbsp;// fd[1]的输出是fd[0]的输入。
+&nbsp;int pipe (int fd[2]);
+</code></pre>
+<p><strong>通过匿名管道实现进程间通信的步骤如下：</strong></p>
+<p><strong>父进程创建管道，得到两个⽂件描述符指向管道的两端</strong></p>
+<p><strong>父进程fork出子进程，⼦进程也有两个⽂件描述符指向同⼀管道。</strong></p>
+<p><strong>父进程关闭fd[0],子进程关闭fd[1]，即⽗进程关闭管道读端,⼦进程关闭管道写端（因为管道只支持单向通信）。⽗进程可以往管道⾥写,⼦进程可以从管道⾥读,管道是⽤环形队列实现的,数据从写端流⼊从读端流出,这样就实现了进程间通信。</strong></p>
+<p><strong>2 高级管道通信</strong></p>
+<p><strong>高级管道(popen)：将另一个程序当做一个新的进程在当前程序进程中启动，则它算是当前程序的子进程，这种方式我们成为高级管道方式。</strong></p>
+<p><strong>3 有名管道通信</strong></p>
+<p><strong>有名管道 (named pipe) ： 有名管道也是半双工的通信方式，但是它允许无亲缘关系进程间的通信。</strong></p>
+<p><strong>4 消息队列通信</strong></p>
+<p><strong>消息队列( message queue ) ： 消息队列是由消息的链表，存放在内核中并由消息队列标识符标识。消息队列克服了信号传递信息少、管道只能承载无格式字节流以及缓冲区大小受限等缺点。</strong></p>
+<p><strong>5 信号量通信</strong></p>
+<p><strong>信号量( semophore ) ： 信号量是一个计数器，可以用来控制多个进程对共享资源的访问。它常作为一种锁机制，防止某进程正在访问共享资源时，其他进程也访问该资源。因此，主要作为进程间以及同一进程内不同线程之间的同步手段。</strong></p>
+<p><strong>6 信号</strong></p>
+<p><strong>信号 ( sinal ) ： 信号是一种比较复杂的通信方式，用于通知接收进程某个事件已经发生。</strong></p>
+<p><strong>7 共享内存通信</strong></p>
+<p><strong>共享内存( shared memory ) ：共享内存就是映射一段能被其他进程所访问的内存，这段共享内存由一个进程创建，但多个进程都可以访问。共享内存是最快的 IPC 方式，它是针对其他进程间通信方式运行效率低而专门设计的。它往往与其他通信机制，如信号两，配合使用，来实现进程间的同步和通信。</strong></p>
+<p><strong>共享内存是最快的进程间通讯的方式</strong></p>
+<ul>
+<li><strong>原因：相对于其他几种方式，共享内存直接在进程的虚拟地址空间进行操作，不再通过执行进入内核的系统调用来传递彼此的数据</strong></li>
+<li><img src="https://b3logfile.com/file/2021/06/image-11141f76.png?imageView2/2/w/1280/format/jpg/interlace/1/q/100" alt=""></li>
+</ul>
+<p><strong>8 套接字通信</strong></p>
+<p><strong>套接字( socket ) ： 套接口也是一种进程间通信机制，与其他通信机制不同的是，它可用于不同机器间的进程通信</strong></p>
+<h3 id="toc_h3_23">线程间的通信</h3>
+<h4 id="toc_h4_24">volatile和synchronized</h4>
+<p><strong>volatile关键字</strong></p>
+<p><strong>Java支持多个线程同时访问一个对象或者对象的成员变量，由于****每个线程可以拥有这个变量的拷贝</strong>（虽然对象以及成员变量分配的内存是在共享内存中的，但是每个执行的线程还是可以拥有一份拷贝，这样做的<strong>目的是加速程序的执行</strong>，这是现代多核处理器的一个显著特性），所以程序在执行过程中，<strong>一个线程看到的变量并不一定是最新的。</strong></p>
+<p><strong>关键字volatile可以用来修饰字段</strong>（成员变量），就是告知程序任何对该变量的访问均需要从共享内存中获取，而对它的改变必须同步刷新回共享内存，它能<strong>保证所有线程对变量访问的可见性。</strong></p>
+<p><strong>举个例子，定义一个表示程序是否运行的成员变量boolean on=true，那么另一个线程可能对它执行关闭动作（on=false），这里涉及多个线程对变量的访问，因此需要将其定义成为volatile boolean on＝true，这样其他线程对它进行改变时，可以让所有线程感知到变化，因为所有对on变量的访问和修改都需要以共享内存为准。但是，过多地使用volatile是不必要的，因为它****会降低程序执行的效率。</strong></p>
+<p><strong>volatile的内存语义和synchronized有相似之处，具体来说就是，当线程写入了volatile 变量值时就等价于线程退出synchronized同步块(把写入工作内存的变量值同步到主内存)，读取volatile变量值时就相当于进入同步块(先清空本地内存变量值，再从主内存获取最新值)。</strong></p>
+<p><strong>volatile 虽然提供了可见性保证，但并不保证操作的原子性。那么一-般在什么时候才使用volatile 关键字呢?</strong></p>
+<blockquote>
+<p><strong>●写入变量值不依赖变量的当前值时。因为如果依赖当前值，将是获取一计算一写入三步操作，这三步操作不是原子性的，而volatile不保证原子性。</strong> <strong>●读写变量值时没有加锁。因为加锁本身已经保证了内存可见性，这时候不需要把变量声明为volatile的。</strong></p>
+</blockquote>
+<p><strong>关键字synchronized:</strong></p>
+<p><strong>关键字synchronized可以****修饰方法或者以同步块</strong>的形式来进行使用，它主要<strong>确保多个线程在同一个时刻，只能有一个线程处于方法或者同步块中</strong>，它保证了线程对变量访问的可见性和排他性。</p>
+<p><strong>示例使用了同步块和同步方法，通过使用javap工具查看生成的class文件信息来分析synchronized关键字的实现细节，示例如下。</strong></p>
+<p><img src="https://b3logfile.com/file/2021/06/image-fd1b9dbf.png?imageView2/2/w/1280/format/jpg/interlace/1/q/100" alt=""></p>
+<p><strong>在Synchronized.class同级目录执行javap–v Synchronized.class，部分相关输出如下所示：</strong></p>
+<p><img src="https://b3logfile.com/file/2021/06/image-7ce61da2.png?imageView2/2/w/1280/format/jpg/interlace/1/q/100" alt=""></p>
+<p>**上面class信息中，对于同步块的实现使用了monitor enter和monitor exit指令，而同步方法则是依靠方法修饰符上的ACC_SYNCHRONIZED来完成的。无论采用哪种方式，**<strong>其本质是对一个对象的监视器（monitor）进行获取，而这个获取过程是排他的，也就是同一时刻只能有一个线程获取到由synchronized所保护对象的监视器。</strong></p>
+<p><strong>任意一个对象都拥有自己的监视器，当这个对象由同步块或者这个对象的同步方法调用时，执行方法的线程****必须先获取到该对象的监视器</strong>才能进入同步块或者同步方法，而没<strong>有获取到监视器（执行该方法）的线程将会被阻塞</strong>在同步块和同步方法的入口处，进入BLOCKED状态。</p>
+<p><img src="https://b3logfile.com/file/2021/06/image-1b533191.png?imageView2/2/w/1280/format/jpg/interlace/1/q/100" alt=""></p>
+<p><strong>从图4-2中可以看到，任意线程对Object（Object由synchronized保护）的访问，首先要获得Object的监视器。如果获取失败，线程进入同步队列，线程状态变为BLOCKED。当访问Object的前驱（获得了锁的线程）释放了锁，则该释放操作唤醒阻塞在同步队列中的线程，使其重新尝试对监视器的获取。</strong></p>
+<h4 id="toc_h4_25">等待/通知机制</h4>
+<p><strong>一个线程修改了一个对象的值，而另一个线程感知到了变化，然后进行相应的操作，整个过程开始于一个线程，而最终执行又是另一个线程。前者是生产者，后者就是消费者，这种模式隔离了“做什么”（what）和“怎么做”（How），在功能层面上实现了解耦，体系结构上具备了良好的伸缩性，但是在Java语言中如何实现类似的功能呢？</strong></p>
+<p><strong>简单的办法是让消费者线程不断地循环检查变量是否符合预期，如下面代码所示，在while循环中设置不满足的条件，如果条件满足则退出while循环，从而完成消费者的工作。</strong></p>
+<pre><code>while (value != desire) {
+	Thread.sleep(1000);
+}
+doSomething();
+</code></pre>
+<p><strong>上面这段伪代码在条件不满足时就睡眠一段时间，这样做的目的是防止过快的“无效”尝试，这种方式看似能够解实现所需的功能，但是却存在如下问题。</strong></p>
+<ol>
+<li><strong>难以确保及时性</strong>。在睡眠时，基本不消耗处理器资源，但是如果睡得过久，就不能及时发现条件已经变化，也就是及时性难以保证。</li>
+<li><strong>难以降低开销</strong>。如果降低睡眠的时间，比如休眠1毫秒，这样消费者能更加迅速地发现条件变化，但是却可能消耗更多的处理器资源，造成了无端的浪费。</li>
+</ol>
+<p><strong>以上两个问题，看似矛盾难以调和，但是Java通过****内置的等待/通知机制</strong>能够很好地解决这个矛盾并实现所需的功能。</p>
+<p><strong>等待/通知的相关方法是任意Java对象都具备的，因为这些方法被定义在所有对象的超类java.lang.Object上，方法和描述如表4-2所示。</strong></p>
+<p><img src="https://b3logfile.com/file/2021/06/image-a1c78b82.png?imageView2/2/w/1280/format/jpg/interlace/1/q/100" alt=""></p>
+<pre><code>package com.pingfa.demo.course;
+&nbsp;
+&nbsp;import java.text.SimpleDateFormat;
+&nbsp;import java.util.Date;
+&nbsp;/**
+&nbsp; * @Author: gyy
+&nbsp; * @Description:
+&nbsp; * @Date: 2021/6/7 15:38
+&nbsp; */
+&nbsp;public class WaitNotifyTest {
+&nbsp; &nbsp; &nbsp;static boolean flag = true;
+&nbsp; &nbsp; &nbsp;static Object lock = new Object();
+&nbsp;
+&nbsp; &nbsp; &nbsp;public static void main(String[] args) {
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;Thread waitThread = new Thread(new Wait(), "WaitThread");
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;waitThread.start();
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;SleepUtils.second(1);
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;Thread notifyThread = new Thread(new Notify(), "NotifyThread");
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;notifyThread.start();
+&nbsp; &nbsp;  }
+&nbsp;
+&nbsp;
+&nbsp; &nbsp; &nbsp;static class Wait implements Runnable{
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;@Override
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;public void run() {
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;//加锁，拥有lock 的monitor
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;synchronized(lock){
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;// 当条件不满足时，继续wait，同时释放了lock的锁
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;while (flag) {//这里不可以使用if，因为当前线程并不没有一直在循环，而是进入等待队列
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;try {
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;System.out.println(Thread.currentThread() + " flag is true. wait @ " + new SimpleDateFormat("HH:mm:ss").format(new Date()));
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;//进入等待队列，等待通知，不会一直循环判断
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;lock.wait();
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  } catch (InterruptedException e) {
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;e.printStackTrace();
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;// 条件满足时，完成工作
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;System.out.println(Thread.currentThread() + " flag is false. running @ " + new SimpleDateFormat("HH:mm:ss").format(new Date()));
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+&nbsp; &nbsp; &nbsp; &nbsp;  }
+&nbsp; &nbsp;  }
+&nbsp; &nbsp; &nbsp;static class Notify implements Runnable{
+&nbsp;
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;@Override
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;public void run() {
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;//加锁，拥有lock的Monitor
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;synchronized(lock){
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;//获取lock的锁，然后进行通知，通知时不会释放lock的锁,
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;//直到当前线程释放了lock后，WaitThread才能wait方法中返回
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;System.out.println(Thread.currentThread()+" hold lock. notify @ "+new SimpleDateFormat("HH:mm:ss").format(new Date()));
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;flag = false;
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;lock.notify();
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;SleepUtils.second(5);
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;//再次加锁
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;synchronized(lock){
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;System.out.println(Thread.currentThread()+" hold lock again. sleep @ "+new SimpleDateFormat("HH:mm:ss").format(new Date()));
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;SleepUtils.second(5);
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+&nbsp; &nbsp; &nbsp; &nbsp;  }
+&nbsp; &nbsp;  }
+&nbsp;}
+&nbsp;//结果：
+&nbsp;Thread[WaitThread,5,main] flag is true. wait @ 16:02:21
+&nbsp;Thread[NotifyThread,5,main] hold lock. notify @ 16:02:22
+&nbsp;Thread[NotifyThread,5,main] hold lock again. sleep @ 16:02:27
+&nbsp;Thread[WaitThread,5,main] flag is false. running @ 16:02:32
+</code></pre>
+<p><strong>上述第3行和第4行输出的顺序可能会互换，而上述例子主要说明了调用wait()、notify()以及notifyAll()时需要注意的细节，如下。</strong></p>
+<blockquote>
+<p><strong>1）使用wait()、notify()和notifyAll()时****需要先对调用对象加锁</strong>。</p>
+<p><strong>2）调用wait()方法后，线程状态由RUNNING变为WAITING，并将当前线程放置到对象的等待队列。</strong></p>
+<p><strong>3）notify()或notifyAll()方法调用后，<strong><strong>等待线程依旧不会从wait()返回</strong>，需要调用notify()或notifAll()的</strong>线程释放锁之后，等待线程才有机会从wait()返回。</strong></p>
+<p><strong>4）notify()方法将等待队列中的一个等待线程从等待队列中移到同步队列中，而notifyAll()方法则是将等待队列中所有的线程全部移到同步队列，被移动的线程状态由WAITING变为BLOCKED。</strong></p>
+<p><strong>5）从wait()方法返回的前提是获得了调用对象的锁。</strong></p>
+</blockquote>
+<p><strong>从上述细节中可以看到，等待/通知机制依托于同步机制，其目的就是****确保等待线程从wait()方法返回时能够感知到通知线程对变量做出的修改。</strong></p>
+<p><img src="https://b3logfile.com/file/2021/06/image-57d85e4d.png?imageView2/2/w/1280/format/jpg/interlace/1/q/100" alt=""></p>
+<p><strong>在图4-3中，WaitThread首先获取了对象的锁，然后调用对象的wait()方法，从而放弃了锁并进入了对象的等待队列WaitQueue中，进入等待状态。由于WaitThread释放了对象的锁，</strong></p>
+<p><strong>NotifyThread随后获取了对象的锁，并调用对象的notify()方法，将WaitThread从WaitQueue移到SynchronizedQueue中，此时WaitThread的状态变为阻塞状态。NotifyThread释放了锁之后，WaitThread再次获取到锁并从wait()方法返回继续执行。</strong></p>
+<h5 id="toc_h5_26">wait()和sleep()的区别</h5>
+<p><strong>sleep()</strong> <strong>sleep() 方法是线程类（Thread）的静态方法，让调用线程进入睡眠状态，让出执行机会给其他线程，等到休眠时间结束后，线程进入就绪状态和其他线程一起竞争cpu的执行时间。</strong> <strong>因为sleep() 是static静态的方法，他不能改变对象的机锁，当一个synchronized块中调用了sleep() 方法，线程虽然进入休眠，但是对象的机锁没有被释放，其他线程依然无法访问这个对象。</strong></p>
+<p><strong>wait()</strong></p>
+<p><strong>wait()是Object类的方法，当一个线程执行到wait方法时，它就进入到一个和该对象相关的等待池，同时释放对象的机锁，使得其他线程能够访问，可以通过notify，notifyAll方法来唤醒等待的线程</strong></p>
+<h4 id="toc_h4_27">等待/通知的经典范式</h4>
+<p><strong>该范式分为两部分，分别针对等待方（消费者）和通知方（生产者）；</strong></p>
+<p><strong>等待方遵循如下原则。</strong></p>
+<ol>
+<li><strong>获取对象的锁。</strong></li>
+<li>**如果条件不满足，那么调用对象的wait()方法，那么就从RUNNABLE到WAITING，**<strong>被通知后仍要检查条件</strong>。</li>
+<li><strong>条件满足则执行对应的逻辑。</strong></li>
+</ol>
+<p><strong>对应的伪代码如下。</strong></p>
+<pre><code>/**
+&nbsp;* 用if为啥不行
+&nbsp; &nbsp; &nbsp; * 1：首先一点我们要搞清楚 wait操作会释放锁
+&nbsp; &nbsp; &nbsp; * 2：想想这种情况,当一个生产者线程执行的时候条件不满足 就会发生阻塞 
+	这时候释放出锁 这时候又一个生产线程进来又会被wait住.然后一个消费者进来，消费了一个 但	
+	是notifyall 将所有的线程都解开了 。
+	那两个生产者线程就会直接运行if后面的东西并没有被拉回来重新判断一下。
+	这个两个生产者线程在同步队列中依次执行，在执行的时候会直接执行if后的语句，
+	那么就可能造成条件不满足的情况。所以用while循环。
+&nbsp;*/
+&nbsp;synchronized(对象){
+&nbsp; &nbsp; &nbsp;while(条件不满足){
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;对象.wait();
+&nbsp; &nbsp;  }
+&nbsp; &nbsp; &nbsp;//满足了，就执行接下来的逻辑
+&nbsp;}
+</code></pre>
+<p><strong>通知方遵循如下原则。</strong></p>
+<ol>
+<li><strong>获得对象的锁。</strong></li>
+<li><strong>改变条件。</strong></li>
+<li><strong>通知所有等待在对象上的线程。被通知的线程由WAITING到BLOAKED。</strong></li>
+</ol>
+<p><strong>对应伪代码：</strong></p>
+<pre><code>synchronized(对象){
+&nbsp; &nbsp; &nbsp;改变条件
+&nbsp; &nbsp; &nbsp;对象.notifyAll();
+&nbsp;}
+</code></pre>
+<p><strong>示例：有两个线程做事，发现条件不满足就会等待，另一个线程执行notifyAll()会唤醒这两个线程，但是可能只有一个线程的条件满足了，如果不使用while那么就会造成条件没有满足而去做另一件事了。</strong></p>
+<pre><code>static final Object ROOM = new Object();
+    static boolean hasCigarette = false;
+    static boolean hasTakeout = false;
+
+    public static void main(String[] args) {
+        new Thread(() -&gt; {
+            synchronized (ROOM) {
+                log.debug("有烟没？[{}]", hasCigarette);
+                while (!hasCigarette) {
+                    log.debug("没烟，先歇会！");
+                    try {
+                        ROOM.wait();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+                log.debug("有烟没？[{}]", hasCigarette);
+                if (hasCigarette) {
+                    log.debug("可以开始干活了");
+                }
+            }
+        }, "小南").start();
+
+        new Thread(() -&gt; {
+            synchronized (ROOM) {
+                log.debug("外卖有没？[{}]", hasTakeout);
+                while (!hasTakeout) {
+                    log.debug("没外卖，先歇会！");
+                    try {
+                        ROOM.wait();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+                log.debug("有外卖没？[{}]", hasTakeout);
+                if (hasTakeout) {
+                    log.debug("可以开始干活了");
+                }
+            }
+        }, "小女").start();
+        try {
+            Thread.sleep( 1000 );
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        new Thread(() -&gt; {
+            synchronized (ROOM) {
+                hasCigarette = true;
+                log.debug("烟到了噢！");
+                ROOM.notifyAll();
+            }
+        }, "送烟的").start();
+
+    }
+</code></pre>
+<h4 id="toc_h4_28">管道输入 / 输出流</h4>
+<p><strong>管道输入/输出流和普通的文件输入/输出流或者网络输入/输出流不同之处在于，它主要用于线程之间的数据传输，而传输的媒介为内存。</strong></p>
+<p><strong>管道输入/输出流主要包括了如下4种具体实现：PipedOutputStream、PipedInputStream、PipedReader和PipedWriter，前两种面向字节，而后两种面向字符。</strong></p>
+<p><strong>看下面例子中，创建了printThread，它用来接受main线程的输入，任何main线程的输入均通过PipedWriter写入，而printThread 在另一端通过 PipedReader 将内容读出并打印。</strong></p>
+<pre><code>package com.pingfa.demo.course;
+&nbsp;
+&nbsp;import java.io.IOException;
+&nbsp;import java.io.PipedReader;
+&nbsp;import java.io.PipedWriter;
+&nbsp;
+&nbsp;/**
+&nbsp; * @Author: gyy
+&nbsp; * @Description:
+&nbsp; * @Date: 2021/6/7 16:31
+&nbsp; */
+&nbsp;public class Piped {
+&nbsp; &nbsp; &nbsp;public static void main(String[] args) throws Exception {
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;PipedWriter out = new PipedWriter();
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;PipedReader in = new PipedReader();
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;// 将输出流和输入流进行连接，否则在使用时会抛出IOException
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;out.connect(in);
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;Thread printThread = new Thread(new Print(in), "PrintThread");
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;printThread.start();
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;int receive = 0;
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;try {
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;while ((receive = System.in.read()) != -1) {
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;out.write(receive);
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+&nbsp; &nbsp; &nbsp; &nbsp;  } finally {
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;out.close();
+&nbsp; &nbsp; &nbsp; &nbsp;  }
+&nbsp; &nbsp;  }
+&nbsp; &nbsp; &nbsp;static class Print implements Runnable {
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;private PipedReader in;
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;public Print(PipedReader in) {
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;this.in = in;
+&nbsp; &nbsp; &nbsp; &nbsp;  }
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;@Override
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;public void run() {
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;int receive = 0;
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;try {
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;while ((receive = in.read()) != -1) {
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;System.out.print((char) receive);
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  } catch (IOException ex) {
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;ex.printStackTrace();
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+&nbsp; &nbsp; &nbsp; &nbsp;  }
+&nbsp; &nbsp;  }
+&nbsp;}
+</code></pre>
+<p><strong>对于Piped类型的流，必须先要进行绑定，也就是调用connect()方法，如果没有将输入/输出流绑定起来，对于该流的访问将会抛出异常。</strong></p>
+<h4 id="toc_h4_29">ThreadLocal的使用</h4>
+<h5 id="toc_h5_30"><strong>介绍</strong>：</h5>
+<p><strong>ThreadLocal，即****线程变量，是一个以ThreadLocal对象为键、任意对象为值的存储结构</strong>。这个结构被附带在线程上，也就是说一个线程可以根据一个ThreadLocal对象查询到绑定在这个线程上的一个值。可以通过set(T)方法来设置一个值，在当前线程下再通过get()方法获取到原先设置的值。</p>
+<p><strong>ThreadLocal用于保存某个线程共享变量：对于同一个static ThreadLocal，不同线程只能从中get，set，remove自己的变量，而不会影响其他线程的变量。</strong></p>
+<ol>
+<li><strong>ThreadLocal.get: 获取ThreadLocal中当前线程共享变量的值。</strong></li>
+<li><strong>ThreadLocal.set: 设置ThreadLocal中当前线程共享变量的值。</strong></li>
+<li><strong>ThreadLocal.remove: 移除ThreadLocal中当前线程共享变量的值。</strong></li>
+<li><strong>ThreadLocal.initialValue: ThreadLocal没有被当前线程赋值时或当前线程刚调用remove方法后调用get方法，返回此方法值。</strong></li>
+</ol>
+<h5 id="toc_h5_31"><strong>使用：</strong></h5>
+<pre><code>/**
+&nbsp; * ThreadLocal用法
+&nbsp; * @author coshaho
+&nbsp; *
+&nbsp; */
+&nbsp;public class MyThreadLocal
+&nbsp;{
+&nbsp; &nbsp; &nbsp;private static final ThreadLocal&lt;Object&gt; threadLocal = new ThreadLocal&lt;Object&gt;(){
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;/**
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; * ThreadLocal没有被当前线程赋值时或当前线程刚调用remove方法后调用get方法，返回此方法值
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; */
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;@Override
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;protected Object initialValue()
+&nbsp; &nbsp; &nbsp; &nbsp;  {
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;System.out.println("调用get方法时，当前线程共享变量没有设置，调用initialValue获取默认值！");
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;return null;
+&nbsp; &nbsp; &nbsp; &nbsp;  }
+&nbsp; &nbsp;  };
+&nbsp; &nbsp; &nbsp; 
+&nbsp; &nbsp; &nbsp;public static void main(String[] args)
+&nbsp; &nbsp;  {
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;new Thread(new MyIntegerTask("IntegerTask1")).start();
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;new Thread(new MyStringTask("StringTask1")).start();
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;new Thread(new MyIntegerTask("IntegerTask2")).start();
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;new Thread(new MyStringTask("StringTask2")).start();
+&nbsp; &nbsp;  }
+&nbsp; &nbsp; &nbsp; 
+&nbsp; &nbsp; &nbsp;public static class MyIntegerTask implements Runnable
+&nbsp; &nbsp;  {
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;private String name;
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;MyIntegerTask(String name)
+&nbsp; &nbsp; &nbsp; &nbsp;  {
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;this.name = name;
+&nbsp; &nbsp; &nbsp; &nbsp;  }
+&nbsp; 
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;@Override
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;public void run()
+&nbsp; &nbsp; &nbsp; &nbsp;  {
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;for(int i = 0; i &lt; 5; i++)
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  {
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;// ThreadLocal.get方法获取线程变量
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;if(null == MyThreadLocal.threadLocal.get())
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  {
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;// ThreadLocal.et方法设置线程变量
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;MyThreadLocal.threadLocal.set(0);
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;System.out.println("线程" + name + ": 0");
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;else
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  {
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;int num = (Integer)MyThreadLocal.threadLocal.get();
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;MyThreadLocal.threadLocal.set(num + 1);
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;System.out.println("线程" + name + ": " + MyThreadLocal.threadLocal.get());
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;if(i == 3)
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  {
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;MyThreadLocal.threadLocal.remove();
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;try
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  {
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;Thread.sleep(1000);
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;catch (InterruptedException e)
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  {
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;e.printStackTrace();
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  } &nbsp;
+&nbsp; &nbsp; &nbsp; &nbsp;  }
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 
+&nbsp; &nbsp;  }
+&nbsp; &nbsp; &nbsp; 
+&nbsp; &nbsp; &nbsp;public static class MyStringTask implements Runnable
+&nbsp; &nbsp;  {
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;private String name;
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;MyStringTask(String name)
+&nbsp; &nbsp; &nbsp; &nbsp;  {
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;this.name = name;
+&nbsp; &nbsp; &nbsp; &nbsp;  }
+&nbsp; 
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;@Override
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;public void run()
+&nbsp; &nbsp; &nbsp; &nbsp;  {
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;for(int i = 0; i &lt; 5; i++)
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  {
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;if(null == MyThreadLocal.threadLocal.get())
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  {
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;MyThreadLocal.threadLocal.set("a");
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;System.out.println("线程" + name + ": a");
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;else
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  {
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;String str = (String)MyThreadLocal.threadLocal.get();
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;MyThreadLocal.threadLocal.set(str + "a");
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;System.out.println("线程" + name + ": " + MyThreadLocal.threadLocal.get());
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;try
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  {
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;Thread.sleep(800);
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;catch (InterruptedException e)
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  {
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;e.printStackTrace();
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+&nbsp; &nbsp; &nbsp; &nbsp;  }
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 
+&nbsp; &nbsp;  }
+&nbsp;}
+</code></pre>
+<h5 id="toc_h5_32"><strong>实现原理：</strong></h5>
+<p><strong>ThreadLocal 相关类结构：</strong></p>
+<p><img src="https://b3logfile.com/file/2021/06/image-a989bd2e.png?imageView2/2/w/1280/format/jpg/interlace/1/q/100" alt=""></p>
+<pre><code>//Thread类中：
+/* 
+ ThreadLocal values pertaining to this thread. This map is maintained
+ * by the ThreadLocal class. */
+ThreadLocal.ThreadLocalMap threadLocals = null;
+
+/*
+     * InheritableThreadLocal values pertaining to this thread. This map is
+     * maintained by the InheritableThreadLocal class.
+     */
+ThreadLocal.ThreadLocalMap inheritableThreadLocals = null;
+</code></pre>
+<p><strong>由该图可知, Thread类中有一个threadLocals和一个inheritableThreadLocals,它们都是ThreadLocalMap类型的变量,而ThreadLocalMap是一个定制化的Hashmap。在默认情况下,每个线程中的这两个变量都为null,只有当前线程第一次调用ThreadLocal的set或者get方法时才会创建它们。</strong></p>
+<p><strong>其实每个线程的本地变量不是存放在ThreadLocal实例里面,而是****存放在调用线程的threadLocals变量里面</strong>。也就是说, ThreadLocal类型的本地变量存放在具体的线程内存空间中。ThreadLocal就是一个工具壳,它通过set方法把value值放入调用线程的threadLocals里面并存放起来,当调用线程调用它的get方法时,再从当前线程的threadLocals变量里面将其拿出来使用。如果调用线程一直不终止,那么这个本地变量会一直存放在调用线程的threadLocals变量里面,所以当不需要使用本地变量时可以通过调用ThreadLocal变量的remove方法,从当前线程的threadLocals里面删除该本地变量。另外, Thread里面的threadLocals为何被设计为map结构?很明显是因为每个线程可以关联多个ThreadLocal变量。</p>
+<p><strong>下面简单分析ThreadLocal 的 set get  remove 方法的实现逻辑</strong></p>
+<pre><code>/**
+&nbsp; &nbsp; &nbsp; * Sets the current thread's copy of this thread-local variable
+&nbsp; &nbsp; &nbsp; * to the specified value.  Most subclasses will have no need to
+&nbsp; &nbsp; &nbsp; * override this method, relying solely on the {@link #initialValue}
+&nbsp; &nbsp; &nbsp; * method to set the values of thread-locals.
+&nbsp; &nbsp; &nbsp; *
+&nbsp; &nbsp; &nbsp; * @param value the value to be stored in the current thread's copy of
+&nbsp; &nbsp; &nbsp; * &nbsp; &nbsp; &nbsp;  this thread-local.
+&nbsp; &nbsp; &nbsp; */
+&nbsp; &nbsp; &nbsp;public void set(T value) {
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;//(1)获取当前线程
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;Thread t = Thread.currentThread();
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;//(2）将当前线程作为key，去查找对应的线程变量，找到则设置
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;ThreadLocalMap map = getMap(t);
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;if (map != null)
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;map.set(this, value);
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;else{
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;//(3)第一次调用就创建当前线程对应的HashMap
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; createMap(t, value);
+&nbsp; &nbsp; &nbsp; &nbsp;  }
+&nbsp; &nbsp;  }
+     /*代码(1)首先获取调用线程,然后使用当前线程作为参数调用getMap(t)方法,getMap(Thread t)的代码如下。
+
+可以看到, getMap(t)的作用是获取线程自己的变量threadLocals, threadlocal变量被绑定到了线程的成员变量上。如果getMap(t)的返回值不为空,则把value值设置到threadLocals中,也就是把当前·变量值放入当前线程的内存变量threadLocals中。threadLocals是一个HashMap结构,其中key就是当前ThreadLocal的实例对象引用, value是通过set方法传递的值。
+
+**/
+
+ThreadLocalMap getMap(Thread t) {
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;return t.threadLocals;
+&nbsp; &nbsp;  }
+&nbsp;/*
+&nbsp;如果getMap(t)返回空值则说明是第一次调用set方法,这时创建当前线程的threadLocals变量。下面来看createMap(t, value)做什么。  创建了threadLocals 变量
+&nbsp;**/
+&nbsp;    void createMap(Thread t, T firstValue) {
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;t.threadLocals = new ThreadLocalMap(this, firstValue);
+&nbsp; &nbsp;  }
+&nbsp;
+</code></pre>
+<pre><code>/**
+&nbsp; &nbsp; &nbsp; * Returns the value in the current thread's copy of this
+&nbsp; &nbsp; &nbsp; * thread-local variable.  If the variable has no value for the
+&nbsp; &nbsp; &nbsp; * current thread, it is first initialized to the value returned
+&nbsp; &nbsp; &nbsp; * by an invocation of the {@link #initialValue} method.
+&nbsp; &nbsp; &nbsp; *
+&nbsp; &nbsp; &nbsp; * @return the current thread's value of this thread-local
+&nbsp; &nbsp; &nbsp; */
+&nbsp; &nbsp; &nbsp;public T get() {
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;Thread t = Thread.currentThread();
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;ThreadLocalMap map = getMap(t);
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;if (map != null) {
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;//不为null 直接返回数据
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;ThreadLocalMap.Entry e = map.getEntry(this);
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;if (e != null) {
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;@SuppressWarnings("unchecked")
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;T result = (T)e.value;
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;return result;
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+&nbsp; &nbsp; &nbsp; &nbsp;  }
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;//为空 那么则初始化当前线程的threadLocals成员交量
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;return setInitialValue();
+&nbsp; &nbsp;  }
+&nbsp;//首先获取当前线程实例,如果当前线程的threadLocals变量不为null,
+//则直·接返回当前线程绑定的本地变量,否则执行代码进行初始化。setInitialValue)的代码如下。
+/**
+&nbsp; &nbsp; &nbsp; * Variant of set() to establish initialValue. Used instead
+&nbsp; &nbsp; &nbsp; * of set() in case user has overridden the set() method.
+&nbsp; &nbsp; &nbsp; *
+&nbsp; &nbsp; &nbsp; * @return the initial value
+&nbsp; &nbsp; &nbsp; */
+&nbsp; &nbsp; &nbsp;private T setInitialValue() {
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;T value = initialValue();
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;Thread t = Thread.currentThread();
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;ThreadLocalMap map = getMap(t);
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;if (map != null)
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;map.set(this, value);
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;else
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;createMap(t, value);
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;return value;
+&nbsp; &nbsp;  }
+     protected T initialValue() {
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;return null;
+&nbsp; &nbsp;  }
+&nbsp;
+</code></pre>
+<pre><code>public void remove() {
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; ThreadLocalMap m = getMap(Thread.currentThread());
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; if (m != null)
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; m.remove(this);
+&nbsp; &nbsp; &nbsp; }
+&nbsp;//如以上代码所示,如果当前线程的threadLocals变量不为空,则删除当前线程中指定ThreadLocal实例的本地变量。
+</code></pre>
+<p><strong>总结: 如图1-6所示,在每个线程内部都有一个名为threadLocals的成员变量,该变量的类型为HashMap,其中key为我们定义的ThreadLocal变量的this引用, value则为我们使用set方法设置的值。每个线程的本地变量存放在线程自己的内存变量threadLocals中如果当前线程一直不消亡,那么这些本地变量会一直存在,所以可能会造成内存溢出,因此使用完毕后要记得调用ThreadLocal的remove方法删除对应线程的threadLocals中的本地变量。</strong></p>
+<p><img src="https://b3logfile.com/file/2021/06/image-172f5111.png?imageView2/2/w/1280/format/jpg/interlace/1/q/100" alt=""></p>
+<h5 id="toc_h5_33">ThreadLocal不支持继承</h5>
+<pre><code>package com.pingfa.demo.course;
+&nbsp;
+&nbsp;/**
+&nbsp; * @Author: gyy
+&nbsp; * @Description:
+&nbsp; * @Date: 2021/6/9 12:04
+&nbsp; */
+&nbsp;public class ThreadLocalTest {
+&nbsp; &nbsp; &nbsp;static final &nbsp;ThreadLocal&lt;String&gt; threadLocal = new ThreadLocal&lt;&gt;();
+&nbsp;
+&nbsp; &nbsp; &nbsp;public static void main(String[] args) {
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;threadLocal.set("main set value");
+&nbsp;
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;new Thread(()-&gt;{
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;System.out.println("testThread:"+threadLocal.get());
+&nbsp; &nbsp; &nbsp; &nbsp;  },"testThread").start();
+&nbsp;
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;System.out.println("mainThread: "+threadLocal.get());
+&nbsp; &nbsp;  }
+&nbsp;}
+&nbsp;//结果：
+&nbsp;mainThread: main set value
+&nbsp;testThread:null
+</code></pre>
+<p>**也就是说，同一个ThreadLocal变量在父线程中被设置值后,**<strong>在子线程中是获取不到的</strong>。根据.上节的介绍，这应该是正常现象，因为在子线程thread里面调用get方法时当前线程为thread线程，而这里调用set方法设置线程变量的是main线程，两者是不同的线程，自然子线程访问时返回null。那么有没有办法让子线程能访问到父线程中的值?答案是有。</p>
+<h5 id="toc_h5_34">InheritableThreadLocal类</h5>
+<p><strong>为了解决上面的问题（在子线程中的获取不到父线程的ThreadLocal）InheritableThreadLocal继承ThreadLocal，其提供了一个特性，就是可以让子线程可以访问到父线程中设置的本地变量。</strong></p>
+<p><strong>InheritableThreadLocal 类源码：</strong></p>
+<pre><code>//由以下代码可知, InheritableThreadLocal继承了ThreadLocal,并重写了三个方法。
+//由代码(3)可知, InheritableThreadLocal重写了createMap方法,
+//那么现在当第一次调用set方法时,创建的是当前线程的inheritableThreadLocals变量的实例而不再是threadLocals。
+//由代码(2)可知,当调用getMap方法获取当前线程内部的map变量时,
+//获取的是inheritableThreadLocals而不再是threadLocals.
+&nbsp;public class InheritableThreadLocal&lt;T&gt; extends ThreadLocal&lt;T&gt; {
+&nbsp; &nbsp; &nbsp;/**
+&nbsp; &nbsp; &nbsp; *(1)
+&nbsp; &nbsp; &nbsp; */
+&nbsp; &nbsp; &nbsp;protected T childValue(T parentValue) {
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;return parentValue;
+&nbsp; &nbsp;  }
+     /**
+&nbsp; &nbsp; &nbsp; * (2)
+&nbsp; &nbsp; &nbsp; */
+&nbsp; &nbsp; &nbsp;ThreadLocalMap getMap(Thread t) {
+&nbsp; &nbsp; &nbsp; &nbsp; return t.inheritableThreadLocals;
+&nbsp; &nbsp;  }
+     /**
+&nbsp; &nbsp; &nbsp; * (3)
+&nbsp; &nbsp; &nbsp; */
+&nbsp; &nbsp; &nbsp;void createMap(Thread t, T firstValue) {
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;t.inheritableThreadLocals = new ThreadLocalMap(this, firstValue);
+&nbsp; &nbsp;  }
+
+</code></pre>
+<p><strong>综上可知,在InheritableThreadLocal的世界里,变量inheritableThreadLocals替代了threadLocals.下面我们看一下重写的代码(1)何时执行,以及如何让子线程可以访问父线程的本地变量。这要从创建Thread的代码说起,打开Thread类的默认构造函数,代码如下</strong></p>
+<p><img src="https://b3logfile.com/file/2021/06/image-dc912079.png?imageView2/2/w/1280/format/jpg/interlace/1/q/100" alt=""></p>
+<p><strong>总结：InheritableThreadLocal 类通过重写代码（2）和（3） 让本地变量保存到具体线程的inheritableThreadLocals变量里面,那么线程在通过InheritableThreadLocal类实例,的set或者get方法设置变量时,就会创建当前线程的inheritableThreadLocals变量。当父线程创建子线程时,构造函数会把父线程中inheritableThreadLocals变量里面的本地变量复制一份保存到子线程的inheritableThreadLocals变量里面。</strong></p>
+<pre><code>/**
+&nbsp; * @Author: gyy
+&nbsp; * @Description:
+&nbsp; * @Date: 2021/6/9 17:07
+&nbsp; */
+&nbsp;public class InheritableThreadLocalTest {
+&nbsp; &nbsp; &nbsp;static ThreadLocal&lt;String&gt; threadLocal = new InheritableThreadLocal&lt;&gt;();
+&nbsp;
+&nbsp; &nbsp; &nbsp;public static void main(String[] args) {
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;threadLocal.set("Value");
+&nbsp;
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;new Thread(()-&gt;System.out.println("child:"+threadLocal.get()),"child").start();
+&nbsp;
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;System.out.println("main:"+threadLocal.get());
+&nbsp; &nbsp;  }
+&nbsp;}
+&nbsp;//结果：
+&nbsp;main:Value
+&nbsp;child:Value
+</code></pre>
+<p><strong>那么在什么情况下需要子线程可以获取父线程的threadlocal变量呢?情况还是蛮多的, 比如子线程需要使用存放在threadlocal变量中的用户登录信息,再比如一些中间件需要把统一的id追踪的整个调用链路记录下来。其实子线程使用父线程中的threadlocal方法有多种方式, 比如创建线程时传入父线程中的变量,并将其复制到子线程中,或者在父线程中构造一个map作为参数传递给子线程,但是这些都改变了我们的使用习惯,所以在这些情况下InheritableThreadLocal就显得比较有用。</strong></p>
+                        <div>
+                            <hr>
+
+标题：并发编程：进程、线程<br>
+作者：<a href="https://gyyspace.github.io" target="_blank">function001</a><br>
+地址：<a href="https://gyyspace.github.io/articles/2024/07/21/1721546762645.html" target="_blank">https://gyyspace.github.io/articles/2024/07/21/1721546762645.html</a><br>
+
+<!-- 签名档内可使用 HTML、JavaScript -->
+<br>
+                        </div>
+                </div>
+                <footer>
+                    <div class="post-tags">
+                            <a rel="tag" href="https://gyyspace.github.io/tags/%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B">
+                                并发编程</a>
+                    </div>
+                    <div class="post-nav fn-clear">
+                            <div class="post-nav-prev post-nav-item fn-right">
+                                <a href="https://gyyspace.github.io/articles/2024/07/21/1721546193766.html" rel="prev"
+                                   title="算法：数组">
+                                    算法：数组 >
+                                </a>
+                            </div>
+                            <div class="post-nav-next post-nav-item fn-left">
+                                <a href="https://gyyspace.github.io/articles/2024/07/21/1721547059362.html" rel="next" title="算法：查找算法">
+                                    < 算法：查找算法
+                                </a>
+                            </div>
+                    </div>
+                </footer>
+            </article>
+        </div>
+            <div id="gitalk-container"></div>
+            <div id="b3logsolocomments"></div>
+            <div id="vcomment" data-name="function001" data-postId="1721546762645"></div>
+            <div id="relevantArticles"></div>
+            <div id="randomArticles"></div>
+<div class="sidebar-toggle">
+    <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+    <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+    <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+</div>
+
+<aside class="sidebar">
+<ul class="article__toc">
+        <li class="toc__h1">
+            <a href="#toc_h1_0">基础知识</a>
+        </li>
+        <li class="toc__h2">
+            <a href="#toc_h2_1">程序，进程，线程，协程</a>
+        </li>
+        <li class="toc__h3">
+            <a href="#toc_h3_2">程序：</a>
+        </li>
+        <li class="toc__h3">
+            <a href="#toc_h3_3">进程：</a>
+        </li>
+        <li class="toc__h3">
+            <a href="#toc_h3_4">线程：</a>
+        </li>
+        <li class="toc__h4">
+            <a href="#toc_h4_5">进程和线程的区别：</a>
+        </li>
+        <li class="toc__h4">
+            <a href="#toc_h4_6">线程上下文切换：</a>
+        </li>
+        <li class="toc__h4">
+            <a href="#toc_h4_7">什么是线程死锁</a>
+        </li>
+        <li class="toc__h4">
+            <a href="#toc_h4_8">一些线程的方法：</a>
+        </li>
+        <li class="toc__h6">
+            <a href="#toc_h6_9">Thread.sleep()的使用</a>
+        </li>
+        <li class="toc__h6">
+            <a href="#toc_h6_10">Thread.yield()的使用：</a>
+        </li>
+        <li class="toc__h6">
+            <a href="#toc_h6_11">Thread.join()的使用</a>
+        </li>
+        <li class="toc__h3">
+            <a href="#toc_h3_12">协程：</a>
+        </li>
+        <li class="toc__h2">
+            <a href="#toc_h2_13">线程简介</a>
+        </li>
+        <li class="toc__h3">
+            <a href="#toc_h3_14">线程的优先级</a>
+        </li>
+        <li class="toc__h3">
+            <a href="#toc_h3_15">Daemon线程------守护线程</a>
+        </li>
+        <li class="toc__h2">
+            <a href="#toc_h2_16">启动和终止线程</a>
+        </li>
+        <li class="toc__h3">
+            <a href="#toc_h3_17">构造线程</a>
+        </li>
+        <li class="toc__h3">
+            <a href="#toc_h3_18">启动线程</a>
+        </li>
+        <li class="toc__h3">
+            <a href="#toc_h3_19">中断操作</a>
+        </li>
+        <li class="toc__h3">
+            <a href="#toc_h3_20">安全终止线程</a>
+        </li>
+        <li class="toc__h2">
+            <a href="#toc_h2_21">进程间的通信方法、线程间的通信方法</a>
+        </li>
+        <li class="toc__h3">
+            <a href="#toc_h3_22">进程间的通信</a>
+        </li>
+        <li class="toc__h3">
+            <a href="#toc_h3_23">线程间的通信</a>
+        </li>
+        <li class="toc__h4">
+            <a href="#toc_h4_24">volatile和synchronized</a>
+        </li>
+        <li class="toc__h4">
+            <a href="#toc_h4_25">等待/通知机制</a>
+        </li>
+        <li class="toc__h5">
+            <a href="#toc_h5_26">wait()和sleep()的区别</a>
+        </li>
+        <li class="toc__h4">
+            <a href="#toc_h4_27">等待/通知的经典范式</a>
+        </li>
+        <li class="toc__h4">
+            <a href="#toc_h4_28">管道输入 / 输出流</a>
+        </li>
+        <li class="toc__h4">
+            <a href="#toc_h4_29">ThreadLocal的使用</a>
+        </li>
+        <li class="toc__h5">
+            <a href="#toc_h5_30">介绍：</a>
+        </li>
+        <li class="toc__h5">
+            <a href="#toc_h5_31">使用：</a>
+        </li>
+        <li class="toc__h5">
+            <a href="#toc_h5_32">实现原理：</a>
+        </li>
+        <li class="toc__h5">
+            <a href="#toc_h5_33">ThreadLocal不支持继承</a>
+        </li>
+        <li class="toc__h5">
+            <a href="#toc_h5_34">InheritableThreadLocal类</a>
+        </li>
+</ul></aside>
+    </div>
+</main>
+<footer class="footer">
+    <div class="wrapper">
+        <div class="fn-clear">
+            <a href="https://gyyspace.github.io">echo洋</a>
+            
+            <div class="fn-right">
+            </div>
+        </div>
+        <div class="fn-clear">
+            &copy; 2024
+            <a href="https://gyyspace.github.io">echo洋</a>
+            
+        </div>
+    </div>
+</footer>
+<div class="back-to-top" onclick="Util.goTop()"></div>
+
+<script>
+  var Label = {
+    speech: true,
+    servePath: "https://gyyspace.github.io",
+    staticServePath: "https://gyyspace.github.io",
+    luteAvailable: false,
+    hljsStyle: 'github',
+    langLabel: "zh_CN",
+    version: "4.4.0",
+    staticSite: true,
+    showCodeBlockLn: false,
+    articleId: "1721546762645",
+  }
+</script>
+<script src="https://gyyspace.github.io/skins/next/js/common.min.js?1721540580809"></script>
+<script type="text/javascript">
+    Label.tocLabel = "目录"
+    Label.siteViewLabel = "站点概览"
+</script>
+
+<script type="text/javascript">
+    Util.addScript('https://gyyspace.github.io/js/page.min.js?1721540580809', 'soloPageScript')
+    var page = new Page({
+        "commentContentCannotEmptyLabel": "评论不能为空",
+        "oId": "1721546762645",
+        "blogHost": "https://gyyspace.github.io",
+        "randomArticles1Label": "随机阅读：",
+        "externalRelevantArticles1Label": "站外相关阅读："
+    });
+    $(document).ready(function () {
+        page.load();
+    page.tips.externalRelevantArticlesDisplayCount = "0";
+        page.loadRandomArticles();
+        page.loadRelevantArticles('1721546762645', '<h4>相关阅读：</h4>');
+    NexT.initArticle()
+    });
+</script>
+</body>
+</html>
+
+<!-- Generated by Latke (https://github.com/88250/latke) in 11ms, 2024/07/21 15:56:20 -->

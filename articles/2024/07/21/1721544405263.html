@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8"/><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"/><meta name="theme-color" content="#3b3e43"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"/><meta name="apple-mobile-web-app-status-bar-style" content="black"><meta name="format-detection" content="telephone=no"/><title>算法：堆&栈 - echo洋</title><meta name="description" content="使用堆和栈解决算法问题。"/><meta property="og:description" content="使用堆和栈解决算法问题。"/>    <meta name="keywords" content="Solo,Java,博客,开源"/><link rel="dns-prefetch" href="https://gyyspace.github.io"/><link rel="dns-prefetch" href="https://cdn.jsdelivr.net"/><link rel="preconnect" href="https://gyyspace.github.io"><link rel="icon" type="image/png" href="https://b3log.org/images/brand/solo-128.png"/><link rel="apple-touch-icon" href="https://b3log.org/images/brand/solo-128.png"><link rel="shortcut icon" type="image/x-icon" href="https://b3log.org/images/brand/solo-128.png"><meta name="copyright" content="B3log"/><meta http-equiv="Window-target" content="_top"/><meta property="og:locale" content="zh_CN"/><meta property="og:title" content="算法：堆&栈 - echo洋"/><meta property="og:site_name" content="echo洋"/><meta property="og:url"      content="https://gyyspace.github.io/articles/2024/07/21/1721544405263.html?"/><meta property="og:image" content="https://b3log.org/images/brand/solo-128.png"/><link rel="search" type="application/opensearchdescription+xml" title="算法：堆&栈 - echo洋" href="/opensearch.xml"><link href="https://gyyspace.github.io/rss.xml" title="RSS" type="application/rss+xml" rel="alternate"/><link rel="manifest" href="https://gyyspace.github.io/manifest.json">        <link rel="canonical" href="https://gyyspace.github.io/articles/2024/07/21/1721544405263.html">        <link rel="stylesheet"
+              href="https://gyyspace.github.io/skins/next/css/base.css?1721540580809"/>
+            <link rel="prev" title="算法：DFS&BFS" href="https://gyyspace.github.io/articles/2024/07/21/1721543855065.html">
+            <link rel="next" title="算法：数学知识" href="https://gyyspace.github.io/articles/2024/07/21/1721546109578.html">
+    <script src="https://gyyspace.github.io/js/lib/vditor/dist/js/icons/ant.js?v=3.9.7" async="" id="vditorIconScript"></script></head>
+<body>
+<header class="header">
+    <div class="header-line"></div>
+    <div class="fn-clear wrapper">
+        <div class="logo-wrap">
+            <a href="https://gyyspace.github.io" rel="start">
+                <span class="logo-line-before"><i></i></span>
+                <span class="site-title">echo洋</span>
+                <span class="logo-line-after"><i></i></span>
+            </a>
+        </div>
+
+        <div class="site-nav-toggle fn-right"
+             onclick="$('.header-line').toggle();$('nav').children('.menu').slideToggle();">
+            <span class="btn-bar"></span>
+            <span class="btn-bar"></span>
+            <span class="btn-bar"></span>
+        </div>
+
+        <nav>
+            <ul class="menu">
+                    <li class="menu-item">
+                        <a href="/tags/Redis" target="_blank" rel="section">
+                            Redis 的设计与实现
+                        </a>
+                    </li>
+            </ul>
+
+        </nav>
+    </div>
+</header><main class="main">
+    <div class="wrapper">
+        <div class="content">
+            <article class="posts-expand">
+                <header class="post-header">
+                    <h2 class="post-title">
+                        算法：堆&栈
+                    </h2>
+                    <div class="post-meta">
+                            <span class="post-time">
+                                    更新于
+                                <time>
+                                    2024-07-21
+                                </time>
+                            </span>
+                        <span class="post-comments-count">
+                                &nbsp; | &nbsp;
+                                <a href="https://gyyspace.github.io/articles/2024/07/21/1721544405263.html#b3logsolocomments">
+                                    <span data-uvstatcmt="1721544405263">0</span> 条评论</a>
+                        </span>
+                        &nbsp; | &nbsp; 热度
+                        <span data-uvstaturl="https://gyyspace.github.io/articles/2024/07/21/1721544405263.html">0</span>°C
+                    </div>
+                </header>
+
+                <div class="post-body post-body--article vditor-reset">
+                    <h1 id="toc_h1_0">使用大根堆和小根堆数据结构</h1>
+<h2 id="toc_h2_1"><a href="https://leetcode-cn.com/problems/find-median-from-data-stream/" target="_blank">295. 数据流的中位数</a></h2>
+<p><strong>使用大根堆和小根堆数据结构来维护数据，找到中位数。</strong></p>
+<p><img src="https://b3logfile.com/file/2021/04/image-241b3bfe.png?imageView2/2/w/1280/format/jpg/interlace/1/q/100" alt=""></p>
+<pre><code>class MedianFinder {
+
+ &nbsp; &nbsp;/** initialize your data structure here. */
+ &nbsp; &nbsp;PriorityQueue&lt;Integer&gt; small;
+ &nbsp; &nbsp;PriorityQueue&lt;Integer&gt; large;
+ &nbsp; &nbsp;public MedianFinder() {
+ &nbsp; &nbsp; &nbsp; &nbsp;small = new PriorityQueue&lt;&gt;();
+ &nbsp; &nbsp; &nbsp; &nbsp;large = new PriorityQueue&lt;&gt;(new Comparator&lt;Integer&gt;() {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;public int compare(Integer arg0, Integer arg1) {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;return arg1 - arg0;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  };
+ &nbsp; &nbsp; &nbsp;  });
+ &nbsp;  }
+ &nbsp;
+ &nbsp; &nbsp;public void addNum(int num) {
+ &nbsp; &nbsp; &nbsp; &nbsp;if (small.size() &gt;= large.size()) {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;small.offer(num);
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;large.offer(small.poll());
+ &nbsp; &nbsp; &nbsp;  } else {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;large.offer(num);
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;small.offer(large.poll());
+ &nbsp; &nbsp; &nbsp;  }
+ &nbsp;  }
+ &nbsp;
+ &nbsp; &nbsp;public double findMedian() { &nbsp;
+ &nbsp; &nbsp; &nbsp; &nbsp;if (small.size() &gt; large.size()) {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;return small.peek();
+ &nbsp; &nbsp; &nbsp;  }else if (small.size() &lt; large.size()) {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;return large.peek();
+ &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp; &nbsp;return (small.peek() + large.peek())/2.0;
+ &nbsp;  }
+}
+</code></pre>
+<h1 id="toc_h1_2">单调栈数据结构</h1>
+<h2 id="toc_h2_3"><a href="https://leetcode-cn.com/problems/next-greater-element-i/" target="_blank">496. 下一个更大元素 I</a></h2>
+<p><strong>使用栈来维护数据，以当前值为标准，如果栈中的元素也就是之前的元素小于当前的元素，那么就保存下来。</strong></p>
+<pre><code>class Solution {
+ &nbsp; &nbsp;public int[] nextGreaterElement(int[] nums1, int[] nums2) {
+ &nbsp; &nbsp; &nbsp; &nbsp;int[] arr = new int[nums1.length];
+ &nbsp; &nbsp; &nbsp; &nbsp;Stack&lt;Integer&gt; stack = new Stack&lt;&gt;();
+ &nbsp; &nbsp; &nbsp; &nbsp;Map&lt;Integer, Integer&gt; map = new HashMap&lt;&gt;();
+ &nbsp; &nbsp; &nbsp; &nbsp;for (Integer num : nums2) {
+ &nbsp; &nbsp; &nbsp;       while(!stack.isEmpty() &amp;&amp; stack.peek()&lt;num){
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; map.put(stack.pop(), num);
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; }
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; stack.push(num);
+        }
+ &nbsp; &nbsp; &nbsp; &nbsp;for (int i = 0; i &lt; arr.length; i++) {
+            arr[i] = map.getOrDefault(nums1[i], -1);
+        }
+        return arr;
+ &nbsp;  }
+}
+</code></pre>
+<h2 id="toc_h2_4"><a href="https://leetcode-cn.com/problems/daily-temperatures/" target="_blank">739. 每日温度</a></h2>
+<p><strong>将数组倒序遍历，与栈中的元素比较，如果大的话，就把栈中的元素剔除。栈中存的是当前元素右边的元素的下标，</strong></p>
+<pre><code>class Solution {
+ &nbsp; &nbsp;public int[] dailyTemperatures(int[] T) {
+ &nbsp; &nbsp; &nbsp; &nbsp;int[] arr &nbsp;= new int[T.length];
+        Stack&lt;Integer&gt; stack = new Stack&lt;&gt;();
+        for (int i = T.length - 1; i &gt;= 0; i--) {
+            while (!stack.empty() &amp;&amp; T[stack.peek()] &lt;= T[i]) {
+                stack.pop();
+            }
+            arr[i] = stack.empty() ? 0 : stack.peek() - i;
+            stack.push(i);
+        }
+        return arr;
+ &nbsp;  }
+}
+</code></pre>
+<h2 id="toc_h2_5"><a href="https://leetcode-cn.com/problems/next-greater-element-ii/" target="_blank">503. 下一个更大元素 II</a></h2>
+<p><strong>道理和上一题相同，只不过是循环了一遍，可以先保存一下整个数组，也可以虚拟的遍历两边数组。</strong></p>
+<pre><code>class Solution {
+ &nbsp; &nbsp;public int[] nextGreaterElements(int[] nums) {
+        int len = nums.length;
+        int[] arr = new int[len];
+        Stack&lt;Integer&gt; stack = new Stack&lt;&gt;();
+        for (int i = len - 1; i &gt;= 0; i--) {
+            stack.push(nums[i]);
+        }
+        for (int i = len - 1; i &gt;= 0; i--) {
+            while (!stack.empty() &amp;&amp; nums[i] &gt;= stack.peek()) {
+                stack.pop();
+            }
+            arr[i] = stack.empty() ? -1 : stack.peek();
+            stack.push(nums[i]);
+        }
+        return arr;
+ &nbsp;  }
+}
+</code></pre>
+<h1 id="toc_h1_6">「单调队列」数据结构解决滑动窗口问题</h1>
+<h2 id="toc_h2_7"><a href="https://leetcode-cn.com/problems/sliding-window-maximum/" target="_blank">239. 滑动窗口最大值</a></h2>
+<p><strong>观察滑动窗口的过程就能发现，实现「单调队列」必须使用一种数据结构支持在头部和尾部进行插入和删除，很明显双链表是满足这个条件的。</strong></p>
+<p><strong>「单调队列」的核心思路和「单调栈」类似，</strong><code>push</code>方法依然在队尾添加元素，但是要把前面比自己小的元素都删掉：</p>
+<pre><code>class MonotonicQueue {
+ &nbsp; &nbsp;// 双链表，支持头部和尾部增删元素
+ &nbsp; &nbsp;private LinkedList&lt;Integer&gt; q = new LinkedList&lt;&gt;();
+
+ &nbsp; &nbsp;public void push(int n) {
+ &nbsp; &nbsp;// 将前面小于自己的元素都删除
+ &nbsp; &nbsp; &nbsp; &nbsp;while (!q.isEmpty() &amp;&amp; q.getLast() &lt; n) {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;q.pollLast();
+ &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp; &nbsp;q.addLast(n);
+ &nbsp;  }
+}
+</code></pre>
+<p><strong>如果每个元素被加入时都这样操作，最终单调队列中的元素大小就会保持一个****单调递减</strong>的顺序，因此我们的<code>max</code>方法可以可以这样写：</p>
+<pre><code>public int max() {
+ &nbsp; &nbsp;// 队头的元素肯定是最大的
+ &nbsp; &nbsp;return q.getFirst();
+}
+</code></pre>
+<p><code>pop</code>方法在队头删除元素<code>n</code>，也很好写：</p>
+<pre><code> //删除头元素
+     &nbsp; &nbsp;public void pop(int n) {
+     &nbsp;      //因为在添加的时候有一个删除的操作，
+     &nbsp;      //所以当删除头元素的时候需要判断是不是已经被删除了
+     &nbsp;      if (n == q.getFirst()) {
+                q.pollFirst();
+            }
+     &nbsp;  }
+</code></pre>
+<p><strong>代码：</strong></p>
+<pre><code>/* 单调队列的实现 */
+class MonotonicQueue {
+ &nbsp; &nbsp;LinkedList&lt;Integer&gt; q = new LinkedList&lt;&gt;();
+ &nbsp; &nbsp;public void push(int n) {
+ &nbsp; &nbsp; &nbsp; &nbsp;// 将小于 n 的元素全部删除
+ &nbsp; &nbsp; &nbsp; &nbsp;while (!q.isEmpty() &amp;&amp; q.getLast() &lt; n) {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;q.pollLast();
+ &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp; &nbsp;// 然后将 n 加入尾部
+ &nbsp; &nbsp; &nbsp; &nbsp;q.addLast(n);
+ &nbsp;  }
+
+ &nbsp; &nbsp;public int max() {
+ &nbsp; &nbsp; &nbsp; &nbsp;return q.getFirst();
+ &nbsp;  }
+
+ &nbsp; &nbsp;public void pop(int n) {
+ &nbsp; &nbsp; &nbsp; &nbsp;if (n == q.getFirst()) {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;q.pollFirst();
+ &nbsp; &nbsp; &nbsp;  }
+ &nbsp;  }
+}
+
+/* 解题函数的实现 */
+int[] maxSlidingWindow(int[] nums, int k) {
+ &nbsp; &nbsp;MonotonicQueue window = new MonotonicQueue();
+ &nbsp; &nbsp;List&lt;Integer&gt; res = new ArrayList&lt;&gt;();
+
+ &nbsp; &nbsp;for (int i = 0; i &lt; nums.length; i++) {
+ &nbsp; &nbsp; &nbsp; &nbsp;if (i &lt; k - 1) {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;//先填满窗口的前 k - 1
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;window.push(nums[i]);
+ &nbsp; &nbsp; &nbsp;  } else {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;// 窗口向前滑动，加入新数字
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;window.push(nums[i]);
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;// 记录当前窗口的最大值
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;res.add(window.max());
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;// 移出旧数字
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;window.pop(nums[i - k + 1]);
+ &nbsp; &nbsp; &nbsp;  }
+ &nbsp;  }
+ &nbsp; &nbsp;// 需要转成 int[] 数组再返回
+ &nbsp; &nbsp;int[] arr = new int[res.size()];
+ &nbsp; &nbsp;for (int i = 0; i &lt; res.size(); i++) {
+ &nbsp; &nbsp; &nbsp; &nbsp;arr[i] = res.get(i);
+ &nbsp;  }
+ &nbsp; &nbsp;return arr;
+}
+</code></pre>
+<h1 id="toc_h1_8">二叉堆，优先级队列</h1>
+<p><img src="https://b3logfile.com/file/2021/04/image-eaabe585.png?imageView2/2/w/1280/format/jpg/interlace/1/q/100" alt=""></p>
+<p><strong>swim：上浮</strong></p>
+<p><img src="https://b3logfile.com/file/2021/04/image-6dda33df.png?imageView2/2/w/1280/format/jpg/interlace/1/q/100" alt=""></p>
+<p><strong>sink：下沉</strong></p>
+<p><img src="https://b3logfile.com/file/2021/04/image-ff46aa8c.png?imageView2/2/w/1280/format/jpg/interlace/1/q/100" alt=""></p>
+<p><strong>insert：插入一个元素，先放到数组的最后一位，然后上浮到适合的位置上。</strong></p>
+<p><img src="https://b3logfile.com/file/2021/04/image-13d48e6a.png?imageView2/2/w/1280/format/jpg/interlace/1/q/100" alt=""></p>
+<p><strong>dleMax：删除最大的元素也就是堆顶的元素。先和最后一位交换，然后把最后一位删除，对堆顶元素进行下浮操作。</strong></p>
+<p><img src="https://b3logfile.com/file/2021/04/image-bbed7d6d.png?imageView2/2/w/1280/format/jpg/interlace/1/q/100" alt=""></p>
+<p><strong>至此就完成了一个设计。</strong></p>
+<h1 id="toc_h1_9">用栈实现队列</h1>
+<p><strong>这里用两个栈实现一个队列</strong></p>
+<pre><code>class MyQueue {
+        Stack&lt;Integer&gt; s1,s2;
+        public MyQueue() {
+            s1 = new Stack&lt;&gt;();
+            s2 = new Stack&lt;&gt;();
+        }
+
+     &nbsp; &nbsp;/** 添加元素到队尾 */
+     &nbsp; &nbsp;public void push(int x) {
+     &nbsp;      s1.push(x);
+     &nbsp;  }
+
+     &nbsp; &nbsp;/** 删除队头的元素并返回 */
+     &nbsp; &nbsp;public int pop() {
+     &nbsp;      if (s2.isEmpty()) {
+                while (!s1.isEmpty()) {
+                    s2.push(s1.pop());
+                }
+            }
+     &nbsp;      return s2.pop();
+     &nbsp;  }
+
+     &nbsp; &nbsp;/** 返回队头元素 */
+     &nbsp; &nbsp;public int peek() {
+     &nbsp;      //保证s2不为空
+     &nbsp;      pop();
+     &nbsp;      return s2.peek();
+     &nbsp;  }
+
+     &nbsp; &nbsp;/** 判断队列是否为空 */
+     &nbsp; &nbsp;public boolean empty() {
+     &nbsp;      return s1.isEmpty() &amp;&amp; s2.isEmpty();
+     &nbsp;  }
+    }
+
+</code></pre>
+<h1 id="toc_h1_10">中缀表达式转为后缀表达式</h1>
+<ol>
+<li>初始化两个栈:运算符栈s1和储存中间结果的栈s2;</li>
+<li>从左至右扫描中缀表达式;</li>
+<li>遇到操作数时，将其压s2;</li>
+<li>遇到运算符时，比较其与s1栈顶运算符的优先级:
+<ol>
+<li>如果s1为空，或栈顶运算符为左括号“(”，则直接将此运算符入栈;</li>
+<li>否则，若优先级比栈顶运算符的高，也将运算符压入s1;</li>
+<li>否则，将s1栈顶的运算符弹出并压入到s2中，再次与 s1中新的栈顶运算符相比较;</li>
+</ol>
+</li>
+<li>遇到括号时:
+<ol>
+<li>如果是左括号“(”，则直接压入s1</li>
+<li>如果是右括号“)”，则依次弹出s1栈顶的运算符，并压入s2，直到遇到左括号为止，此时将这一对括号 丢弃</li>
+</ol>
+</li>
+<li>重复步骤2至5，直到表达式的最右边</li>
+<li>将s1中剩余的运算符依次弹出并压入s2</li>
+<li>依次弹出s2中的元素并输出，结果的逆序即为中缀表达式对应的后缀表达式</li>
+</ol>
+<h1 id="toc_h1_11"><a href="https://leetcode-cn.com/problems/basic-calculator-ii/" target="_blank">227. 基本计算器 II</a></h1>
+<p>使用栈完成一个基本计算器（不含括号）。</p>
+<p>解题思路：遍历字符串，如果是数字就赋值到num，判断上一个运算符，如果是+就把num值入栈，-号就就把-num入栈，/或者* 出栈数与num做运算后入栈即可，最后累加栈中的数字。</p>
+<pre><code class="language-java">public int calculate(String s) {
+        Stack&lt;Integer&gt; stack = new Stack&lt;&gt;();
+        char sign = '+';
+        int num = 0;
+        for (int i = 0; i &lt; s.length(); i++) {
+            char ch = s.charAt(i);
+            if(ch &gt;= '0'){
+                num = num * 10 - '0' + ch;
+            }
+            if ((ch &lt; '0' &amp;&amp; ch !=' ' )|| i == s.length()-1){
+                switch (sign){
+                    case '+' : stack.push(num); break;
+                    case '-' : stack.push(-num); break;
+                    case '*' : stack.push(stack.pop() * num); break;
+                    case '/' : stack.push(stack.pop() / num); break;
+                }
+                sign = ch;
+                num = 0;
+            }
+        }
+        int result = 0;
+        while (!stack.isEmpty()) {
+            result += stack.pop();
+        }
+        return result;
+    }
+</code></pre>
+<h1 id="toc_h1_12"><a href="https://leetcode-cn.com/problems/evaluate-reverse-polish-notation/" target="_blank">150. 逆波兰表达式求值</a></h1>
+<pre><code class="language-java">public int evalRPN(String[] tokens) {
+        Stack&lt;Integer&gt; stack = new Stack&lt;&gt;();
+        for (String token : tokens) {
+            if ("+".equals(token) ||
+                "-".equals(token) ||
+                "*".equals(token) ||
+                "/".equals(token)) {
+                Integer a = stack.pop();
+                Integer b = stack.pop();
+                switch (token.charAt(0)) {
+                    case '+':
+                        stack.push(a + b);
+                        break;
+                    case '-':
+                        stack.push(b - a);
+                        break;
+                    case '*':
+                        stack.push(b * a);
+                        break;
+                    case '/':
+                        stack.push(b / a);
+                        break;
+                }
+            } else {
+                stack.add(Integer.parseInt(token));
+            }
+        }
+        return stack.peek();
+    }
+</code></pre>
+<h1 id="toc_h1_13"><a href="https://leetcode-cn.com/problems/basic-calculator/" target="_blank">224. 基本计算器</a></h1>
+<pre><code class="language-java">public int calculate(String s) {
+        Stack&lt;Integer&gt; stack = new Stack&lt;Integer&gt;();
+        // sign 代表正负
+        int sign = 1, res = 0;
+        int length = s.length();
+        for (int i = 0; i &lt; length; i++) {
+            char ch = s.charAt(i);
+            if (Character.isDigit(ch)) {
+                int cur = ch - '0';
+                while (i + 1 &lt; length &amp;&amp; Character.isDigit(s.charAt(i + 1)))
+                    cur = cur * 10 + s.charAt(++i) - '0';
+                res = res + sign * cur;
+            } else if (ch == '+') {
+                sign = 1;
+            } else if (ch == '-') {
+                sign = -1;
+            } else if (ch == '(') {
+                stack.push(res);
+                res = 0;
+                stack.push(sign);
+                sign = 1;
+            } else if (ch == ')') {
+                res = stack.pop() * res + stack.pop();
+            }
+        }
+        return res;
+    }
+</code></pre>
+                        <div>
+                            <hr>
+
+标题：算法：堆&栈<br>
+作者：<a href="https://gyyspace.github.io" target="_blank">function001</a><br>
+地址：<a href="https://gyyspace.github.io/articles/2024/07/21/1721544405263.html" target="_blank">https://gyyspace.github.io/articles/2024/07/21/1721544405263.html</a><br>
+
+<!-- 签名档内可使用 HTML、JavaScript -->
+<br>
+                        </div>
+                </div>
+                <footer>
+                    <div class="post-tags">
+                            <a rel="tag" href="https://gyyspace.github.io/tags/%E7%AE%97%E6%B3%95">
+                                算法</a>
+                            <a rel="tag" href="https://gyyspace.github.io/tags/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84">
+                                数据结构</a>
+                    </div>
+                    <div class="post-nav fn-clear">
+                            <div class="post-nav-prev post-nav-item fn-right">
+                                <a href="https://gyyspace.github.io/articles/2024/07/21/1721543855065.html" rel="prev"
+                                   title="算法：DFS&BFS">
+                                    算法：DFS&BFS >
+                                </a>
+                            </div>
+                            <div class="post-nav-next post-nav-item fn-left">
+                                <a href="https://gyyspace.github.io/articles/2024/07/21/1721546109578.html" rel="next" title="算法：数学知识">
+                                    < 算法：数学知识
+                                </a>
+                            </div>
+                    </div>
+                </footer>
+            </article>
+        </div>
+            <div id="gitalk-container"></div>
+            <div id="b3logsolocomments"></div>
+            <div id="vcomment" data-name="function001" data-postId="1721544405263"></div>
+            <div id="relevantArticles"></div>
+            <div id="randomArticles"></div>
+<div class="sidebar-toggle">
+    <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+    <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+    <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+</div>
+
+<aside class="sidebar">
+<ul class="article__toc">
+        <li class="toc__h1">
+            <a href="#toc_h1_0">使用大根堆和小根堆数据结构</a>
+        </li>
+        <li class="toc__h2">
+            <a href="#toc_h2_1">295. 数据流的中位数</a>
+        </li>
+        <li class="toc__h1">
+            <a href="#toc_h1_2">单调栈数据结构</a>
+        </li>
+        <li class="toc__h2">
+            <a href="#toc_h2_3">496. 下一个更大元素 I</a>
+        </li>
+        <li class="toc__h2">
+            <a href="#toc_h2_4">739. 每日温度</a>
+        </li>
+        <li class="toc__h2">
+            <a href="#toc_h2_5">503. 下一个更大元素 II</a>
+        </li>
+        <li class="toc__h1">
+            <a href="#toc_h1_6">「单调队列」数据结构解决滑动窗口问题</a>
+        </li>
+        <li class="toc__h2">
+            <a href="#toc_h2_7">239. 滑动窗口最大值</a>
+        </li>
+        <li class="toc__h1">
+            <a href="#toc_h1_8">二叉堆，优先级队列</a>
+        </li>
+        <li class="toc__h1">
+            <a href="#toc_h1_9">用栈实现队列</a>
+        </li>
+        <li class="toc__h1">
+            <a href="#toc_h1_10">中缀表达式转为后缀表达式</a>
+        </li>
+        <li class="toc__h1">
+            <a href="#toc_h1_11">227. 基本计算器 II</a>
+        </li>
+        <li class="toc__h1">
+            <a href="#toc_h1_12">150. 逆波兰表达式求值</a>
+        </li>
+        <li class="toc__h1">
+            <a href="#toc_h1_13">224. 基本计算器</a>
+        </li>
+</ul></aside>
+    </div>
+</main>
+<footer class="footer">
+    <div class="wrapper">
+        <div class="fn-clear">
+            <a href="https://gyyspace.github.io">echo洋</a>
+            
+            <div class="fn-right">
+            </div>
+        </div>
+        <div class="fn-clear">
+            &copy; 2024
+            <a href="https://gyyspace.github.io">echo洋</a>
+            
+        </div>
+    </div>
+</footer>
+<div class="back-to-top" onclick="Util.goTop()"></div>
+
+<script>
+  var Label = {
+    speech: true,
+    servePath: "https://gyyspace.github.io",
+    staticServePath: "https://gyyspace.github.io",
+    luteAvailable: false,
+    hljsStyle: 'github',
+    langLabel: "zh_CN",
+    version: "4.4.0",
+    staticSite: true,
+    showCodeBlockLn: false,
+    articleId: "1721544405263",
+  }
+</script>
+<script src="https://gyyspace.github.io/skins/next/js/common.min.js?1721540580809"></script>
+<script type="text/javascript">
+    Label.tocLabel = "目录"
+    Label.siteViewLabel = "站点概览"
+</script>
+
+<script type="text/javascript">
+    Util.addScript('https://gyyspace.github.io/js/page.min.js?1721540580809', 'soloPageScript')
+    var page = new Page({
+        "commentContentCannotEmptyLabel": "评论不能为空",
+        "oId": "1721544405263",
+        "blogHost": "https://gyyspace.github.io",
+        "randomArticles1Label": "随机阅读：",
+        "externalRelevantArticles1Label": "站外相关阅读："
+    });
+    $(document).ready(function () {
+        page.load();
+    page.tips.externalRelevantArticlesDisplayCount = "0";
+        page.loadRandomArticles();
+        page.loadRelevantArticles('1721544405263', '<h4>相关阅读：</h4>');
+    NexT.initArticle()
+    });
+</script>
+</body>
+</html>
+
+<!-- Generated by Latke (https://github.com/88250/latke) in 19ms, 2024/07/21 15:56:20 -->

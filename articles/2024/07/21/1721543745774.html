@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8"/><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"/><meta name="theme-color" content="#3b3e43"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"/><meta name="apple-mobile-web-app-status-bar-style" content="black"><meta name="format-detection" content="telephone=no"/><title>算法：动态规划 - echo洋</title><meta name="description" content="动态规划问题的一般形式就是求最值。动态规划其实是运筹学的一种最优化方法，只不过在计算机问题上应用比较多，比如求最长递增子序列呀，最小编辑距离呀等等。"/><meta property="og:description" content="动态规划问题的一般形式就是求最值。动态规划其实是运筹学的一种最优化方法，只不过在计算机问题上应用比较多，比如求最长递增子序列呀，最小编辑距离呀等等。"/>    <meta name="keywords" content="Solo,Java,博客,开源"/><link rel="dns-prefetch" href="https://gyyspace.github.io"/><link rel="dns-prefetch" href="https://cdn.jsdelivr.net"/><link rel="preconnect" href="https://gyyspace.github.io"><link rel="icon" type="image/png" href="https://b3log.org/images/brand/solo-128.png"/><link rel="apple-touch-icon" href="https://b3log.org/images/brand/solo-128.png"><link rel="shortcut icon" type="image/x-icon" href="https://b3log.org/images/brand/solo-128.png"><meta name="copyright" content="B3log"/><meta http-equiv="Window-target" content="_top"/><meta property="og:locale" content="zh_CN"/><meta property="og:title" content="算法：动态规划 - echo洋"/><meta property="og:site_name" content="echo洋"/><meta property="og:url"      content="https://gyyspace.github.io/articles/2024/07/21/1721543745774.html?"/><meta property="og:image" content="https://b3log.org/images/brand/solo-128.png"/><link rel="search" type="application/opensearchdescription+xml" title="算法：动态规划 - echo洋" href="/opensearch.xml"><link href="https://gyyspace.github.io/rss.xml" title="RSS" type="application/rss+xml" rel="alternate"/><link rel="manifest" href="https://gyyspace.github.io/manifest.json">        <link rel="canonical" href="https://gyyspace.github.io/articles/2024/07/21/1721543745774.html">        <link rel="stylesheet"
+              href="https://gyyspace.github.io/skins/next/css/base.css?1721540580809"/>
+            <link rel="prev" title="算法：链表" href="https://gyyspace.github.io/articles/2024/07/21/1721542283762.html">
+            <link rel="next" title="算法：DFS&BFS" href="https://gyyspace.github.io/articles/2024/07/21/1721543855065.html">
+    <script src="https://gyyspace.github.io/js/lib/vditor/dist/js/icons/ant.js?v=3.9.7" async="" id="vditorIconScript"></script></head>
+<body>
+<header class="header">
+    <div class="header-line"></div>
+    <div class="fn-clear wrapper">
+        <div class="logo-wrap">
+            <a href="https://gyyspace.github.io" rel="start">
+                <span class="logo-line-before"><i></i></span>
+                <span class="site-title">echo洋</span>
+                <span class="logo-line-after"><i></i></span>
+            </a>
+        </div>
+
+        <div class="site-nav-toggle fn-right"
+             onclick="$('.header-line').toggle();$('nav').children('.menu').slideToggle();">
+            <span class="btn-bar"></span>
+            <span class="btn-bar"></span>
+            <span class="btn-bar"></span>
+        </div>
+
+        <nav>
+            <ul class="menu">
+                    <li class="menu-item">
+                        <a href="/tags/Redis" target="_blank" rel="section">
+                            Redis 的设计与实现
+                        </a>
+                    </li>
+            </ul>
+
+        </nav>
+    </div>
+</header><main class="main">
+    <div class="wrapper">
+        <div class="content">
+            <article class="posts-expand">
+                <header class="post-header">
+                    <h2 class="post-title">
+                        算法：动态规划
+                    </h2>
+                    <div class="post-meta">
+                            <span class="post-time">
+                                    更新于
+                                <time>
+                                    2024-07-21
+                                </time>
+                            </span>
+                        <span class="post-comments-count">
+                                &nbsp; | &nbsp;
+                                <a href="https://gyyspace.github.io/articles/2024/07/21/1721543745774.html#b3logsolocomments">
+                                    <span data-uvstatcmt="1721543745774">0</span> 条评论</a>
+                        </span>
+                        &nbsp; | &nbsp; 热度
+                        <span data-uvstaturl="https://gyyspace.github.io/articles/2024/07/21/1721543745774.html">0</span>°C
+                    </div>
+                </header>
+
+                <div class="post-body post-body--article vditor-reset">
+                    <p><img src="https://b3logfile.com/bing/20230823.jpg?imageView2/1/w/960/h/540/interlace/1/q/100" alt=""></p>
+<h1 id="toc_h1_0">动态规划</h1>
+<p><strong>动态规划问题的一般形式就是求最值</strong>。动态规划其实是运筹学的一种最优化方法，只不过在计算机问题上应用比较多，比如求<strong>最长</strong>递增子序列呀，<strong>最小</strong>编辑距离呀等等。</p>
+<p>**既然是要求最值，核心问题是什么呢？**<strong>求解动态规划的核心问题是穷举</strong>。因为要求最值，肯定要把所有可行的答案穷举出来，然后在其中找最值呗。</p>
+<p><strong>动态规划就这么简单，就是穷举就完事了？我看到的动态规划问题都很难啊！</strong></p>
+<p><strong>首先，动态规划的穷举有点特别，因为这类问题****存在「重叠子问题」</strong>，如果暴力穷举的话效率会极其低下，所以需要「备忘录」或者「DP table」来优化穷举过程，避免不必要的计算。</p>
+<p><strong>而且，动态规划问题一定会****具备「最优子结构」</strong>，才能通过子问题的最值得到原问题的最值。</p>
+<p>**另外，虽然动态规划的核心思想就是穷举求最值，但是问题可以千变万化，穷举所有可行解其实并不是一件容易的事，只有列出正确的【**<strong>状态转移方程</strong>】才能正确地穷举。</p>
+<p>**以上提到的重叠子问题、最优子结构、状态转移方程就是动态规划三要素。具体什么意思等会会举例详解，但是在实际的算法问题中，**<strong>写出状态转移方程是最困难的</strong>，这也就是为什么很多朋友觉得动态规划问题困难的原因，思维框架，辅助思考状态转移方程：</p>
+<p><strong>明确「状态」 -&gt; 定义 dp 数组/函数的含义 -&gt; 明确「选择」-&gt; 明确 base case。</strong></p>
+<h2 id="toc_h2_1">示例</h2>
+<h3 id="toc_h3_2">斐波那契数列</h3>
+<p><strong>引出「状态转移方程」这个名词，实际上就是描述问题结构的数学形式：</strong></p>
+<p><img src="https://b3logfile.com/file/2021/04/image-383aadde.png?imageView2/2/w/1280/format/jpg/interlace/1/q/100" alt=""></p>
+<p><strong>为啥叫「状态转移方程」？为了听起来高端。你把 f(n) 想做一个状态 n，这个状态 n 是由状态 n - 1 和状态 n - 2 相加转移而来，这就叫状态转移，仅此而已。</strong></p>
+<p><strong>你会发现，上面的几种解法中的所有操作，例如 return f(n - 1) + f(n - 2)，dp[i] = dp[i - 1] + dp[i - 2]，以及对备忘录或 DP table 的初始化操作，都是围绕这个方程式的不同表现形式。可见列出「状态转移方程」的重要性，它是解决问题的核心。很容易发现，其实状态转移方程直接代表着暴力解法。</strong></p>
+<p><strong>千万不要看不起暴力解，动态规划问题最困难的就是写出状态转移方程</strong>，即这个暴力解。优化方法无非是用备忘录或者 DP table，再无奥妙可言。</p>
+<h3 id="toc_h3_3"><a href="https://leetcode-cn.com/problems/coin-change/" target="_blank">322. 零钱兑换</a></h3>
+<blockquote>
+<p><strong>要获取总金额为amount时最少硬币数，需要求amount-1时的最少硬币数+1</strong></p>
+<p><strong>独立重叠的子问题</strong></p>
+</blockquote>
+<pre><code>public int coinChange(int[] coins, int amount) {
+        //dp[i]  是总金额为i是最少硬币数
+        int[] dp = new int[amount+1];
+        //数组初始化
+        Arrays.fill(dp, amount+1);
+        dp[0] = 0;
+        for (int i = 1; i &lt; dp.length; i++) {
+            for (int j = 0; j &lt; coins.length; j++) {
+                if (i &gt;= coins[j]) {//总金额大于硬币面额时
+                    dp[i] = Math.max(dp[i], dp[i-coins[j]] + 1);
+                }
+            }
+        } 
+        return dp[amount] == amount+1 ? -1 : dp[amount];
+ &nbsp;  }
+</code></pre>
+<p><strong>PS：为啥</strong><code>dp</code>数组初始化为<code>amount + 1</code>呢，因为凑成<code>amount</code>金额的硬币数最多只可能等于<code>amount</code>（全用 1 元面值的硬币），所以初始化为<code>amount + 1</code>就相当于初始化为正无穷，便于后续取最小值。</p>
+<h3 id="toc_h3_4"><a href="https://leetcode-cn.com/problems/minimum-cost-for-tickets/" target="_blank">983. 最低票价</a></h3>
+<blockquote>
+<p><strong>不要按照示例中的那样，第一天就买好后面几天的票。比如第4天买了一张7天的票，一直可以到第10天。。不要按照这个思路</strong></p>
+<p><strong>可以逆着来，一张4~10天的票，我第10天付款，这样动态规划更好理解</strong></p>
+<p><strong>dp[ n ]= min(dp[ n-1 ] + cost[ 0 ] ,dp[ n-7 ] + cost[ 1 ],dp[ n-30 ]+cost[ 2 ] )</strong></p>
+<p><strong>dp的长度应该为365天，或者最后days[ ]中的最后一天，例如示例中最后一天是20，则dp[21] 。</strong></p>
+<p><strong>如果当天不需要旅行，则dp[ n ] =dp[ n-1 ]；</strong></p>
+<p><strong>dp[i] 的定义是：第i天，如果去旅行那么，前i天花费的最少的钱数：当天买1天，或买七天那么前七天就不买票，30天同理</strong> <strong>不旅行，那么就是前一天花费的钱数</strong></p>
+</blockquote>
+<pre><code>public int mincostTickets(int[] days, int[] costs) {
+ &nbsp; &nbsp; &nbsp; &nbsp;int dayMax = days[days.length-1];
+        int[] dp = new int[dayMax+1];
+        int a,b,c;
+        for (int i = 0; i &lt; days.length; i++) {
+            //标记当天去旅行
+            dp[days[i]] = -1;
+        }
+        for (int i = 1; i &lt;= dayMax; i++) {
+            if (dp[i] == 0) {
+                //当天不旅行
+                dp[i] = dp[i-1];
+            }else {
+                //当天去旅行
+                //这一天买1天的票
+                a = dp[i-1] + costs[0];
+                //这一天买7天的票，那么前七天就不用买票
+                if (i-7&gt;0) {
+                    b = dp[i-7] + costs[1];
+                }else {
+                    b = costs[1];
+                }
+                if (i-30&gt;0) {
+                    c= dp[i-30] + costs[2];
+                }else {
+                    c = costs[2];
+                }
+                dp[i] = Math.min(a, b);
+                dp[i] = Math.min(dp[i], c);
+            }
+        }
+        return dp[dayMax];
+ &nbsp;  }
+</code></pre>
+<h1 id="toc_h1_5">子序列类型问题</h1>
+<p><strong>对于两个字符串求子序列的问题，都是用两个指针<code>i</code>和<code>j</code>分别在两个字符串上移动，大概率是动态规划思路</strong>。</p>
+<p><strong>解决两个字符串的动态规划问题，一般都是用两个指针<code>i,j</code>分别指向两个字符串的最后，然后一步步往前走，缩小问题的规模</strong>。</p>
+<p><strong>使用备忘录的时候，最好有二维数组记录，使用hashmap不太好，最好使用dp数组解法</strong></p>
+<h2 id="toc_h2_6">子序列解题模板：最长回文子序列</h2>
+<p><strong>第一种思路模板是一个一维的 dp 数组</strong>：没理解</p>
+<pre><code>int n = array.length;
+int[] dp = new int[n];
+
+for (int i = 1; i &lt; n; i++) {
+ &nbsp; &nbsp;for (int j = 0; j &lt; i; j++) {
+ &nbsp; &nbsp; &nbsp; &nbsp;dp[i] = 最值(dp[i], dp[j] + ...)
+ &nbsp;  }
+}
+</code></pre>
+<p><strong>第二种思路模板是一个二维的 dp 数组</strong>：</p>
+<pre><code>int n = arr.length;
+int[][] dp = new dp[n][n];
+
+for (int i = 0; i &lt; n; i++) {
+ &nbsp; &nbsp;for (int j = 1; j &lt; n; j++) {
+ &nbsp; &nbsp; &nbsp; &nbsp;if (arr[i] == arr[j]) 
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;dp[i][j] = dp[i][j] + ...
+ &nbsp; &nbsp; &nbsp; &nbsp;else
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;dp[i][j] = 最值(...)
+ &nbsp;  }
+}
+</code></pre>
+<p><strong>这种思路运用相对更多一些，尤其是涉及两个字符串/数组的子序列。本思路中 dp 数组含义又分为「只涉及一个字符串」和「涉及两个字符串」两种情况。</strong></p>
+<p>**2.1 **<strong>涉及两个字符串/数组时</strong>（比如最长公共子序列），dp 数组的含义如下：</p>
+<p><strong>在子数组<code>arr1[0..i]</code>和子数组<code>arr2[0..j]</code>中，我们要求的子序列（最长公共子序列）长度为<code>dp[i][j]</code></strong>。正常遍历即可</p>
+<p><strong>2.2</strong>只涉及一个字符串/数组时（比如本文要讲的最长回文子序列），dp 数组的含义如下：</p>
+<p><strong>在子数组<code>array[i..j]</code>中，我们要求的子序列（最长回文子序列）的长度为<code>dp[i][j]</code></strong>。需要反向遍历。😳</p>
+<h3 id="toc_h3_7"><a href="https://leetcode-cn.com/problems/longest-palindromic-subsequence/" target="_blank">516. 最长回文子序列</a></h3>
+<blockquote>
+<p><strong>一个字符串，从两头开始遍历。两个字符串中后向前遍历。</strong></p>
+</blockquote>
+<p><strong>dp函数解法：</strong></p>
+<pre><code> public int longestPalindromeSubseq(String s) {
+         int len = s.length();
+         //备忘录
+         int[][] memo = new int[len][len];
+         for (int[] is : memo) {
+            Arrays.fill(is, -1);
+        }
+         return dp(s, 0, s.length()-1, memo);
+     }
+    /**
+     * dp函数定义：返回s[start, end]的最大回文子序列
+     * @param s
+     * @param index
+     * @return
+     */
+    public int dp(String s, int start, int end, int[][] memo) {
+        if (memo[start][end] != -1) {
+            return memo[start][end];
+        }
+        if (start == end) {
+            return 1;
+        }else if (start &gt; end) {
+            return 0;
+        }
+        //判断两端是否相同
+        if (s.charAt(start) == s.charAt(end)) {
+            //相同那么在[start,end]上就是[start+1,end-1]+2
+            memo[start][end] = &nbsp;dp(s, start+1, end-1, memo)+2;
+        }else {
+            //不相同那么在[start,end]上就等于[start+1，end]和[start,end-1]的最大值
+            memo[start][end] = Math.max(dp(s, start, end-1,memo), dp(s, start+1, end,memo));
+        }
+        return memo[start][end];
+    }
+
+
+</code></pre>
+<p><strong>dp数组解法：这个和下面的一些题的解法不同，在遍历dp数组的时候需要反着遍历</strong></p>
+<p><strong>初始化数组是这样的：</strong></p>
+<p><img src="https://b3logfile.com/file/2021/04/image-34c071f5.png?imageView2/2/w/1280/format/jpg/interlace/1/q/100" alt=""></p>
+<p><strong>为了保证每次计算<code>dp[i][j]</code>，左、下、左下三个方向的位置已经被计算出来，只能斜着遍历或者反着遍历</strong>：</p>
+<p><img src="https://b3logfile.com/file/2021/04/image-e14d0a9e.png?imageView2/2/w/1280/format/jpg/interlace/1/q/100" alt=""></p>
+<pre><code>public int longestPalindromeSubseq(String s) {
+        int len = s.length();
+        // dp[i,j]代表的是s在i-j的范围上最大回文序列的长度
+        int[][] dp = new int[len][len];
+        // 初始化
+        for (int i = 0; i &lt; len; i++) {
+            dp[i][i] = 1;
+        }
+        // 需要反着遍历保证正确的状态转移
+        for (int i = len - 1; i &gt;= 0; i--) {
+            for (int j = i + 1; j &lt; len; j++) {
+                if (s.charAt(i) == s.charAt(j)) {
+                    dp[i][j] = dp[i + 1][j - 1] + 2;
+                } else {
+                    dp[i][j] = Math.max(dp[i + 1][j], dp[i][j - 1]);
+                }
+            }
+        }
+        return dp[0][len - 1];
+    }
+</code></pre>
+<p><strong>主要还是正确定义 dp 数组的含义，遇到子序列问题，首先想到两种动态规划思路，然后根据实际问题看看哪种思路容易找到状态转移关系。</strong></p>
+<p>**另外，找到状态转移和 base case 之后，**<strong>一定要观察 DP table</strong>，看看怎么遍历才能保证通过已计算出来的结果解决新的问题</p>
+<h2 id="toc_h2_8"><a href="https://leetcode-cn.com/problems/longest-increasing-subsequence/" target="_blank">300. 最长递增子序列</a></h2>
+<pre><code>public int lengthOfLIS(int[] nums) {
+ &nbsp; &nbsp; &nbsp; &nbsp;int len = nums.length;
+ &nbsp; &nbsp; &nbsp; &nbsp;//dp[i] 表示的意思是nums[i] 之前的包含i位置的 最长递增子序列
+ &nbsp; &nbsp; &nbsp; &nbsp;int[] dp = new int[len];
+ &nbsp; &nbsp; &nbsp; &nbsp;int res = 0;
+ &nbsp; &nbsp; &nbsp; &nbsp;for(int i = 0; i &lt; len; i++){
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;// 先初始为1
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;dp[i] = 1;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;for(int j = 0; j &lt; i; j++){
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;//如果在之前得序列中最后一位数小于nums[i] 那么nums[i] 就等于这个序列长度+1
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;if(nums[i] &gt; nums[j]){
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;dp[i] = Math.max(dp[i], dp[j] + 1);
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;res = Math.max(res, dp[i]);
+ &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp; &nbsp;return res;
+ &nbsp;  }
+</code></pre>
+<h2 id="toc_h2_9"><a href="https://leetcode-cn.com/problems/russian-doll-envelopes/" target="_blank">354. 俄罗斯套娃信封问题</a></h2>
+<p><strong>解法一：时间复杂度高</strong></p>
+<pre><code>public int maxEnvelopes(int[][] envelopes) {
+ &nbsp; &nbsp; &nbsp; &nbsp;//首先对数组从大到小排序
+ &nbsp; &nbsp; &nbsp; &nbsp;Arrays.sort(envelopes, (x, y)-&gt;{
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;return -x[0] - x[1] + y[0] + y[1];
+ &nbsp; &nbsp; &nbsp;  });
+ &nbsp; &nbsp; &nbsp; &nbsp;int len = envelopes.length;
+ &nbsp; &nbsp; &nbsp; &nbsp;// dp[i] 表示第i位置包括i之前的有多少个信封可以套一起
+ &nbsp; &nbsp; &nbsp; &nbsp;int[] dp = new int[len];
+ &nbsp; &nbsp; &nbsp; &nbsp;// 初始为1
+ &nbsp; &nbsp; &nbsp; &nbsp;Arrays.fill(dp, 1);
+ &nbsp; &nbsp; &nbsp; &nbsp;int res = 0;
+ &nbsp; &nbsp; &nbsp; &nbsp;for(int i = 0; i &lt; len; i++){
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;for(int j = 0; j &lt; i; j++){
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;//如果当前i上的信封前面有比自己小的，那么就可以套上去
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;if(envelopes[i][0] &lt; envelopes[j][0] &amp;&amp; envelopes[i][1] &lt; envelopes[j][1]){
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;dp[i] = Math.max(dp[i], dp[j]+1);
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;//取出dp中的最大值
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;res = Math.max(res, dp[i]);
+ &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp; &nbsp;return res;
+ &nbsp;  }
+</code></pre>
+<p><strong>解法二：同样也是排序，先对索引0升序排序，如果索引0相同，那么对索引1降序排序。</strong></p>
+<p><strong>最后对索引1组成一个数组，对这个数组求最长递增子序列得到的答案即为题目所求。</strong></p>
+<pre spellcheck="false" class="md-fences mock-cm md-end-block" lang="java" cid="n69" mdtype="fences"><br></pre>
+<h2 id="toc_h2_10"><a href="https://leetcode-cn.com/problems/edit-distance/" target="_blank">72. 编辑距离</a></h2>
+<p><strong>dp数组解法：解析在代码中</strong></p>
+<pre><code>/**
+	 * dp[i][j]  含义是使word1[..i]和word2[..j]相同需要的操作数
+	 * @param word1
+	 * @param word2
+	 * @return
+	 */
+	public int minDistance(String word1, String word2) {
+		int n = word1.length();
+		int m = word2.length();
+        int[][] dp = new int[n+1][m+1];
+	//初始化数组
+        for (int i = 1; i &lt;= n; i++) {
+			dp[i][0] = i;
+		}
+        for (int i = 1; i &lt;= m; i++) {
+			dp[0][i] = i;
+		}
+        for (int i = 1; i &lt;= n; i++) {
+			for (int j = 1; j &lt;= m; j++) {
+				if (word1.charAt(i-1) == word2.charAt(j-1)) {
+					dp[i][j] = dp[i-1][j-1];
+				}else {
+					//word1 -&gt; word2
+					//这时这两个字母不同，需要进行那三步操作，下面取这三步操作的最小操作数
+					//删除,word1[i]删除了，所以要# 前移 i，继续跟 j 对比看之前word1[..i-1]和word2[..j]的操作数
+					int d1 = dp[i-1][j] +1;
+					//替换,我直接把 s1[i] 替换成 s2[j]，这样它俩就匹配了同时前移 i，j 继续对比
+					//相当于两个单词都改变了，所以看之前word[..i-1]和word2[..j-1]的操作数
+					int d2 = dp[i-1][j-1] + 1;
+					//插入,直接在word1[i] 插入一个和word2[j]一样的字符那么word2[j] 就被匹配了
+					//前移 j，继续跟 i 对比,别忘了操作数加一
+					int d3 = dp[i][j-1] + 1;
+					dp[i][j] = Math.min(Math.min(d1, d2), d3);
+				}
+			}
+		}
+        return dp[n][m];
+    }
+</code></pre>
+<p><strong>dp函数解法：记得要有备忘录****memo</strong></p>
+<blockquote>
+<p><strong>我从后向前逐渐比较，如果相同那么-1继续向下比较，如果不同，就分三种情况取三种情况中的最小操作次数，记得+1。</strong></p>
+<p><strong>dp函数的定义：返回word1[..i]和word2[..j]相同的最小操作次数，相信这个定义。</strong></p>
+<p><strong>递归出口：当i||j&lt;0时，剩下的字符长度就是需要操作的次数，返回即可。</strong></p>
+</blockquote>
+<pre><code>class Solution {
+   public int minDistance(String word1, String word2) {
+        int w1 = word1.length()-1;
+        int w2 = word2.length()-1;
+        return dp(w1, w2, word1, word2);
+    }
+	Map&lt;String, Integer&gt; map = new HashMap&lt;&gt;();
+	public int dp(int i, int j,String w1,String w2) {
+		if (map.containsKey(i+""+j)) {
+			return map.get(i+""+j);
+		}
+		if (i &lt; 0) {
+			map.put(i+""+j, j+1);
+			return j+1;
+		}
+		if (j &lt; 0) {
+			map.put(i+""+j, i+1);
+			return i+1;
+		}
+		if (w1.charAt(i) == w2.charAt(j)) {
+			return dp(i-1, j-1, w1, w2);
+		}else {
+			//插入
+			int d1 = dp(i, j-1, w1, w2)+1;
+			//删除
+			int d2 = dp(i-1,j,w1,w2)+1;
+			//替换
+			int d3 = dp(i-1, j-1, w1, w2)+1;
+			int step = Math.min(Math.min(d1, d2), d3);
+			map.put(i+""+j, step);
+			return step;
+		}
+	}
+
+
+
+}
+</code></pre>
+<h2 id="toc_h2_11"><a href="https://leetcode-cn.com/problems/maximum-subarray/" target="_blank">53. 最大子序和</a></h2>
+<blockquote>
+<p><strong>求一个数组的子数组的最大和？</strong></p>
+<p><strong>求以每一位元素结尾的子数组最大和即可。</strong></p>
+</blockquote>
+<pre><code>public int maxSubArray(int[] nums) {
+		//dp[i] 的含义是以nums[i]为结尾的最大子数组。
+		int[] dp = new int[nums.length];
+		dp[0] = nums[0];
+		int max = nums[0];
+		for (int i = 1; i &lt; dp.length; i++) {
+			dp[i] = Math.max(dp[i-1]+nums[i], nums[i]);
+			max = Math.max(max, dp[i]);
+		}
+		return max;
+    }
+</code></pre>
+<h2 id="toc_h2_12"><a href="https://leetcode-cn.com/problems/longest-common-subsequence/" target="_blank">1143. 最长公共子序列</a></h2>
+<blockquote>
+<p><strong>这个dp函数的定义是：dp(s1, i, s2, j)计算s1[...i]和s2[...j]的最长公共子序列长度。</strong></p>
+<p><strong>dp[i]表示的是公共序列的长度</strong></p>
+</blockquote>
+<p>**dp函数解法：**<strong>从上到下</strong></p>
+<pre><code>	public int longestCommonSubsequence(String text1, String text2) {
+		//备忘录
+		int memo[][] = new int[text1.length()][text2.length()];
+		for (int[] is : memo) {
+			Arrays.fill(is, -1);
+		}
+        return dp(text1.length()-1, text2.length()-1, text1, text2, memo);
+    }
+
+	/**
+	 * 返回 0-t1,  0-t2的子序列长度
+	 * 这个dp函数的定义是：dp(s1, i, s2, j)计算s1[i..]和s2[j..]的最长公共子序列长度。
+	 * @param t1
+	 * @param t2
+	 * @param test1
+	 * @param test2
+	 * @return
+	 */
+	public int dp(int t1, int t2, String test1,String test2, int[][] memo) {
+		if (t1 &lt; 0 || t2 &lt; 0) {
+			return 0;
+		}
+		if (memo[t1][t2] != -1) {
+			return memo[t1][t2];
+		}
+		if (test1.charAt(t1) == test2.charAt(t2)) {
+			memo[t1][t2] = dp(t1-1, t2-1, test1, test2, memo) + 1;
+		}else {
+			memo[t1][t2] = Math.max(dp(t1-1, t2, test1, test2,memo), dp(t1, t2-1, test1, test2,memo));
+		}
+		return memo[t1][t2];   
+	}
+
+</code></pre>
+<p>**dp数组解法：**<strong>从低到上</strong></p>
+<blockquote>
+<p><strong>dp</strong><a href="#">i</a>代表字符串text1从开始到第i位 和 text2从开始到第j位的最长子序和</p>
+<p><strong>dp</strong><a href="#">i-1</a>代表字符串text1从开始到第i-1位 和 text2从开始到第j位的最长子序和</p>
+</blockquote>
+<pre><code>public int longestCommonSubsequence(String text1, String text2) {
+		int n = text1.length();
+		int m = text2.length();
+		int dp[][] = new int[n+1][m+1];
+		for (int i = 1; i &lt;= n; i++) {
+			for (int j = 1; j &lt;= m; j++) {
+				if(text1.charAt(i-1) == text2.charAt(j-1)) {
+					dp[i][j] = dp[i-1][j-1] + 1;
+				}else {
+					dp[i][j] = Math.max(dp[i-1][j], dp[i][j-1]);
+				}
+			}
+		}
+		return dp[n][m];
+    }
+</code></pre>
+<h2 id="toc_h2_13"><a href="https://leetcode-cn.com/problems/delete-operation-for-two-strings/" target="_blank">583. 两个字符串的删除操作</a></h2>
+<blockquote>
+<p><strong>和上面的题类似，dp[i]表示的是删除操作的次数。</strong></p>
+</blockquote>
+<p><strong>dp函数解法：</strong></p>
+<pre><code>public int minDistance(String word1, String word2) {
+		int[][] memo = new int[word1.length()][word2.length()];
+		for (int[] is : memo) {
+			Arrays.fill(is, -1);
+		}
+		return dp(word1.length()-1, word2.length()-1, word1, word2,memo);
+    }
+	/**
+	 * dp函数定义：使word1[..w1]和word2[..w2]相同需要的操作次数
+	 * @param w1
+	 * @param w2
+	 * @param word1
+	 * @param word2
+	 * @return
+	 */
+
+	public int dp(int w1,int w2, String word1,String word2,int[][] memo) {
+		//递归出口
+		if (w1 &lt; 0) {
+			return w2+1;
+		}
+		if (w2 &lt; 0) {
+			return w1+1;
+		}
+		if (memo[w1][w2] != -1) {
+			return memo[w1][w2];
+		}
+		if (word1.charAt(w1) == word2.charAt(w2)) {
+			memo[w1][w2] = dp(w1-1, w2-1, word1, word2,memo);
+		}else {
+			//要进行删除操作
+			memo[w1][w2] = Math.min(dp(w1-1, w2, word1, word2,memo) + 1, dp(w1, w2-1, word1, word2,memo) + 1);
+		}
+		return memo[w1][w2];
+	}
+</code></pre>
+<p><strong>dp数组解法：</strong></p>
+<pre><code>class Solution {
+    public int minDistance(String word1, String word2) {
+        int n = word1.length();
+		int m = word2.length();
+		int[][] dp = new int[n+1][m+1];
+//注意初始化
+        for (int i = 1; i &lt;= n; i++) {
+			dp[i][0] = i;
+		}
+        for (int i = 1; i &lt;= m; i++) {
+			dp[0][i] = i;
+		}
+		for (int i = 1; i &lt;= n; i++) {
+			for (int j = 1; j &lt;= m; j++) {
+				if (word1.charAt(i-1) == word2.charAt(j-1)) {
+					dp[i][j] = dp[i-1][j-1];
+				}else {
+					dp[i][j] = Math.min(dp[i-1][j]+1, dp[i][j-1]+1);
+				}
+			}
+		}
+		return dp[n][m];
+    }
+}
+</code></pre>
+<h2 id="toc_h2_14"><a href="https://leetcode-cn.com/problems/minimum-ascii-delete-sum-for-two-strings/" target="_blank">712. 两个字符串的最小ASCII删除和</a></h2>
+<blockquote>
+<p><strong>和上面的题类似，只不过dp[i]表示的是Ascll的最小和</strong></p>
+</blockquote>
+<p><strong>dp函数解法：</strong></p>
+<pre><code>class Solution {
+   
+	public int minimumDeleteSum(String s1, String s2) {
+		int n = s1.length();
+		int m = s2.length();
+		int[][] memo = new int[n][m];
+		for (int[] is : memo) {
+			Arrays.fill(is, -1);
+		}
+		return dp(n-1, m-1, s1, s2, memo);
+    }
+	/**
+	 * dp函数定义：返回s1[..i]和s2[..j]删除字母的ASCII
+	 * @param i
+	 * @param j
+	 * @param s1
+	 * @param s2
+	 * @return
+	 */
+
+	public int dp(int i,int j, String s1, String s2, int[][] memo) {
+		if(i &lt; 0) {
+			int sum = 0;
+			for (int k = 0; k &lt;= j; k++) {
+				sum += s2.charAt(k);
+			}
+			return sum;
+		}
+		if (j &lt; 0) {
+			int sum = 0;
+			for (int k = 0; k &lt;= i; k++) {
+				sum += s1.charAt(k);
+			}
+			return sum;
+		}
+		if (memo[i][j] != -1) {
+			return memo[i][j];
+		}
+		if (s1.charAt(i) == s2.charAt(j)) {
+			memo[i][j] = dp(i-1, j-1, s1, s2,memo);
+		}else {
+			int d1 = dp(i-1, j, s1, s2,memo) + s1.charAt(i);
+			int d2 = dp(i, j-1, s1, s2,memo) + s2.charAt(j);
+			memo[i][j] = Math.min(d1, d2);
+		}
+		return memo[i][j];
+	}
+
+
+
+}
+</code></pre>
+<p><strong>dp数组解法：</strong></p>
+<pre><code>class Solution {
+   
+	public int minimumDeleteSum(String s1, String s2) {
+	int n = s1.length();
+		int m = s2.length();
+		int[][] dp = new int[n + 1][m + 1];
+		for (int i = 1; i &lt;= n; i++) {
+			dp[i][0] = s1.charAt(i - 1)+dp[i-1][0];
+		}
+		for (int i = 1; i &lt;= m; i++) {
+			dp[0][i] = s2.charAt(i - 1)+dp[0][i-1];
+		}
+		for (int i = 1; i &lt;= n; i++) {
+			for (int j = 1; j &lt;= m; j++) {
+				if (s1.charAt(i - 1) == s2.charAt(j - 1)) {
+					dp[i][j] = dp[i - 1][j - 1];
+				} else {
+					dp[i][j] = Math.min(dp[i - 1][j] + s1.charAt(i-1), dp[i][j - 1] + s2.charAt(j-1));
+				}
+			}
+		}
+		return dp[n][m];
+    }
+}
+</code></pre>
+<h1 id="toc_h1_15">0-1背包问题</h1>
+<h2 id="toc_h2_16"><a href="https://leetcode-cn.com/problems/partition-equal-subset-sum/" target="_blank">416. 分割等和子集</a></h2>
+<pre><code>public boolean canPartition(int[] nums) {
+        int sum = 0;
+        for (int num : nums) sum += num;
+        // 和为奇数时，不可能划分成两个和相等的集合
+        if (sum % 2 != 0) return false;
+        int n = nums.length;
+        sum = sum / 2;
+        boolean[][] dp = new boolean[n + 1][sum + 1];
+        // base case
+        for (int i = 0; i &lt;= n; i++){
+            dp[i][0] = true;
+        }
+        for (int i = 1; i &lt;= n; i++) {
+            for (int j = 1; j &lt;= sum; j++) {
+                if (j - nums[i - 1] &lt; 0) {
+                    // 背包容量不足，不能装入第 i 个物品
+                    dp[i][j] = dp[i - 1][j];
+                } else {
+                    // 装入或不装入背包
+                    dp[i][j] = dp[i - 1][j] || dp[i - 1][j - nums[i - 1]];
+                }
+            }
+        }
+        return dp[n][sum];
+
+        // int sum = 0;
+        // for (int num : nums) sum += num;
+        // // 和为奇数时，不可能划分成两个和相等的集合
+        // if (sum % 2 != 0) return false;
+        // int n = nums.length;
+        // sum = sum / 2;
+        // boolean[] dp = new boolean[sum + 1];
+  
+        // // base case
+        // dp[0] = true;
+
+        // for (int i = 0; i &lt; n; i++) {
+        //     for (int j = sum; j &gt;= 0; j--) {
+        //         if (j - nums[i] &gt;= 0) {
+        //             dp[j] = dp[j] || dp[j - nums[i]];
+        //         }
+        //     }
+        // }
+        // return dp[sum];
+    }
+</code></pre>
+<h1 id="toc_h1_17">完全背包问题</h1>
+<h1 id="toc_h1_18">其它题</h1>
+<h2 id="toc_h2_19"><a href="http://lx.lanqiao.cn/problem.page?gpid=T312" target="_blank">数字三角形</a></h2>
+<blockquote>
+<p><strong>使用动态规划，冲下往上依次计算路径的和，最后输出最上层即可。</strong></p>
+</blockquote>
+<pre><code>import java.util.Scanner;
+public class Main {
+	 
+	static int max = 0;
+	public static void main(String[] args) {
+		Scanner scanner = new Scanner(System.in);
+		int n = Integer.parseInt(scanner.nextLine());
+		String[][] strings = new String[n][n];
+		for (int i = 0; i &lt; n; i++) {
+			strings[i] = scanner.nextLine().split(" ");
+		}
+
+		for (int i = n-1; i &gt; 0; i--) {
+			for (int j = 0; j &lt; strings[i].length -1; j++) {
+				strings[i-1][j] = Integer.parseInt(strings[i-1][j] )+Math.max(Integer.parseInt(strings[i][j]), Integer.parseInt(strings[i][j+1]))+"";
+			}
+		}
+		System.out.println(strings[0][0]);
+	}
+}
+
+</code></pre>
+<h2 id="toc_h2_20"><a href="http://lx.lanqiao.cn/problem.page?gpid=T13" target="_blank">K好数</a></h2>
+<p><strong>问题描述</strong></p>
+<p><strong>如果一个自然数N的K进制表示中任意的相邻的两位都不是相邻的数字，那么我们就说这个数是K好数。求L位K进制数中K好数的数目。例如K = 4，L = 2的时候，所有K好数为11、13、20、22、30、31、33 共7个。由于这个数目很大，请你输出它对1000000007取模后的值。</strong></p>
+<p><strong>输入格式</strong></p>
+<p><strong>输入包含两个正整数，K和L。</strong></p>
+<p><strong>输出格式</strong></p>
+<p><strong>输出一个整数，表示答案对1000000007取模后的值。</strong></p>
+<blockquote>
+<p><strong>使用动态规划。</strong></p>
+</blockquote>
+<p><img src="https://b3logfile.com/file/2021/04/image-14611f47.png?imageView2/2/w/1280/format/jpg/interlace/1/q/100" alt=""></p>
+<blockquote>
+<p><strong>L = 1时 数字为0 -&gt; 0个，1-&gt;1个 ....  3-&gt;1个</strong></p>
+<p><strong>L=  2时第二位数字为0时前一位数字可以是2，3。所以有2种</strong></p>
+<p><strong>L=  2时第二位数字为1时前一位数字可以是1，3。所以2种</strong></p>
+<p><strong>......</strong></p>
+<p><strong>L = 3时第三位数字是0时只考虑第二位数字不是1即可，所以有5种</strong></p>
+</blockquote>
+<pre><code>public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        int k = scanner.nextInt();
+        int l = scanner.nextInt();
+     
+        int[][] nums = new int[l][k];
+
+        for (int i = 1; i &lt; k; i++) {
+            nums[0][i] = 1;
+        }
+        for (int i = 1; i &lt; l; i++) {
+            for (int j = 0; j &lt; k; j++) {
+                for (int j2 = 0; j2 &lt; k; j2++) {
+                    if (j2 + 1 != j &amp;&amp; j2 - 1 != j) {
+                        nums[i][j] = (nums[i][j] + nums[i-1][j2])%1000000007;
+                    }
+                }
+            }
+        }
+        BigInteger bigInteger = new BigInteger("0");
+        for (int i = 0; i &lt; k; i++) {
+            bigInteger = bigInteger.add(new BigInteger(nums[l-1][i]+""));
+        }
+        System.out.println(bigInteger.mod(new BigInteger("1000000007")));
+    }
+</code></pre>
+<h2 id="toc_h2_21"><a href="https://leetcode-cn.com/problems/ba-shu-zi-fan-yi-cheng-zi-fu-chuan-lcof/" target="_blank">剑指 Offer 46. 把数字翻译成字符串</a></h2>
+<pre><code>public int translateNum(int num) {
+ &nbsp; &nbsp; &nbsp; &nbsp;if (num &lt;= 9){
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;return 1;
+ &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp; &nbsp;int temp = num % 100;
+ &nbsp; &nbsp; &nbsp; &nbsp;if (temp&lt;=9||temp&gt;25){
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;return translateNum(num/10);
+ &nbsp; &nbsp; &nbsp;  }else{
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;return translateNum(num/10) + translateNum(num/100);
+ &nbsp; &nbsp; &nbsp;  }
+ &nbsp;  }
+</code></pre>
+<h2 id="toc_h2_22"><a href="https://leetcode-cn.com/problems/nge-tou-zi-de-dian-shu-lcof/" target="_blank">剑指 Offer 60. n个骰子的点数</a></h2>
+<pre><code>public double[] dicesProbability(int n) {
+ &nbsp; &nbsp; &nbsp; &nbsp;//表示一个筛子的时候，只有6个可能值，每个概率均为1/6
+ &nbsp; &nbsp; &nbsp; &nbsp;double[] dp = new double[6];
+ &nbsp; &nbsp; &nbsp; &nbsp;Arrays.fill(dp, 1.0/6.0);
+ &nbsp; &nbsp; &nbsp; &nbsp;for(int i = 2; i &lt;= n; i++){
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;//i个筛子的最小值为i，最大值为6*i,所以i个筛子的时候，就有6*i - i + 1 = 5*i + 1个可能值
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;double[] temp = new double[5 * i + 1];
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;for(int j = 0; j &lt; dp.length; j++){
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;for(int k = 0; k &lt; 6; k++){
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;temp[j+k] += dp[j]*(1.0/6.0);
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;dp = temp;
+ &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp; &nbsp;return dp;
+ &nbsp;  }
+</code></pre>
+                        <div>
+                            <hr>
+
+标题：算法：动态规划<br>
+作者：<a href="https://gyyspace.github.io" target="_blank">function001</a><br>
+地址：<a href="https://gyyspace.github.io/articles/2024/07/21/1721543745774.html" target="_blank">https://gyyspace.github.io/articles/2024/07/21/1721543745774.html</a><br>
+
+<!-- 签名档内可使用 HTML、JavaScript -->
+<br>
+                        </div>
+                </div>
+                <footer>
+                    <div class="post-tags">
+                            <a rel="tag" href="https://gyyspace.github.io/tags/%E7%AE%97%E6%B3%95">
+                                算法</a>
+                            <a rel="tag" href="https://gyyspace.github.io/tags/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84">
+                                数据结构</a>
+                    </div>
+                    <div class="post-nav fn-clear">
+                            <div class="post-nav-prev post-nav-item fn-right">
+                                <a href="https://gyyspace.github.io/articles/2024/07/21/1721542283762.html" rel="prev"
+                                   title="算法：链表">
+                                    算法：链表 >
+                                </a>
+                            </div>
+                            <div class="post-nav-next post-nav-item fn-left">
+                                <a href="https://gyyspace.github.io/articles/2024/07/21/1721543855065.html" rel="next" title="算法：DFS&BFS">
+                                    < 算法：DFS&BFS
+                                </a>
+                            </div>
+                    </div>
+                </footer>
+            </article>
+        </div>
+            <div id="gitalk-container"></div>
+            <div id="b3logsolocomments"></div>
+            <div id="vcomment" data-name="function001" data-postId="1721543745774"></div>
+            <div id="relevantArticles"></div>
+            <div id="randomArticles"></div>
+<div class="sidebar-toggle">
+    <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+    <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+    <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+</div>
+
+<aside class="sidebar">
+<ul class="article__toc">
+        <li class="toc__h1">
+            <a href="#toc_h1_0">动态规划</a>
+        </li>
+        <li class="toc__h2">
+            <a href="#toc_h2_1">示例</a>
+        </li>
+        <li class="toc__h3">
+            <a href="#toc_h3_2">斐波那契数列</a>
+        </li>
+        <li class="toc__h3">
+            <a href="#toc_h3_3">322. 零钱兑换</a>
+        </li>
+        <li class="toc__h3">
+            <a href="#toc_h3_4">983. 最低票价</a>
+        </li>
+        <li class="toc__h1">
+            <a href="#toc_h1_5">子序列类型问题</a>
+        </li>
+        <li class="toc__h2">
+            <a href="#toc_h2_6">子序列解题模板：最长回文子序列</a>
+        </li>
+        <li class="toc__h3">
+            <a href="#toc_h3_7">516. 最长回文子序列</a>
+        </li>
+        <li class="toc__h2">
+            <a href="#toc_h2_8">300. 最长递增子序列</a>
+        </li>
+        <li class="toc__h2">
+            <a href="#toc_h2_9">354. 俄罗斯套娃信封问题</a>
+        </li>
+        <li class="toc__h2">
+            <a href="#toc_h2_10">72. 编辑距离</a>
+        </li>
+        <li class="toc__h2">
+            <a href="#toc_h2_11">53. 最大子序和</a>
+        </li>
+        <li class="toc__h2">
+            <a href="#toc_h2_12">1143. 最长公共子序列</a>
+        </li>
+        <li class="toc__h2">
+            <a href="#toc_h2_13">583. 两个字符串的删除操作</a>
+        </li>
+        <li class="toc__h2">
+            <a href="#toc_h2_14">712. 两个字符串的最小ASCII删除和</a>
+        </li>
+        <li class="toc__h1">
+            <a href="#toc_h1_15">0-1背包问题</a>
+        </li>
+        <li class="toc__h2">
+            <a href="#toc_h2_16">416. 分割等和子集</a>
+        </li>
+        <li class="toc__h1">
+            <a href="#toc_h1_17">完全背包问题</a>
+        </li>
+        <li class="toc__h1">
+            <a href="#toc_h1_18">其它题</a>
+        </li>
+        <li class="toc__h2">
+            <a href="#toc_h2_19">数字三角形</a>
+        </li>
+        <li class="toc__h2">
+            <a href="#toc_h2_20">K好数</a>
+        </li>
+        <li class="toc__h2">
+            <a href="#toc_h2_21">剑指 Offer 46. 把数字翻译成字符串</a>
+        </li>
+        <li class="toc__h2">
+            <a href="#toc_h2_22">剑指 Offer 60. n个骰子的点数</a>
+        </li>
+</ul></aside>
+    </div>
+</main>
+<footer class="footer">
+    <div class="wrapper">
+        <div class="fn-clear">
+            <a href="https://gyyspace.github.io">echo洋</a>
+            
+            <div class="fn-right">
+            </div>
+        </div>
+        <div class="fn-clear">
+            &copy; 2024
+            <a href="https://gyyspace.github.io">echo洋</a>
+            
+        </div>
+    </div>
+</footer>
+<div class="back-to-top" onclick="Util.goTop()"></div>
+
+<script>
+  var Label = {
+    speech: true,
+    servePath: "https://gyyspace.github.io",
+    staticServePath: "https://gyyspace.github.io",
+    luteAvailable: false,
+    hljsStyle: 'github',
+    langLabel: "zh_CN",
+    version: "4.4.0",
+    staticSite: true,
+    showCodeBlockLn: false,
+    articleId: "1721543745774",
+  }
+</script>
+<script src="https://gyyspace.github.io/skins/next/js/common.min.js?1721540580809"></script>
+<script type="text/javascript">
+    Label.tocLabel = "目录"
+    Label.siteViewLabel = "站点概览"
+</script>
+
+<script type="text/javascript">
+    Util.addScript('https://gyyspace.github.io/js/page.min.js?1721540580809', 'soloPageScript')
+    var page = new Page({
+        "commentContentCannotEmptyLabel": "评论不能为空",
+        "oId": "1721543745774",
+        "blogHost": "https://gyyspace.github.io",
+        "randomArticles1Label": "随机阅读：",
+        "externalRelevantArticles1Label": "站外相关阅读："
+    });
+    $(document).ready(function () {
+        page.load();
+    page.tips.externalRelevantArticlesDisplayCount = "0";
+        page.loadRandomArticles();
+        page.loadRelevantArticles('1721543745774', '<h4>相关阅读：</h4>');
+    NexT.initArticle()
+    });
+</script>
+</body>
+</html>
+
+<!-- Generated by Latke (https://github.com/88250/latke) in 14ms, 2024/07/21 15:56:20 -->

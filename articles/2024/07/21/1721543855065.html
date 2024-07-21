@@ -1,0 +1,1149 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8"/><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"/><meta name="theme-color" content="#3b3e43"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"/><meta name="apple-mobile-web-app-status-bar-style" content="black"><meta name="format-detection" content="telephone=no"/><title>算法：DFS&BFS - echo洋</title><meta name="description" content="解决一个回溯问题，实际上就是一个决策树的遍历过程**。你只需要思考 3 个问题： 路径：也就是已经做出的选择。 选择列表：也就是你当前可以做的选择。 结束条件：也就是到达决策树底层，无法再做选择的条件。"/><meta property="og:description" content="解决一个回溯问题，实际上就是一个决策树的遍历过程**。你只需要思考 3 个问题： 路径：也就是已经做出的选择。 选择列表：也就是你当前可以做的选择。 结束条件：也就是到达决策树底层，无法再做选择的条件。"/>    <meta name="keywords" content="Solo,Java,博客,开源"/><link rel="dns-prefetch" href="https://gyyspace.github.io"/><link rel="dns-prefetch" href="https://cdn.jsdelivr.net"/><link rel="preconnect" href="https://gyyspace.github.io"><link rel="icon" type="image/png" href="https://b3log.org/images/brand/solo-128.png"/><link rel="apple-touch-icon" href="https://b3log.org/images/brand/solo-128.png"><link rel="shortcut icon" type="image/x-icon" href="https://b3log.org/images/brand/solo-128.png"><meta name="copyright" content="B3log"/><meta http-equiv="Window-target" content="_top"/><meta property="og:locale" content="zh_CN"/><meta property="og:title" content="算法：DFS&BFS - echo洋"/><meta property="og:site_name" content="echo洋"/><meta property="og:url"      content="https://gyyspace.github.io/articles/2024/07/21/1721543855065.html?"/><meta property="og:image" content="https://b3log.org/images/brand/solo-128.png"/><link rel="search" type="application/opensearchdescription+xml" title="算法：DFS&BFS - echo洋" href="/opensearch.xml"><link href="https://gyyspace.github.io/rss.xml" title="RSS" type="application/rss+xml" rel="alternate"/><link rel="manifest" href="https://gyyspace.github.io/manifest.json">        <link rel="canonical" href="https://gyyspace.github.io/articles/2024/07/21/1721543855065.html">        <link rel="stylesheet"
+              href="https://gyyspace.github.io/skins/next/css/base.css?1721540580809"/>
+            <link rel="prev" title="算法：动态规划" href="https://gyyspace.github.io/articles/2024/07/21/1721543745774.html">
+            <link rel="next" title="算法：堆&栈" href="https://gyyspace.github.io/articles/2024/07/21/1721544405263.html">
+    <script src="https://gyyspace.github.io/js/lib/vditor/dist/js/icons/ant.js?v=3.9.7" async="" id="vditorIconScript"></script></head>
+<body>
+<header class="header">
+    <div class="header-line"></div>
+    <div class="fn-clear wrapper">
+        <div class="logo-wrap">
+            <a href="https://gyyspace.github.io" rel="start">
+                <span class="logo-line-before"><i></i></span>
+                <span class="site-title">echo洋</span>
+                <span class="logo-line-after"><i></i></span>
+            </a>
+        </div>
+
+        <div class="site-nav-toggle fn-right"
+             onclick="$('.header-line').toggle();$('nav').children('.menu').slideToggle();">
+            <span class="btn-bar"></span>
+            <span class="btn-bar"></span>
+            <span class="btn-bar"></span>
+        </div>
+
+        <nav>
+            <ul class="menu">
+                    <li class="menu-item">
+                        <a href="/tags/Redis" target="_blank" rel="section">
+                            Redis 的设计与实现
+                        </a>
+                    </li>
+            </ul>
+
+        </nav>
+    </div>
+</header><main class="main">
+    <div class="wrapper">
+        <div class="content">
+            <article class="posts-expand">
+                <header class="post-header">
+                    <h2 class="post-title">
+                        算法：DFS&BFS
+                    </h2>
+                    <div class="post-meta">
+                            <span class="post-time">
+                                    发表于
+                                <time>
+                                    2024-07-21
+                                </time>
+                            </span>
+                        <span class="post-comments-count">
+                                &nbsp; | &nbsp;
+                                <a href="https://gyyspace.github.io/articles/2024/07/21/1721543855065.html#b3logsolocomments">
+                                    <span data-uvstatcmt="1721543855065">0</span> 条评论</a>
+                        </span>
+                        &nbsp; | &nbsp; 热度
+                        <span data-uvstaturl="https://gyyspace.github.io/articles/2024/07/21/1721543855065.html">0</span>°C
+                    </div>
+                </header>
+
+                <div class="post-body post-body--article vditor-reset">
+                    <h1 id="toc_h1_0">回溯算法框架</h1>
+<p><strong>解决一个回溯问题，实际上就是一个决策树的遍历过程</strong>。你只需要思考 3 个问题：</p>
+<ol>
+<li><strong>路径</strong>：也就是已经做出的选择。</li>
+</ol>
+<p><strong>2、选择列表</strong>：也就是你当前可以做的选择。</p>
+<p><strong>3、结束条件</strong>：也就是到达决策树底层，无法再做选择的条件。</p>
+<pre><code>result = []
+def backtrack(路径, 选择列表):
+ &nbsp; &nbsp;if 满足结束条件:
+ &nbsp; &nbsp; &nbsp; &nbsp;result.add(路径)
+ &nbsp; &nbsp; &nbsp; &nbsp;return
+
+ &nbsp; &nbsp;for 选择 in 选择列表:
+ &nbsp; &nbsp; &nbsp; &nbsp;做选择
+ &nbsp; &nbsp; &nbsp; &nbsp;backtrack(路径, 选择列表)
+ &nbsp; &nbsp; &nbsp; &nbsp;撤销选择
+</code></pre>
+<pre><code>    List&lt;List&lt;Integer&gt;&gt; res = new ArrayList&lt;&gt;();
+    public void dfs(路径，选择列表) {
+        if满足条件：
+        res.add(路径)
+        return;
+        for (选择 in 选择路径) {
+            做选择
+            dfs(路径，选择列表)
+            撤销选择
+        }
+    }
+</code></pre>
+<p><strong>其核心就是 for 循环里面的递归，在递归调用之前「做选择」，在递归调用之后「撤销选择」</strong>，特别简单。</p>
+<p><strong>我们只要在递归之前做出选择，在递归之后撤销刚才的选择</strong>，就能正确得到每个节点的选择列表和路径。</p>
+<h2 id="toc_h2_1">全排列</h2>
+<pre><code>List&lt;List&lt;Integer&gt;&gt; res = new LinkedList&lt;&gt;();
+
+/* 主函数，输入一组不重复的数字，返回它们的全排列 */
+List&lt;List&lt;Integer&gt;&gt; permute(int[] nums) {
+ &nbsp; &nbsp;// 记录「路径」
+ &nbsp; &nbsp;LinkedList&lt;Integer&gt; track = new LinkedList&lt;&gt;();
+ &nbsp; &nbsp;backtrack(nums, track);
+ &nbsp; &nbsp;return res;
+}
+
+// 路径：记录在 track 中
+// 选择列表：nums 中不存在于 track 的那些元素
+// 结束条件：nums 中的元素全都在 track 中出现
+void backtrack(int[] nums, LinkedList&lt;Integer&gt; track) {
+ &nbsp; &nbsp;// 触发结束条件
+ &nbsp; &nbsp;if (track.size() == nums.length) {
+ &nbsp; &nbsp; &nbsp; &nbsp;res.add(new LinkedList(track));
+ &nbsp; &nbsp; &nbsp; &nbsp;return;
+ &nbsp;  }
+
+ &nbsp; &nbsp;for (int i = 0; i &lt; nums.length; i++) {
+ &nbsp; &nbsp; &nbsp; &nbsp;// 排除不合法的选择
+ &nbsp; &nbsp; &nbsp; &nbsp;if (track.contains(nums[i]))
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;continue;
+ &nbsp; &nbsp; &nbsp; &nbsp;// 做选择
+ &nbsp; &nbsp; &nbsp; &nbsp;track.add(nums[i]);
+ &nbsp; &nbsp; &nbsp; &nbsp;// 进入下一层决策树
+ &nbsp; &nbsp; &nbsp; &nbsp;backtrack(nums, track);
+ &nbsp; &nbsp; &nbsp; &nbsp;// 取消选择
+ &nbsp; &nbsp; &nbsp; &nbsp;track.removeLast();
+ &nbsp;  }
+}
+</code></pre>
+<p><strong>通过全排列问题详解了回溯算法的底层原理。当然，这个算法解决全排列不是很高效，因为对链表使用</strong><code>contains</code>方法需要 O(N) 的时间复杂度。有更好的方法通过交换元素达到目的，</p>
+<h2 id="toc_h2_2">全排列去重</h2>
+<pre><code>public static void permutation(char[] chars , int index , List&lt;String&gt; res) {
+        if (index == chars.length - 1) {
+            String string = new String(chars);
+            res.add(string);
+        }else {
+            for (int i = index; i &lt; chars.length; i++) {
+                //去重
+                if (isSwap(chars, index, i)) {
+                    swap(chars, index, i);
+
+                    permutation(chars, index+1, res);
+                    //回溯,恢复到初始状态
+                    swap(chars, index, i);
+                }
+            }
+        }
+    }
+
+    public static boolean isSwap(char[] chars, int begin, int end) {
+        for (int i = begin; i &lt; end; i++) {
+            if (chars[i] == chars[end]) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public static void swap(char[] chars, int i, int j) {
+        char temp = chars[j];
+        chars[j] = chars[i];
+        chars[i] = temp;
+    }
+
+</code></pre>
+<h2 id="toc_h2_3"><a href="https://leetcode-cn.com/problems/sudoku-solver/" target="_blank">37. 解数独</a></h2>
+<pre><code>public static void solveSudoku(char[][] board) {
+        //用于记录行上的某个数是否存在
+        boolean[][] row = new boolean[9][9];
+        //用于记录列上的某个数是否存在
+        boolean[][] col = new boolean[9][9];
+        //用于记录九宫格上的某个数是否存在
+        boolean[][] block = new boolean[9][9];
+
+        for (int i = 0; i &lt; 9; i++) {
+            for (int j = 0; j &lt; 9; j++) {
+                if (board[i][j] != '.') {
+                    int num = board[i][j] - '1';
+                    row[i][num] = true;
+                    col[j][num] = true;
+                    //第几个九宫格 // blockIndex = i / 3 * 3 + j / 3，取整
+                    int blockindex = i/3*3 + j/3;
+                    block[blockindex][num] = true;
+                }
+            }
+        }
+        dfs(board,row, col, block, 0, 0);
+    }
+
+    //路径：已经填过的位置
+    //选择列表：三个boolean[][]
+    //结束条件：遍历一遍
+    public static boolean dfs(char[][] board,boolean[][] row, boolean[][] col, boolean[][] block, int i,int j) {
+        //判断，是否是空格 &amp;&amp; i，j，是否越界
+        while (board[i][j] != '.') {
+            if (++j &gt;= 9) {
+                //要换到下一行
+                i++;
+                j = 0;
+            }
+            //结束
+            if (i &gt;= 9) {
+                return true;
+            }
+        }
+        for (int num = 0; num &lt; 9; num++) {
+            //判断该数字是否已经存在
+            if (!row[i][num] &amp;&amp; !col[j][num] &amp;&amp; !block[i/3*3+j/3][num]) {
+                board[i][j] = (char) (num + '1');
+                row[i][num] = true;
+                col[j][num] = true;
+                block[i/3*3+j/3][num] = true;
+                if (dfs(board, row, col, block, i, j)) {
+                    return true;
+                }
+                //回溯
+                board[i][j] = '.';
+                row[i][num] = false;
+                col[j][num] = false;
+                block[i/3*3+j/3][num] = false;
+            }
+        }
+        return false;
+    }
+   
+   
+</code></pre>
+<h2 id="toc_h2_4"><a href="https://leetcode-cn.com/problems/n-queens/" target="_blank">51. N 皇后</a></h2>
+<pre><code>static List&lt;List&lt;String&gt;&gt; res = new LinkedList&lt;&gt;();
+
+    /**
+     * 在同一行上，同一列上，同一条斜线上不能有两个
+     */
+    public static List&lt;List&lt;String&gt;&gt; solveNQueens(int n) {
+        //初始化一个棋盘
+        char[][] chars = new char[n][n];
+        for (int i = 0; i &lt; chars.length; i++) {
+            for (int j = 0; j &lt; chars.length; j++) {
+                chars[i][j] = '.';
+            }
+        }
+        dfs(chars, 0);
+        return res;
+ &nbsp;  }
+
+    //路径：填过的棋盘
+    //选择列表：剩余的空位置棋盘
+    //结束条件：遍历一遍棋盘
+    public static void dfs(char[][] chars, int row) {
+        if (row == chars.length) {
+            List&lt;String&gt; list = print(chars);
+            res.add(new ArrayList&lt;&gt;(list));
+            return;
+        }
+        int len = chars.length;
+        for (int i = 0; i &lt; len; i++) {
+            //检查是否重复
+            if (isValid(chars, row, i)) {
+                chars[row][i] = 'Q';
+                dfs(chars, row+1);
+                chars[row][i] = '.';
+            }
+        }
+    }
+    /**
+     * 注意：这里只判断了上部分的。
+     * @param chars
+     * @param row
+     * @param col
+     * @return
+     */
+    public static boolean isValid(char[][] chars, int row, int col) {
+        //检查这一列上是否重复
+        int len &nbsp;= chars.length; 
+        for (int j = 0; j &lt; len; j++) {
+            if (chars[j][col] == 'Q') {
+                return false;
+            }
+        }
+        //判断左上方
+        for (int i = row-1,j = col-1; i&gt;=0&amp;&amp;j&gt;=0;i--,j--) {
+            if (chars[i][j] == 'Q') {
+                return false;
+            }
+        }
+        //判断右上方
+        for (int i = row-1,j=col+1; i&gt;=0&amp;&amp;j&lt;len;i--,j++) {
+            if (chars[i][j] &nbsp;== 'Q') {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public static List&lt;String&gt; print(char[][] chars) {
+        List&lt;String&gt; list = new ArrayList&lt;&gt;();
+        for (int i = 0; i &lt; chars.length; i++) {
+            list.add(new String(chars[i]));
+        }
+        return list;
+    }
+
+</code></pre>
+<h2 id="toc_h2_5"><a href="https://leetcode-cn.com/problems/subsets/" target="_blank">78. 子集</a></h2>
+<pre><code>List&lt;List&lt;Integer&gt;&gt; res = new ArrayList&lt;&gt;(); 
+    public &nbsp;List&lt;List&lt;Integer&gt;&gt; subsets(int[] nums) {
+        LinkedList&lt;Integer&gt; list = new LinkedList&lt;&gt;();
+        dfs(0, nums, list);
+        return res;
+ &nbsp;  }
+   
+    //路径：
+    public &nbsp;void dfs(int index, int[] nums, LinkedList&lt;Integer&gt; list) {
+        res.add(new ArrayList&lt;&gt;(list));
+        for (int i = index; i &lt; nums.length; i++) {
+            list.addLast(nums[i]);
+            dfs(i+1, nums, list);
+            list.removeLast();
+        }
+    }
+</code></pre>
+<h2 id="toc_h2_6"><a href="https://leetcode-cn.com/problems/combinations/" target="_blank">77. 组合</a></h2>
+<pre><code>List&lt;List&lt;Integer&gt;&gt; res = new ArrayList&lt;&gt;(); 
+    public List&lt;List&lt;Integer&gt;&gt; combine(int n, int k) {
+        int[] nums = new int[n];
+        for (int i = 0; i &lt; nums.length; i++) {
+            nums[i] = i+1;
+        }
+ &nbsp; &nbsp; &nbsp; &nbsp;List&lt;Integer&gt; list = new ArrayList&lt;&gt;();
+        dfs(nums, k,0, list);
+        return res;
+    }
+
+
+    public void dfs(int[] nums,int k,int start, List&lt;Integer&gt; list) {
+        if (list.size() == k) {
+            res.add(new ArrayList&lt;&gt;(list));
+            return;
+        }
+        for (int i = start; i &lt; nums.length; i++) {
+            list.add(nums[i]);
+            dfs(nums, k, start+1, list);
+            list.remove(list.size()-1);
+        }
+    }
+</code></pre>
+<p>**子集问题可以利用数学归纳思想，假设已知一个规模较小的问题的结果，思考如何推导出原问题的结果。也可以用回溯算法，要用 **<code>start</code>参数排除已选择的数字。</p>
+<p>**组合问题利用的是回溯思想，结果可以表示成树结构，我们只要套用回溯算法模板即可，关键点在于要用一个 **<code>start</code> 排除已经选择过的数字。</p>
+<p>**排列问题是回溯思想，也可以表示成树结构套用算法模板，不同之处在于使用 **<code>contains</code> 方法排除已经选择的数字，</p>
+<h2 id="toc_h2_7"><a href="https://leetcode-cn.com/problems/generate-parentheses/" target="_blank">22. 括号生成</a></h2>
+<p>**我的代码：先全排列，然后用栈判断是否是合法的括号。**<strong>麻烦</strong></p>
+<pre><code>class Solution {
+ &nbsp; &nbsp; List&lt;String&gt; res = new ArrayList&lt;&gt;();
+    public &nbsp;List&lt;String&gt; generateParenthesis(int n) {
+        char[] chars = new char[n*2];
+        for (int i = 0; i &lt; chars.length; i++) {
+            if (i % 2 == 0) {
+                chars[i] = '(';
+            }else {
+                chars[i] = ')';
+            }
+        }
+        //List&lt;Character&gt; list = new ArrayList&lt;&gt;();
+        dfs(chars, 0);
+        return res;
+ &nbsp;  }
+
+    public &nbsp;void dfs(char[] chars,int index) {
+        if (chars.length == index) {
+            Stack&lt;Character&gt; stack = new Stack&lt;&gt;();
+            String str = "";
+            for (Character c : chars) {
+                str += c+"";
+                if (c == '(') {
+                    stack.push(c);
+                }else {
+                    if (stack.empty()) {
+                        return;
+                    }else {
+                        stack.pop();
+                    }
+                }
+            }
+            res.add(str);
+            return;
+        }
+        for (int i = index; i &lt; chars.length; i++) {
+            if (isSwap(chars, index, i)) {
+                swap(chars, index, i);
+                dfs(chars, index+1);
+                swap(chars, index, i);
+            }
+        }
+    }
+
+    public boolean isSwap(char[] chars, int start,int end) {
+        for (int i = start; i &lt;end; i++) {
+            if (chars[end] == chars[i]) {
+                return false;
+            }
+        }
+        return true;
+    }
+    public void swap(char[] chars, int i, int j) {
+        char temp = chars[i];
+        chars[i] = chars[j];
+        chars[j] = temp;
+    }
+
+}
+</code></pre>
+<p><strong>第二种解法：</strong></p>
+<pre><code> List&lt;String&gt; res = new ArrayList&lt;&gt;();
+    public List&lt;String&gt; generateParenthesis(int n) {
+        Stack&lt;Character&gt; stack = new Stack&lt;&gt;();
+        dfs(n, n, stack);
+        return res;
+ &nbsp;  }
+
+    public void dfs(int left, int right, Stack&lt;Character&gt; stack) {
+        if (right &lt; left) {
+            return;
+        }
+        if (left &lt; 0 || right &lt;0) {
+            return;
+        }
+        if (left == 0 &amp;&amp; right == 0) {
+            String str = "";
+            for (Character character : stack) {
+                str+=character;
+            }
+            res.add(str);
+            return;
+        }
+        stack.push('(');
+        dfs(left-1, right, stack);
+        stack.pop();
+
+        stack.push(')');
+        dfs(left, right-1, stack);
+        stack.pop();
+    }
+</code></pre>
+<h2 id="toc_h2_8"><a href="https://leetcode-cn.com/problems/surrounded-regions/" target="_blank">130. 被围绕的区域</a></h2>
+<blockquote>
+<p><strong>先把边界与边界相连的区域，O换成-，然后遍历二维数组，把O-&gt;X ,- 换回O；</strong></p>
+</blockquote>
+<pre><code>class Solution {
+ &nbsp;public void solve(char[][] board) {
+        //上边界
+        for (int i = 0; i &lt; board[0].length; i++) {
+            dfs(board, 0, i);
+        }
+        //下边界
+        for (int i = 0; i &lt; board[0].length; i++) {
+            dfs(board, board.length-1, i);
+        }
+        //左边界
+        for (int i = 0; i &lt; board.length; i++) {
+            dfs(board, i, 0);
+        }
+        //右边界
+        for (int i = 0; i &lt; board.length; i++) {
+            dfs(board, i, board[i].length-1);
+        }
+
+        for (int i = 0; i &lt; board.length; i++) {
+            for (int j = 0; j &lt; board[i].length; j++) {
+                if (board[i][j] == 'O') {
+                    board[i][j] = 'X';
+                }
+                if (board[i][j] == '-') {
+                    board[i][j] = 'O';
+                }
+            }
+        }
+
+ &nbsp;  }
+
+    public void dfs(char[][] board, int i, int j) {
+         if(i&gt;=0&amp;&amp;j&gt;=0&amp;&amp;i&lt;board.length&amp;&amp;j&lt;board[0].length&amp;&amp;board[i][j]=='O') 
+ &nbsp; &nbsp; &nbsp;  {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;board[i][j]='-';
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;dfs(board,i+1,j);
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;dfs(board,i-1,j);
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;dfs(board,i,j+1);
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;dfs(board,i,j-1);
+ &nbsp; &nbsp; &nbsp;  }
+    }
+
+
+}
+</code></pre>
+<h2 id="toc_h2_9"><a href="https://leetcode-cn.com/problems/ju-zhen-zhong-de-lu-jing-lcof/" target="_blank">剑指 Offer 12. 矩阵中的路径</a></h2>
+<blockquote>
+<ul>
+<li><strong>dfs + 回溯；</strong></li>
+<li><strong>使用二维布尔数组记录之前的位置是否已经被访问过，如果已经被访问过的话，则在 dfs 的过程中，直接 return false 即可。也就是说，此路已经不通了；</strong></li>
+<li><strong>如果当前遍历到的字符不等于 board</strong><a href="#">i</a> 位置上的字符，那么说明此路也是不通的，因此返回 false；</li>
+<li><strong>至于递归结束的条件：如果指针 start 能够来到 word 的最后一个字符，那么说明能够在矩阵 board 中找到一条路径，此时返回 true；</strong></li>
+<li><strong>在遍历到当前 board</strong><a href="#">i</a> 的时候，首先应将该位置的 visited<a href="#">i</a> 设置为 true，表明访问过；</li>
+<li><strong>然后，递归地去 board</strong><a href="#">i</a> 的上下左右四个方向去找，剩下的路径；</li>
+<li><strong>在 dfs 的过程当中，如果某条路已经不通了，那么那么需要回溯，也就是将 visited</strong><a href="#">i</a> 位置的布尔值重新赋值为 fasle；</li>
+<li><strong>最后，返回 ans 即可。</strong></li>
+</ul>
+</blockquote>
+<pre><code>class Solution {
+ &nbsp; &nbsp;public boolean exist(char[][] board, String word) {
+ &nbsp; &nbsp; &nbsp; &nbsp;if (board == null || board.length == 0 || board[0].length == 0) {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;return false;
+ &nbsp; &nbsp; &nbsp;  }
+
+ &nbsp; &nbsp; &nbsp; &nbsp;char[] chars = word.toCharArray();
+ &nbsp; &nbsp; &nbsp; &nbsp;boolean[][] visited = new boolean[board.length][board[0].length];
+ &nbsp; &nbsp; &nbsp; &nbsp;for (int i = 0; i &lt; board.length; i++) {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;for (int j = 0; j &lt; board[0].length; j++) {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;// 从 (0, 0) 点开始进行 dfs 操作，不断地去找，
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;// 如果以 (0, 0) 点没有对应的路径的话，那么就从 (0, 1) 点开始去找
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;if (dfs(board, chars, visited, i, j, 0)) {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;return true;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp; &nbsp;return false;
+ &nbsp;  }
+
+ &nbsp; &nbsp;private boolean dfs(char[][] board, char[] chars, boolean[][] visited, int i, int j, int start) {
+ &nbsp; &nbsp; &nbsp; &nbsp;if (i &lt; 0 || i &gt;= board.length || j &lt; 0 || j &gt;= board[0].length 
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;|| chars[start] != board[i][j] || visited[i][j]) {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;return false;
+ &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp; &nbsp;if (start == chars.length - 1) {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;return true; &nbsp;
+ &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp; &nbsp;visited[i][j] = true;
+ &nbsp; &nbsp; &nbsp; &nbsp;boolean ans = false;
+ &nbsp; &nbsp; &nbsp; &nbsp;ans = dfs(board, chars, visited, i + 1, j, start + 1) 
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; || dfs(board, chars, visited, i - 1, j, start + 1)
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; || dfs(board, chars, visited, i, j + 1, start + 1)
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; || dfs(board, chars, visited, i, j - 1, start + 1);
+ &nbsp; &nbsp; &nbsp; &nbsp;visited[i][j] = false;
+ &nbsp; &nbsp; &nbsp; &nbsp;return ans;
+ &nbsp;  }
+}
+</code></pre>
+<h1 id="toc_h1_10">BFS算法框架</h1>
+<pre><code>// 计算从起点 start 到终点 target 的最近距离
+int BFS(Node start, Node target) {
+ &nbsp; &nbsp;Queue&lt;Node&gt; q; // 核心数据结构
+ &nbsp; &nbsp;Set&lt;Node&gt; visited; // 避免走回头路
+
+ &nbsp; &nbsp;q.offer(start); // 将起点加入队列
+ &nbsp; &nbsp;visited.add(start);
+ &nbsp; &nbsp;int step = 0; // 记录扩散的步数
+
+ &nbsp; &nbsp;while (q not empty) {
+ &nbsp; &nbsp; &nbsp; &nbsp;int sz = q.size();
+ &nbsp; &nbsp; &nbsp; &nbsp;/* 将当前队列中的所有节点向四周扩散 */
+ &nbsp; &nbsp; &nbsp; &nbsp;for (int i = 0; i &lt; sz; i++) {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;Node cur = q.poll();
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;/* 划重点：这里判断是否到达终点 */
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;if (cur is target)
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;return step;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;/* 将 cur 的相邻节点加入队列 */
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;for (Node x : cur.adj())
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;if (x not in visited) {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;q.offer(x);
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;visited.add(x);
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp; &nbsp;/* 划重点：更新步数在这里 */
+ &nbsp; &nbsp; &nbsp; &nbsp;step++;
+ &nbsp;  }
+} 
+</code></pre>
+<h2 id="toc_h2_11"><a href="https://leetcode-cn.com/problems/minimum-depth-of-binary-tree/" target="_blank">111. 二叉树的最小深度</a></h2>
+<pre><code> public int minDepth(TreeNode root) {
+ &nbsp; &nbsp; &nbsp; if (root == null) {
+            return 0;
+        }
+        Queue&lt;TreeNode&gt; queue = new LinkedList&lt;&gt;();
+        //Set&lt;TreeNode&gt; set = new HashSet&lt;&gt;();
+        queue.offer(root);
+        //set.add(root);
+        int step = 1;
+        while (!queue.isEmpty()) {
+            int size = queue.size();
+            for (int i = 0; i &lt; size; i++) {
+                TreeNode node = queue.poll();
+                if (node.left == null &amp;&amp; node.right == null) {
+                    return step;
+                }
+                if (node.left != null) {
+                    queue.offer(node.left);
+                }
+                if (node.right != null) {
+                    queue.offer(node.right);
+                }
+            }
+            step++;
+        }
+        return step;
+ &nbsp;  }
+</code></pre>
+<h2 id="toc_h2_12"><a href="https://leetcode-cn.com/problems/open-the-lock/" target="_blank">752. 打开转盘锁</a></h2>
+<p><strong>deadends：中的数字是不可以进行转动的。</strong></p>
+<pre><code>class Solution {
+ &nbsp; &nbsp;public int openLock(String[] deadends, String target) {
+     &nbsp; &nbsp;Set&lt;String&gt; deSet = new HashSet&lt;&gt;();
+     &nbsp; &nbsp;for (String string : deadends) {
+            deSet.add(string);
+        }
+     &nbsp; &nbsp;Set&lt;String&gt; visited = new HashSet&lt;&gt;();
+     &nbsp; &nbsp;Queue&lt;String&gt; queue = new LinkedList&lt;&gt;();
+     &nbsp; &nbsp;//记录，排除重复的值
+     &nbsp; &nbsp;visited.add("0000");
+     &nbsp; &nbsp;queue.offer("0000");
+
+     &nbsp; &nbsp;int step = 0;
+     &nbsp; &nbsp;while (!queue.isEmpty()) {
+     &nbsp;      int size = queue.size();
+            for (int i = 0; i &lt; size; i++) {
+                String pollString = queue.poll();
+                //被锁的，不可以在这个基础上转动
+                if (deSet.contains(pollString)) {
+                    continue;
+                }
+                //出口
+                if (pollString.equals(target)) {
+                    return step;
+                }
+                for (int j = 0; j &lt; 4; j++) {
+                    String s1 = plusOne(pollString, j);
+                    if (!visited.contains(s1)) {
+                        queue.offer(s1);
+                        visited.add(s1);
+                    }
+                    String s2 = minusOne(pollString, j);
+                    if (!visited.contains(s2)) {
+                        queue.offer(s2);
+                        visited.add(s2);
+                    }
+                }
+            }
+            step++;
+        }
+     &nbsp; &nbsp;return -1;
+    }
+
+    public String plusOne(String cur, int pos) {
+     &nbsp; &nbsp;char[] c = cur.toCharArray();
+     &nbsp; &nbsp;if (c[pos] == '9') {
+            c[pos] = '0';
+        }else {
+            c[pos] +=1;
+        }
+     &nbsp; &nbsp;return new String(c);
+    }
+
+    public String minusOne(String cur, int pos) {
+        char[] c = cur.toCharArray();
+     &nbsp; &nbsp;if (c[pos] == '0') {
+            c[pos] = '9';
+        }else {
+            c[pos] -=1;
+        }
+     &nbsp; &nbsp;return new String(c);
+    }
+}
+</code></pre>
+<h3 id="toc_h3_13">双向BFS解法：</h3>
+<blockquote>
+<p><strong>对q1进行扩散，扩散的结果保存到temp，然后q1 = q2,q2= temp,下一轮就相当于对q2进行扩散，双向。就是轮换着进行扩散。</strong></p>
+</blockquote>
+<pre><code>public int openLock(String[] deadends, String target) {
+        Set&lt;String&gt; q1 = new HashSet&lt;&gt;();
+        Set&lt;String&gt; q2 = new HashSet&lt;&gt;();
+        Set&lt;String&gt; valid = new HashSet&lt;&gt;();
+        for (String string : deadends) {
+            valid.add(string);
+        }
+        if (valid.contains("0000")) {
+            return -1;
+        }
+        // 初始化
+        q1.add("0000");
+        q2.add(target);
+        int step = 0;
+        while (!q1.isEmpty() &amp;&amp; !q2.isEmpty()) {
+            // 记录扩散结果
+            Set&lt;String&gt; temp = new HashSet&lt;&gt;();
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;//对q1进行扩散，扩散的结果保存到temp，然后q1 = q2,q2= temp,下一轮就相当于对q2进行扩散，双向。
+            for (String str : q1) {
+                if (q2.contains(str)) {
+                    return step;
+                }
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;valid.add(str);
+                for (int i = 0; i &lt; 4; i++) {
+                    String butString = setRotateBut(str, i);
+                    if (!valid.contains(butString)) {
+                        temp.add(butString);
+                    }
+                    String topString = setRotateTop(str, i);
+                    if (!valid.contains(topString)) {
+                        temp.add(topString);
+                    }
+                }
+            }
+            step ++;
+            q1 = q2;
+            q2 = temp;
+        }
+         return -1;
+     }
+    //0-1-9-0旋转
+     public static String setRotateTop(String str, int j) {
+         char[] chars= str.toCharArray();
+
+            if (chars[j] == '9') {
+                chars[j] = '0';
+            }else {
+                chars[j] = (char)(chars[j] +1);
+            }
+
+         return new String(chars);
+     }
+     //0-9-8-0
+     public static String setRotateBut(String str, int j) {
+         char[] chars= str.toCharArray();
+
+            if (chars[j] == '0') {
+                chars[j] = '9';
+            }else {
+                chars[j] = (char)(chars[j] -1);
+            }
+         return new String(chars);
+     }
+</code></pre>
+<h2 id="toc_h2_14"><a href="https://leetcode-cn.com/problems/sliding-puzzle/" target="_blank">773. 滑动谜题</a></h2>
+<p><strong>我的代码，双向BFS，用字符串进行操作。时间复杂度高。</strong></p>
+<pre><code>public static int slidingPuzzle(int[][] board) {
+		Set&lt;String&gt; q1 = new HashSet&lt;&gt;();
+		Set&lt;String&gt; q2 = new HashSet&lt;&gt;();
+		Set&lt;String&gt; valid = new HashSet&lt;&gt;();
+
+		q1.add(serializationRe(board));
+		q2.add("123450");
+		int step = 0; 
+
+		while (!q1.isEmpty() &amp;&amp; !q2.isEmpty()) {
+			Set&lt;String&gt; temp = new HashSet&lt;&gt;();
+			for (String str : q1) {
+				if (q2.contains(str)) {
+					return step;
+				}
+				valid.add(str);
+				String[] arrStrings = serialization(str);
+				for (int i = 0; i &lt; arrStrings.length; i++) {
+					if (arrStrings[i] != null &amp;&amp; !valid.contains(arrStrings[i])) {
+						temp.add(arrStrings[i]);
+					}
+				}
+			}
+			step++;
+			q1 = q2;
+			q2 = temp;
+		}
+		return -1;
+    }
+
+	public static String[] serialization(String str){
+		int[][] arr = new int[2][3];
+		int n = 0;
+		int m = 0;
+		for (int i = 0; i &lt; str.length(); i++) {
+			if (i&lt;3) {
+				if (str.charAt(i) == '0') {
+					m = i;
+				}
+				arr[0][i] = str.charAt(i) - '0';
+			}else {
+				if (str.charAt(i) == '0') {
+					n = 1;
+					m = i-3;
+				}
+				arr[1][i-3] = str.charAt(i) - '0';
+			}
+		}
+		String[] strings = new String[3];
+		int index = 0;
+		if (m-1&gt;=0) {
+			swap(arr[n], m-1, m);
+			strings[index++] = serializationRe(arr);
+			swap(arr[n], m-1, m);
+		}
+		if (m+1&lt;3) {
+			swap(arr[n], m+1, m);
+			strings[index++] = serializationRe(arr);
+			swap(arr[n], m+1, m);
+		}
+		if (n == 0) {
+			int temp = arr[n][m];
+			arr[n][m] = arr[n+1][m];
+			arr[n+1][m] = temp;
+			strings[index] = serializationRe(arr);
+		}else {
+			int temp = arr[n][m];
+			arr[n][m] = arr[n-1][m];
+			arr[n-1][m] = temp;
+			strings[index] = serializationRe(arr);
+		}
+		return strings;
+	}
+
+	public static void swap(int[] arr, int i, int j) {
+		int temp = arr[i];
+		arr[i] = arr[j];
+		arr[j] = temp;
+	}
+
+	public static String serializationRe(int[][] board){
+		String string = "";
+		for (int i = 0; i &lt; board.length; i++) {
+			for (int j = 0; j &lt; board[i].length; j++) {
+				string+=board[i][j];
+			}
+		}
+		return string;
+	}
+
+</code></pre>
+<p><strong>优化：也是转为字符串处理，但是记录一下每个位置为0时可以做交换的位置，省去了去找位置的步骤，用字符串可以交换，避免多次转换。</strong></p>
+<pre><code>class Solution {
+public:
+    int slidingPuzzle(vector&lt;vector&lt;int&gt;&gt;&amp; board) {
+    int m = 2, n = 3;
+    string start = "";
+    string target = "123450";
+    // 将 2x3 的数组转化成字符串
+    for (int i = 0; i &lt; m; i++) {
+        for (int j = 0; j &lt; n; j++) {
+            start.push_back(board[i][j] + '0');
+        }
+    }
+    // 记录一维字符串的相邻索引
+    vector&lt;vector&lt;int&gt;&gt; neighbor = {
+        { 1, 3 },
+        { 0, 4, 2 },
+        { 1, 5 },
+        { 0, 4 },
+        { 3, 1, 5 },
+        { 4, 2 }
+    };
+
+    /******* BFS 算法框架开始 *******/
+    queue&lt;string&gt; q;
+    unordered_set&lt;string&gt; visited;
+    q.push(start);
+    visited.insert(start);
+
+    int step = 0;
+    while (!q.empty()) {
+        int sz = q.size();
+        for (int i = 0; i &lt; sz; i++) {
+            string cur = q.front(); q.pop();
+            // 判断是否达到目标局面
+            if (target == cur) {
+                return step;
+            }
+            // 找到数字 0 的索引
+            int idx = 0;
+            for (; cur[idx] != '0'; idx++);
+            // 将数字 0 和相邻的数字交换位置
+            for (int adj : neighbor[idx]) {
+                string new_board = cur;
+                swap(new_board[adj], new_board[idx]);
+                // 防止走回头路
+                if (!visited.count(new_board)) {
+                    q.push(new_board);
+                    visited.insert(new_board);
+                }
+            }
+        }
+        step++;
+    }
+    return -1;
+    /******* BFS 算法框架结束 *******/
+}
+};
+</code></pre>
+<h2 id="toc_h2_15">蓝桥杯国赛javaB组---B扩散</h2>
+<p><img src="https://b3logfile.com/file/2021/05/image-51bc30eb.png?imageView2/2/w/1280/format/jpg/interlace/1/q/100" alt=""></p>
+<p>**答案：**<strong>20312088</strong></p>
+<pre><code>public static void test() {
+		boolean[][] bss = new boolean[10000][10000];
+		bss[3000][3000] = true;
+		bss[5020][3011] = true;
+		bss[3011][3014] = true;
+		bss[5000][5000] = true;
+
+		Queue&lt;String&gt; queue = new LinkedList&lt;&gt;();
+		queue.add("3000,3000");
+		queue.add("5020,3011");
+		queue.add("3011,3014");
+		queue.add("5000,5000");
+
+		for (int i = 0; i &lt; 2020; i++) {
+			int size = queue.size();
+			for (int j = 0; j &lt; size; j++) {
+				String str = queue.poll();
+				String[] arr = str.split(",");
+				int x = Integer.parseInt(arr[0]);
+				int y = Integer.parseInt(arr[1]);
+				if (!bss[x-1][y]) {
+					bss[x-1][y] = true;
+					queue.add((x-1)+","+y);
+				}
+				if (!bss[x+1][y]) {
+					bss[x+1][y] = true;
+					queue.add((x+1)+","+y);
+				}
+				if (!bss[x][y-1]) {
+					bss[x][y-1] = true;
+					queue.add(x+","+(y-1));
+				}
+				if (!bss[x][y+1]) {
+					bss[x][y+1] = true;
+					queue.add(x+","+(y+1));
+				}
+			}
+		}
+
+		long count = 0;
+
+		for (int i = 0; i &lt; bss.length; i++) {
+			for (int j = 0; j &lt; bss[i].length; j++) {
+				if (bss[i][j]) {
+					count++;
+				}
+			}
+		}
+		System.out.println(count);
+	}
+
+
+</code></pre>
+<h2 id="toc_h2_16">蓝桥杯国赛javaB组---E玩具蛇</h2>
+<p><img src="https://b3logfile.com/file/2021/05/image-26fab12c.png?imageView2/2/w/1280/format/jpg/interlace/1/q/100" alt=""></p>
+<pre><code>public static void test() {
+		for (int i = 0; i &lt; 4; i++) {
+			for (int j = 0; j &lt; 4; j++) {
+				bbs[i][j] = true;
+				dfs(i, j, 1);
+				bbs[i][j] = false;
+			}
+		}
+		System.out.println(s);
+	}
+	static int s = 0;
+	static boolean[][] bbs = new boolean[4][4];
+
+	public static void dfs(int i, int j,int count) {
+		System.out.println(count);
+		if (count==16) {
+			s++;
+			return;
+		}
+		if (i+1&lt;4 &amp;&amp; !bbs[i+1][j]) {
+			bbs[i+1][j] = true;
+			dfs(i+1, j,count+1);
+			bbs[i+1][j] = false;
+		}
+		if (j+1&lt;4&amp;&amp; !bbs[i][j+1]) {
+			bbs[i][j+1] = true;
+			dfs(i, j+1,count+1);
+			bbs[i][j+1] = false;
+		}
+		if (i-1&gt;=0&amp;&amp; !bbs[i-1][j]) {
+			bbs[i-1][j] = true;
+			dfs(i-1, j,count+1);
+			bbs[i-1][j] = false;
+		}
+		if (j-1&gt;=0&amp;&amp; !bbs[i][j-1]) {
+			bbs[i][j-1] = true;
+			dfs(i, j-1,count+1);
+			bbs[i][j-1] = false;
+		}
+	}
+</code></pre>
+                        <div>
+                            <hr>
+
+标题：算法：DFS&BFS<br>
+作者：<a href="https://gyyspace.github.io" target="_blank">function001</a><br>
+地址：<a href="https://gyyspace.github.io/articles/2024/07/21/1721543855065.html" target="_blank">https://gyyspace.github.io/articles/2024/07/21/1721543855065.html</a><br>
+
+<!-- 签名档内可使用 HTML、JavaScript -->
+<br>
+                        </div>
+                </div>
+                <footer>
+                    <div class="post-tags">
+                            <a rel="tag" href="https://gyyspace.github.io/tags/%E7%AE%97%E6%B3%95">
+                                算法</a>
+                            <a rel="tag" href="https://gyyspace.github.io/tags/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84">
+                                数据结构</a>
+                    </div>
+                    <div class="post-nav fn-clear">
+                            <div class="post-nav-prev post-nav-item fn-right">
+                                <a href="https://gyyspace.github.io/articles/2024/07/21/1721543745774.html" rel="prev"
+                                   title="算法：动态规划">
+                                    算法：动态规划 >
+                                </a>
+                            </div>
+                            <div class="post-nav-next post-nav-item fn-left">
+                                <a href="https://gyyspace.github.io/articles/2024/07/21/1721544405263.html" rel="next" title="算法：堆&栈">
+                                    < 算法：堆&栈
+                                </a>
+                            </div>
+                    </div>
+                </footer>
+            </article>
+        </div>
+            <div id="gitalk-container"></div>
+            <div id="b3logsolocomments"></div>
+            <div id="vcomment" data-name="function001" data-postId="1721543855065"></div>
+            <div id="relevantArticles"></div>
+            <div id="randomArticles"></div>
+<div class="sidebar-toggle">
+    <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+    <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+    <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+</div>
+
+<aside class="sidebar">
+<ul class="article__toc">
+        <li class="toc__h1">
+            <a href="#toc_h1_0">回溯算法框架</a>
+        </li>
+        <li class="toc__h2">
+            <a href="#toc_h2_1">全排列</a>
+        </li>
+        <li class="toc__h2">
+            <a href="#toc_h2_2">全排列去重</a>
+        </li>
+        <li class="toc__h2">
+            <a href="#toc_h2_3">37. 解数独</a>
+        </li>
+        <li class="toc__h2">
+            <a href="#toc_h2_4">51. N 皇后</a>
+        </li>
+        <li class="toc__h2">
+            <a href="#toc_h2_5">78. 子集</a>
+        </li>
+        <li class="toc__h2">
+            <a href="#toc_h2_6">77. 组合</a>
+        </li>
+        <li class="toc__h2">
+            <a href="#toc_h2_7">22. 括号生成</a>
+        </li>
+        <li class="toc__h2">
+            <a href="#toc_h2_8">130. 被围绕的区域</a>
+        </li>
+        <li class="toc__h2">
+            <a href="#toc_h2_9">剑指 Offer 12. 矩阵中的路径</a>
+        </li>
+        <li class="toc__h1">
+            <a href="#toc_h1_10">BFS算法框架</a>
+        </li>
+        <li class="toc__h2">
+            <a href="#toc_h2_11">111. 二叉树的最小深度</a>
+        </li>
+        <li class="toc__h2">
+            <a href="#toc_h2_12">752. 打开转盘锁</a>
+        </li>
+        <li class="toc__h3">
+            <a href="#toc_h3_13">双向BFS解法：</a>
+        </li>
+        <li class="toc__h2">
+            <a href="#toc_h2_14">773. 滑动谜题</a>
+        </li>
+        <li class="toc__h2">
+            <a href="#toc_h2_15">蓝桥杯国赛javaB组---B扩散</a>
+        </li>
+        <li class="toc__h2">
+            <a href="#toc_h2_16">蓝桥杯国赛javaB组---E玩具蛇</a>
+        </li>
+</ul></aside>
+    </div>
+</main>
+<footer class="footer">
+    <div class="wrapper">
+        <div class="fn-clear">
+            <a href="https://gyyspace.github.io">echo洋</a>
+            
+            <div class="fn-right">
+            </div>
+        </div>
+        <div class="fn-clear">
+            &copy; 2024
+            <a href="https://gyyspace.github.io">echo洋</a>
+            
+        </div>
+    </div>
+</footer>
+<div class="back-to-top" onclick="Util.goTop()"></div>
+
+<script>
+  var Label = {
+    speech: true,
+    servePath: "https://gyyspace.github.io",
+    staticServePath: "https://gyyspace.github.io",
+    luteAvailable: false,
+    hljsStyle: 'github',
+    langLabel: "zh_CN",
+    version: "4.4.0",
+    staticSite: true,
+    showCodeBlockLn: false,
+    articleId: "1721543855065",
+  }
+</script>
+<script src="https://gyyspace.github.io/skins/next/js/common.min.js?1721540580809"></script>
+<script type="text/javascript">
+    Label.tocLabel = "目录"
+    Label.siteViewLabel = "站点概览"
+</script>
+
+<script type="text/javascript">
+    Util.addScript('https://gyyspace.github.io/js/page.min.js?1721540580809', 'soloPageScript')
+    var page = new Page({
+        "commentContentCannotEmptyLabel": "评论不能为空",
+        "oId": "1721543855065",
+        "blogHost": "https://gyyspace.github.io",
+        "randomArticles1Label": "随机阅读：",
+        "externalRelevantArticles1Label": "站外相关阅读："
+    });
+    $(document).ready(function () {
+        page.load();
+    page.tips.externalRelevantArticlesDisplayCount = "0";
+        page.loadRandomArticles();
+        page.loadRelevantArticles('1721543855065', '<h4>相关阅读：</h4>');
+    NexT.initArticle()
+    });
+</script>
+</body>
+</html>
+
+<!-- Generated by Latke (https://github.com/88250/latke) in 6ms, 2024/07/21 15:56:20 -->

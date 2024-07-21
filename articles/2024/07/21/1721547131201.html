@@ -1,0 +1,1512 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8"/><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"/><meta name="theme-color" content="#3b3e43"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"/><meta name="apple-mobile-web-app-status-bar-style" content="black"><meta name="format-detection" content="telephone=no"/><title>算法：红黑树 - echo洋</title><meta name="description" content="详解红黑树数据结构"/><meta property="og:description" content="详解红黑树数据结构"/>    <meta name="keywords" content="Solo,Java,博客,开源"/><link rel="dns-prefetch" href="https://gyyspace.github.io"/><link rel="dns-prefetch" href="https://cdn.jsdelivr.net"/><link rel="preconnect" href="https://gyyspace.github.io"><link rel="icon" type="image/png" href="https://b3log.org/images/brand/solo-128.png"/><link rel="apple-touch-icon" href="https://b3log.org/images/brand/solo-128.png"><link rel="shortcut icon" type="image/x-icon" href="https://b3log.org/images/brand/solo-128.png"><meta name="copyright" content="B3log"/><meta http-equiv="Window-target" content="_top"/><meta property="og:locale" content="zh_CN"/><meta property="og:title" content="算法：红黑树 - echo洋"/><meta property="og:site_name" content="echo洋"/><meta property="og:url"      content="https://gyyspace.github.io/articles/2024/07/21/1721547131201.html?"/><meta property="og:image" content="https://b3log.org/images/brand/solo-128.png"/><link rel="search" type="application/opensearchdescription+xml" title="算法：红黑树 - echo洋" href="/opensearch.xml"><link href="https://gyyspace.github.io/rss.xml" title="RSS" type="application/rss+xml" rel="alternate"/><link rel="manifest" href="https://gyyspace.github.io/manifest.json">        <link rel="canonical" href="https://gyyspace.github.io/articles/2024/07/21/1721547131201.html">        <link rel="stylesheet"
+              href="https://gyyspace.github.io/skins/next/css/base.css?1721540580809"/>
+            <link rel="prev" title="算法：查找算法" href="https://gyyspace.github.io/articles/2024/07/21/1721547059362.html">
+            <link rel="next" title="算法：排序算法" href="https://gyyspace.github.io/articles/2024/07/21/1721547230220.html">
+    <script src="https://gyyspace.github.io/js/lib/vditor/dist/js/icons/ant.js?v=3.9.7" async="" id="vditorIconScript"></script></head>
+<body>
+<header class="header">
+    <div class="header-line"></div>
+    <div class="fn-clear wrapper">
+        <div class="logo-wrap">
+            <a href="https://gyyspace.github.io" rel="start">
+                <span class="logo-line-before"><i></i></span>
+                <span class="site-title">echo洋</span>
+                <span class="logo-line-after"><i></i></span>
+            </a>
+        </div>
+
+        <div class="site-nav-toggle fn-right"
+             onclick="$('.header-line').toggle();$('nav').children('.menu').slideToggle();">
+            <span class="btn-bar"></span>
+            <span class="btn-bar"></span>
+            <span class="btn-bar"></span>
+        </div>
+
+        <nav>
+            <ul class="menu">
+                    <li class="menu-item">
+                        <a href="/tags/Redis" target="_blank" rel="section">
+                            Redis 的设计与实现
+                        </a>
+                    </li>
+            </ul>
+
+        </nav>
+    </div>
+</header><main class="main">
+    <div class="wrapper">
+        <div class="content">
+            <article class="posts-expand">
+                <header class="post-header">
+                    <h2 class="post-title">
+                        算法：红黑树
+                    </h2>
+                    <div class="post-meta">
+                            <span class="post-time">
+                                    发表于
+                                <time>
+                                    2024-07-21
+                                </time>
+                            </span>
+                        <span class="post-comments-count">
+                                &nbsp; | &nbsp;
+                                <a href="https://gyyspace.github.io/articles/2024/07/21/1721547131201.html#b3logsolocomments">
+                                    <span data-uvstatcmt="1721547131201">0</span> 条评论</a>
+                        </span>
+                        &nbsp; | &nbsp; 热度
+                        <span data-uvstaturl="https://gyyspace.github.io/articles/2024/07/21/1721547131201.html">0</span>°C
+                    </div>
+                </header>
+
+                <div class="post-body post-body--article vditor-reset">
+                    <h1 id="toc_h1_0">红黑树底层详解</h1>
+<h2 id="toc_h2_1">1 红黑树的性质</h2>
+<ol>
+<li><strong>每个节点要么是黑色，要么是红色。</strong></li>
+<li><strong>根节点是黑色。</strong></li>
+<li><strong>每个叶子节点（NIL）是黑色。</strong></li>
+<li><strong>每个红色节点的两个子节点一定都是黑色。不能有两个红色节点相连。</strong></li>
+<li><strong>任意一节点到每个叶子节点的路径都包含数量相同的黑结点。俗称：黑高！</strong></li>
+</ol>
+<p><strong>从性质5又可以推出：性质5.1：如果一个节点存在黑子节点，那么该结点肯定有两个子节点。</strong></p>
+<p><img src="https://b3logfile.com/file/2021/02/image-7bdfcda2.png?imageView2/2/w/1280/format/jpg/interlace/1/q/100" alt=""></p>
+<p><strong>红黑树并不是一个完美平衡二叉查找树，从图上可以看到，根结点P的左子树显然比右子树高，但左子树和右子树的黑结点的层数是相等的，也即任意一个结点到到每个叶子结点的路径都包含数量相同的黑结点(性质5)。所以我们叫红黑树这种平衡为黑色完美平衡。</strong></p>
+<h2 id="toc_h2_2">2 红黑树的自平衡（左旋、右旋和变色）</h2>
+<h3 id="toc_h3_3">1、变色</h3>
+<p><strong>结点的颜色由红变黑或由黑变红。</strong></p>
+<h3 id="toc_h3_4">2、左旋</h3>
+<p><strong>以某个结点作为支点(旋转结点)，其右子结点变为旋转结点的父结点，右子结点的左子结点变为旋转结点的右子结点，左子结点保持不变。</strong></p>
+<p><strong>左旋图示：</strong></p>
+<p><img src="https://img.hacpai.com/file/2019/12/%E5%B7%A6%E6%97%8B-a8a0f75e.gif" alt=""></p>
+<p><img src="https://b3logfile.com/file/2021/02/image-e71651f5.png?imageView2/2/w/1280/format/jpg/interlace/1/q/100" alt=""></p>
+<p><strong>代码实现：</strong></p>
+<pre><code>/**
+ &nbsp; &nbsp; &nbsp; &nbsp; * 红黑树左旋
+ &nbsp; &nbsp; &nbsp; &nbsp; * @param root 树的根节点
+ &nbsp; &nbsp; &nbsp; &nbsp; * @param p 旋转的节点
+ &nbsp; &nbsp; &nbsp; &nbsp; * @return
+ &nbsp; &nbsp; &nbsp; &nbsp; */
+ &nbsp; &nbsp; &nbsp; &nbsp;static &lt;K,V&gt; TreeNode&lt;K,V&gt; rotateLeft(TreeNode&lt;K,V&gt; root,
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;TreeNode&lt;K,V&gt; p) {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;// r：旋转节点的右节点
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;// pp: 旋转节点的父节点
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;// rl：旋转节点的右节点的左节点
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;TreeNode&lt;K,V&gt; r, pp, rl;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;// 因为左旋之后旋转节点的右子节点成为旋转节点的父节点，所以：旋转节点不为null，旋转节点的右子节点不为空null可以进行左旋
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;if (p != null &amp;&amp; (r = p.right) != null) {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;// 左旋使旋转节点的右子节点的左子节点成为旋转节点的右子节点，
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;// 旋转节点的右子节点的左子节点赋值给旋转节点的右子节点 并赋值给rl
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;if ((rl = p.right = r.left) != null)
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;rl.parent = p;// 旋转节点的右子节点的左子节点认下p节点作为父节点
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;// 将旋转节点的父节点赋值给旋转节点的右子节点的父节点（p的父去做r的父）并且用pp记录
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;// 如果为空说明r就是跟节点了，需要标记为黑色
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;if ((pp = r.parent = p.parent) == null)
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  (root = r).red = false;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;// 下面的判断是 旋转节点的父，认下旋转节点的右子节点作为哪个儿子
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;else if (pp.left == p)
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;pp.left = r;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;else
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;pp.right = r;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;r.left = p; // 旋转节点作为旋转节点的右子节点的左儿子
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;p.parent = r;// 上面是r认p做儿，这里是p认r作为父
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;return root;
+ &nbsp; &nbsp; &nbsp;  }
+</code></pre>
+<blockquote>
+<p><strong>(rl = p.right = r.left) 这句代码的意思是 r的左节点，赋值给p的右节点，并且用rl标记这个节点。</strong></p>
+<p><strong>-&gt; p.right = r.left;  rl = p.right; 就是这两个语句。</strong></p>
+</blockquote>
+<h3 id="toc_h3_5">3、右旋</h3>
+<p><strong>以某个结点作为支点(旋转结点)，其左子结点变为旋转结点的父结点，左子结点的右子结点变为旋转结点的左子结点，右子结点保持不变。</strong></p>
+<p><strong>右旋图示：</strong></p>
+<p><img src="https://img.hacpai.com/file/2019/12/%E5%8F%B3%E6%97%8B-0ea140d5.gif" alt=""></p>
+<p><img src="https://b3logfile.com/file/2021/02/image-addd3e9f.png?imageView2/2/w/1280/format/jpg/interlace/1/q/100" alt=""></p>
+<p><strong>代码实现：</strong></p>
+<pre><code>/**
+ &nbsp; &nbsp; &nbsp; &nbsp; * 右旋
+ &nbsp; &nbsp; &nbsp; &nbsp; * @param root 根节点
+ &nbsp; &nbsp; &nbsp; &nbsp; * @param p 旋转节点
+ &nbsp; &nbsp; &nbsp; &nbsp; * @return
+ &nbsp; &nbsp; &nbsp; &nbsp; */
+ &nbsp; &nbsp; &nbsp; &nbsp;static &lt;K,V&gt; TreeNode&lt;K,V&gt; rotateRight(TreeNode&lt;K,V&gt; root,
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; TreeNode&lt;K,V&gt; p) {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;// l:旋转节点的左子节点，pp：旋转节点的父节点，lr：旋转节点的左子节点的右子节点。
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;TreeNode&lt;K,V&gt; l, pp, lr;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;//判断旋转节点，以及旋转节点的左子节点不能为空
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;if (p != null &amp;&amp; (l = p.left) != null) {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;//将旋转节点的左子节点的右子节点赋值给旋转节点的左指针，并用lr标记这个节点。旋转节点认左儿子
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;if ((lr = p.left = l.right) != null)
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;lr.parent = p;//旋转节点的左子节点的右子节点认旋转节点做父
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;// 将旋转节点的父节点赋值给旋转节点的左子节点的父指针，并用pp标记这个节点，如果等于null说明旋转节点是根节点。
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;if ((pp = l.parent = p.parent) == null)
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  (root = l).red = false;//那么现在旋转节点的左子节点就是根节点，标记为黑色
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;// 如果旋转节点的父节点不等于null，那么它的指针指向l（认下儿子）。
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;else if (pp.right == p)
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;pp.right = l;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;else
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;pp.left = l;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;//l 认下p 作为 右儿子
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;l.right = p;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;//p 认下 l 做 父
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;p.parent = l;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;return root;
+ &nbsp; &nbsp; &nbsp;  }
+</code></pre>
+<h2 id="toc_h2_6">3 红黑树的插入</h2>
+<p><strong>注意：<strong>插入节点，必须为</strong>红色</strong>，理由很简单，红色在父节点（如果存在）为黑色节点时，红黑树的黑色平衡没被破坏，不需要做自平衡操作。但如果插入结点是黑色，那么插入位置所在的子树黑色结点总是多1，必须做自平衡。</p>
+<p><img src="https://b3logfile.com/file/2021/02/image-f66019e2.png?imageView2/2/w/1280/format/jpg/interlace/1/q/100" alt=""></p>
+<h3 id="toc_h3_7">3.1 红黑树的树化</h3>
+<p><strong>HashMap在链表长度&gt;8（默认值）和table数组长度&gt;=64（默认值）时就会将链表树化。</strong></p>
+<p><strong>下面看树化的过程：</strong></p>
+<h4 id="toc_h4_8">3.1.1 链表结构替换</h4>
+<p><strong>将Node节点链表结构替换为TreeNode节点链表结构</strong></p>
+<p><strong>treeifyBin方法</strong></p>
+<p><strong>put方法中，如果达到了树化的条件(链表长度&gt;8) 执行treeifyBin()</strong></p>
+<p><strong>这个方式首先判断table数组的****长度是否达到了树化阈值</strong>(默认64)，如果没有达到，那么进行<strong>扩容操作</strong>。如果达到了，那么将这个桶内的<strong>链表(Node)，转化为链表(TreeNode)</strong> 。然后 执行<strong>treeify</strong>方法 进行树化。</p>
+<pre><code>/**
+ &nbsp; &nbsp; * Replaces all linked nodes in bin at index for given hash unless
+ &nbsp; &nbsp; * table is too small, in which case resizes instead.
+ &nbsp; &nbsp; *
+ &nbsp; &nbsp; * 树化，如果table表没有达到默认值，那么进行扩容
+ &nbsp; &nbsp; */
+final void treeifyBin(Node&lt;K,V&gt;[] tab, int hash) {
+ &nbsp; &nbsp;// tab: table数组
+ &nbsp; &nbsp;// hash: 当前插入节点的key的hash值
+ &nbsp; &nbsp;// n: table数组长度
+ &nbsp; &nbsp;// index: 当前hash所在的桶位置索引
+ &nbsp; &nbsp;// e: 当前桶位置的头节点
+ &nbsp; &nbsp;int n, index; Node&lt;K,V&gt; e;
+ &nbsp; &nbsp;// 如果table数组长度小于默认值，那么进行扩容
+ &nbsp; &nbsp;if (tab == null || (n = tab.length) &lt; MIN_TREEIFY_CAPACITY)
+ &nbsp; &nbsp; &nbsp; &nbsp;resize();
+ &nbsp; &nbsp;//头节点不为null
+ &nbsp; &nbsp;else if ((e = tab[index = (n - 1) &amp; hash]) != null) {
+ &nbsp; &nbsp; &nbsp; &nbsp;// 下面的过程是：将链表节点（Node）替换为树节点（TreeNode），还是链表结构
+ &nbsp; &nbsp; &nbsp; &nbsp;// hd：树节点链表的头节点
+ &nbsp; &nbsp; &nbsp; &nbsp;// tl: 临时变量
+ &nbsp; &nbsp; &nbsp; &nbsp;TreeNode&lt;K,V&gt; hd = null, tl = null;
+ &nbsp; &nbsp; &nbsp; &nbsp;do {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;// 将一个链表节点，替换为一个树节点并返回
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;TreeNode&lt;K,V&gt; p = replacementTreeNode(e, null);
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;if (tl == null)
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;hd = p;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;else {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;p.prev = tl;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;tl.next = p;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;tl = p;
+ &nbsp; &nbsp; &nbsp;  } while ((e = e.next) != null);
+ &nbsp; &nbsp; &nbsp; &nbsp;//将树节点的链表结构放入桶中，判断是否为空
+ &nbsp; &nbsp; &nbsp; &nbsp;if ((tab[index] = hd) != null)
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;//不为空，进行树化。hd：树节点
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;hd.treeify(tab);
+ &nbsp;  }
+}
+</code></pre>
+<h4 id="toc_h4_9">3.1.2 链表树化</h4>
+<p><strong>treeify方法</strong></p>
+<p><strong>该方法的作用是：<strong><strong>将链表(TreeNode) 树化，<strong>并且在每一次节点插入树中时执行</strong>balanceInsertion方法自平衡</strong>，最后执行</strong>moveRootToFront方法保证根节点是桶位置的第一个节点即头节点</strong></p>
+<pre><code>/**
+ &nbsp; &nbsp; &nbsp; &nbsp; * 将树节点链表转为树结构
+ &nbsp; &nbsp; &nbsp; &nbsp; * 这个方法是TreeNode的内部方法，通过TreeNode调用
+ &nbsp; &nbsp; &nbsp; &nbsp; * Forms tree of the nodes linked from this node.
+ &nbsp; &nbsp; &nbsp; &nbsp; * @return root of tree
+ &nbsp; &nbsp; &nbsp; &nbsp; * @param tab 传入的table数组
+ &nbsp; &nbsp; &nbsp; &nbsp; */
+final void treeify(Node&lt;K,V&gt;[] tab) {
+ &nbsp; &nbsp;// 树化，在从树节点链表-&gt;树的过程中，this指的是当前桶位置上的头节点（树节点），桶位置上还是链表
+ &nbsp; &nbsp;// root: 树的根节点。
+ &nbsp; &nbsp;TreeNode&lt;K,V&gt; root = null;
+ &nbsp; &nbsp;for (TreeNode&lt;K,V&gt; x = this, next; x != null; x = next) {
+ &nbsp; &nbsp; &nbsp; &nbsp;// 当前节点的下一个节点
+ &nbsp; &nbsp; &nbsp; &nbsp;next = (TreeNode&lt;K,V&gt;)x.next;
+ &nbsp; &nbsp; &nbsp; &nbsp;x.left = x.right = null;
+ &nbsp; &nbsp; &nbsp; &nbsp;//说明当前是第一个节点
+ &nbsp; &nbsp; &nbsp; &nbsp;if (root == null) {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;x.parent = null;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;// 表示是一个黑节点
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;x.red = false;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;root = x;
+ &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp; &nbsp;else {// 说明当前不是第一个节点
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;// 记录当前节点的key，hash
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;K k = x.key;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;int h = x.hash;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;//kc : k如果是Comparable的实例，那么返回运行时的类型
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;Class&lt;?&gt; kc = null;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;// 遍历当前树
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;for (TreeNode&lt;K,V&gt; p = root;;) {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;// dir: 用于判断x树节点应该放在left，还是right上
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;// ph: 当前树上节点的hash值
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;// pk: 当前树上节点的key值
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;int dir, ph;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;K pk = p.key;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;if ((ph = p.hash) &gt; h)
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;dir = -1;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;else if (ph &lt; h)
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;dir = 1;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;else if ((kc == null &amp;&amp;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  (kc = comparableClassFor(k)) == null) ||
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; (dir = compareComparables(kc, k, pk)) == 0)
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;dir = tieBreakOrder(k, pk);
+
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;TreeNode&lt;K,V&gt; xp = p;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;// 判断是否遍历到了树的叶子节点，如果是那么直接将x放到树上，结束循环。
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;if ((p = (dir &lt;= 0) ? p.left : p.right) == null) {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;x.parent = xp;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;if (dir &lt;= 0)
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;xp.left = x;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;else
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;xp.right = x;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;// 向树中插入了一个节点，进行自平衡操作
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;root = balanceInsertion(root, x);
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;break;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp;  }
+ &nbsp;  }
+ &nbsp; &nbsp;moveRootToFront(tab, root);
+}
+</code></pre>
+<h3 id="toc_h3_10">3.2 红黑树的插入</h3>
+<p><strong>putTreeVal方法</strong></p>
+<p>**该方法：**<strong>添加一个树节点</strong> ，执行该方法时说明链表已经树化过了，桶上就已经是树了。</p>
+<pre><code>/**
+ &nbsp; &nbsp; &nbsp; &nbsp; * Tree version of putVal.
+ &nbsp; &nbsp; &nbsp; &nbsp; * 树节点的put过程
+ &nbsp; &nbsp; &nbsp; &nbsp; * @param map HashMap
+ &nbsp; &nbsp; &nbsp; &nbsp; * @param tab HashMap的散列表数组
+ &nbsp; &nbsp; &nbsp; &nbsp; * @param h 要添加key的hash值
+ &nbsp; &nbsp; &nbsp; &nbsp; * @param k 要添加的key
+ &nbsp; &nbsp; &nbsp; &nbsp; * @param v 要添加的value
+ &nbsp; &nbsp; &nbsp; &nbsp; * @return
+ &nbsp; &nbsp; &nbsp; &nbsp; */
+final TreeNode&lt;K,V&gt; putTreeVal(HashMap&lt;K,V&gt; map, Node&lt;K,V&gt;[] tab,
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; int h, K k, V v) {
+ &nbsp; &nbsp;// kc: 如果key是一个Comparable类型的实现，那么保存key运行具体类型，否则保存null
+ &nbsp; &nbsp;Class&lt;?&gt; kc = null;
+ &nbsp; &nbsp;boolean searched = false;
+ &nbsp; &nbsp;// root: 树的根节点
+ &nbsp; &nbsp;TreeNode&lt;K,V&gt; root = (parent != null) ? root() : this;
+ &nbsp; &nbsp;// 遍历树
+ &nbsp; &nbsp;for (TreeNode&lt;K,V&gt; p = root;;) {
+ &nbsp; &nbsp; &nbsp; &nbsp;// dir：用于记录，插入的节点应该在当前节点的左节点还是右节点
+ &nbsp; &nbsp; &nbsp; &nbsp;// ph: 当前节点的hash值
+ &nbsp; &nbsp; &nbsp; &nbsp;// pk: 当前节点的key值
+ &nbsp; &nbsp; &nbsp; &nbsp;int dir, ph; K pk;
+ &nbsp; &nbsp; &nbsp; &nbsp;// 说明新插入的节点应该在当前节点的左子树上
+ &nbsp; &nbsp; &nbsp; &nbsp;if ((ph = p.hash) &gt; h)
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;dir = -1;
+ &nbsp; &nbsp; &nbsp; &nbsp;// 说明新插入的节点应该在当前节点的左子树上
+ &nbsp; &nbsp; &nbsp; &nbsp;else if (ph &lt; h)
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;dir = 1;
+ &nbsp; &nbsp; &nbsp; &nbsp;// 说明新插入的节点和当前节点的key值相同，那么不做处理直接返回，由上层方法修改value值
+ &nbsp; &nbsp; &nbsp; &nbsp;else if ((pk = p.key) == k || (k != null &amp;&amp; k.equals(pk)))
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;return p;
+ &nbsp; &nbsp; &nbsp; &nbsp;else if ((kc == null &amp;&amp;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  (kc = comparableClassFor(k)) == null) ||
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; (dir = compareComparables(kc, k, pk)) == 0) {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;if (!searched) {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;TreeNode&lt;K,V&gt; q, ch;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;searched = true;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;if (((ch = p.left) != null &amp;&amp;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; (q = ch.find(h, k, kc)) != null) ||
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  ((ch = p.right) != null &amp;&amp;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; (q = ch.find(h, k, kc)) != null))
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;return q;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;dir = tieBreakOrder(k, pk);
+ &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp; &nbsp;// 判断是否遍历到了叶子节点，如果是将插入的节点插入进去，如果不是继续遍历
+ &nbsp; &nbsp; &nbsp; &nbsp;TreeNode&lt;K,V&gt; xp = p;
+ &nbsp; &nbsp; &nbsp; &nbsp;if ((p = (dir &lt;= 0) ? p.left : p.right) == null) {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;Node&lt;K,V&gt; xpn = xp.next;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;TreeNode&lt;K,V&gt; x = map.newTreeNode(h, k, v, xpn);
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;if (dir &lt;= 0)
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;xp.left = x;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;else
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;xp.right = x;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;xp.next = x;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;x.parent = x.prev = xp;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;if (xpn != null)
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  ((TreeNode&lt;K,V&gt;)xpn).prev = x;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;// 插入完成之后，先进行一个自平衡操作，然后保证root根节点是桶的头节点
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;moveRootToFront(tab, balanceInsertion(root, x));
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;return null;
+ &nbsp; &nbsp; &nbsp;  }
+ &nbsp;  }
+}
+</code></pre>
+<h3 id="toc_h3_11">3.3 重要方法</h3>
+<p><strong>下面这几个方法都是TreeNode结构的内部方法。</strong></p>
+<h4 id="toc_h4_12">3.3.1 balanceInsertion()</h4>
+<pre><code>/**
+ &nbsp; &nbsp; &nbsp; &nbsp; * 新插入一个节点之后，从低到上进行树自平衡操作，就是变色，左旋，右旋操作，直到满足红黑树的性质
+ &nbsp; &nbsp; &nbsp; &nbsp; * @param root 树的根节点
+ &nbsp; &nbsp; &nbsp; &nbsp; * @param x 新插入的树节点
+ &nbsp; &nbsp; &nbsp; &nbsp; * @return 返回根节点。
+ &nbsp; &nbsp; &nbsp; &nbsp; */
+static &lt;K,V&gt; TreeNode&lt;K,V&gt; balanceInsertion(TreeNode&lt;K,V&gt; root,
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;TreeNode&lt;K,V&gt; x) {
+ &nbsp; &nbsp;//将新插入树中的节点设为红节点，插入到树中的节点必须是红色
+ &nbsp; &nbsp;x.red = true;
+ &nbsp; &nbsp;// x: 新插入到树中的节点
+ &nbsp; &nbsp;// xp: x的父节点
+ &nbsp; &nbsp;// xpp: xp的父节点
+ &nbsp; &nbsp;// xppr: xpp的右节点
+ &nbsp; &nbsp;for (TreeNode&lt;K,V&gt; xp, xpp, xppl, xppr;;) {
+ &nbsp; &nbsp; &nbsp; &nbsp;// 情况一：红黑树为空树，x的父节点为空，那么x节点就是一个跟节点，是黑节点
+ &nbsp; &nbsp; &nbsp; &nbsp;if ((xp = x.parent) == null) {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;x.red = false;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;return x;
+ &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp; &nbsp;// 情况二：插入节点的父节点为黑色
+ &nbsp; &nbsp; &nbsp; &nbsp;else if (!xp.red || (xpp = xp.parent) == null)
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;//直接返回 说明 x就是一个红节点
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;return root;
+ &nbsp; &nbsp; &nbsp; &nbsp;// 情况三：插入节点的父节点为红色
+ &nbsp; &nbsp; &nbsp; &nbsp;// 情况3.1：父节点是祖父节点的左子节点，依据红黑树性质4可知：红色节点不能相连 ==&gt; 祖父结点肯定为黑结点；
+ &nbsp; &nbsp; &nbsp; &nbsp;if (xp == (xppl = xpp.left)) {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;// 叔叔结点存在并且为红结点，那么该插入子树的红黑层数的情况是：黑红红。显然最简单的处理方式是把其改为：红黑红。
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;if ((xppr = xpp.right) != null &amp;&amp; xppr.red) {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;xppr.red = false;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;xp.red = false;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;xpp.red = true;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;x = xpp;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;// 叔叔结点不存在或为黑结点，并且插入结点的父亲结点是祖父结点的左子节点
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;else {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;//新插入节点，为其父节点的右子节点（LR红色情况）将LR红色情况经过左旋改为LL情况
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;// 这个条件执行会将当前节点设为父节点，下面if对祖父节点的父节点自平衡（在祖父节点存在的的情况下）
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;if (x == xp.right) {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;// 对父节点左旋。当前节点设为父节点
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;root = rotateLeft(root, x = xp);
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;xpp = (xp = x.parent) == null ? null : xp.parent;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;// 进入这个条件表示，新插入节点，为其父节点的左子节点（LL红色情况）如果是LR情况，经过上面处理后也变成了LL情况
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;if (xp != null) {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;// 目前红黑层数的情况是：黑红红，所以要改为红黑红
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;xp.red = false;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;if (xpp != null) {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;xpp.red = true;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;root = rotateRight(root, xpp);
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp; &nbsp;//情况3.2：父节点是祖父节点的右子节点
+ &nbsp; &nbsp; &nbsp; &nbsp;else {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;// 叔叔结点存在并且为红结点，那么该插入子树的红黑层数的情况是：黑红红。显然最简单的处理方式是把其改为：红黑红。
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;if (xppl != null &amp;&amp; xppl.red) {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;xppl.red = false;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;xp.red = false;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;xpp.red = true;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;x = xpp;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;// 叔叔结点不存在或为黑结点，并且插入结点的父亲结点是祖父结点的右子节点
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;else {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;//新插入节点，为其父节点的左子节点（RL红色情况）将RL红色情况经过右旋改为RR情况
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;// 这个条件执行会将当前节点设为父节点，下面if对祖父节点的父节点自平衡（在祖父节点存在的的情况下）
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;if (x == xp.left) {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;// 对父节点右旋。当前节点设为父节点
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;root = rotateRight(root, x = xp);
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;xpp = (xp = x.parent) == null ? null : xp.parent;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;// 进入这个条件表示，新插入节点，为其父节点的右子节点（RR红色情况）如果是RL情况，经过上面处理后也变成了RL情况
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;if (xp != null) {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;xp.red = false;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;if (xpp != null) {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;xpp.red = true;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;//对祖父节点左旋
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;root = rotateLeft(root, xpp);
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp;  }
+ &nbsp;  }
+}
+</code></pre>
+<h5 id="toc_h5_13">(1) 自平衡流程</h5>
+<p><strong>1) 情景1：红黑树为空树</strong></p>
+<p><strong>最简单的一种情景，直接把插入结点作为根结点，并且设为黑色。</strong></p>
+<p>**根据红黑树性质2：**<strong>根节点是黑色</strong>。</p>
+<p>**2) 情景2：**插入节点的父节点为黑节点</p>
+<p><strong>由于插入的结点是红色的，并不会影响红黑树的平衡，直接插入即可，无需做自平衡。</strong></p>
+<p><img src="https://b3logfile.com/file/2021/02/image-cf4decd3.png?imageView2/2/w/1280/format/jpg/interlace/1/q/100" alt=""></p>
+<p>**3) 情景3：**插入节点的父节点是红色节点</p>
+<p><strong>根据红黑树的性质2：<strong><strong>根结点是黑色</strong>。如果插入节点的父结点为红结点，那么该父结点不可能为根结点，所以插入结点总是存在祖父结点。根据红黑树性质4：<strong>每个红色节点的两个子节点一定都是黑色。不能有两个红色节点相连。</strong> 所以</strong>祖父节点一定存在且是红色的</strong>。</p>
+<p><strong>衍生出两种情况：</strong></p>
+<p><strong>3.1) 父节点是祖父节点的左子节点</strong></p>
+<p><strong>3.1.1) 叔叔结点存在并且为红结点</strong></p>
+<p><strong>那么该插入子树的红黑层数的情况是：黑红红。显然最简单的处理方式是把其改为：红黑红。</strong></p>
+<p><strong>处理：</strong></p>
+<ol>
+<li><strong>将P和U节点改为黑色</strong></li>
+<li><strong>将PP改为红色</strong></li>
+<li><strong>将PP设置为当前节点，进行后续处理</strong></li>
+</ol>
+<p><img src="https://b3logfile.com/file/2021/02/image-1618bbe1.png?imageView2/2/w/1280/format/jpg/interlace/1/q/100" alt=""></p>
+<p><strong>可以看到，我们把PP结点设为红色了，如果PP的父结点是黑色，那么无需再做任何处理；</strong></p>
+<p><strong>但如果PP的父结点是红色，则违反红黑树性质了。所以需要将PP设置为当前节点，继续做插入操作自平衡处理，直到平衡为止。</strong></p>
+<p><strong>3.1.1) 叔叔结点不存在或为黑结点</strong></p>
+<p><strong>新插入节点，为其父节点的右子节点（LR红色情况）</strong></p>
+<p><strong>处理：</strong></p>
+<ol>
+<li><strong>对P进行左旋。</strong></li>
+<li><strong>将P设置为当前节点，得到LL红色情况。</strong></li>
+<li><strong>按照LL红色情况处理（1.变颜色 2.右旋PP）。</strong></li>
+</ol>
+<p><img src="https://b3logfile.com/file/2021/02/image-363ff945.png?imageView2/2/w/1280/format/jpg/interlace/1/q/100" alt=""></p>
+<p><strong>新插入节点，为其父节点的左子节点（LL红色情况）</strong></p>
+<p><strong>处理：</strong></p>
+<ol>
+<li><strong>变颜色：将P设置为黑色，将PP设置为红色。</strong></li>
+<li><strong>对PP节点进行右旋。</strong></li>
+</ol>
+<p><img src="https://b3logfile.com/file/2021/02/image-9576e370.png?imageView2/2/w/1280/format/jpg/interlace/1/q/100" alt=""></p>
+<p><strong>3.2) 父节点是祖父节点的右子节点</strong></p>
+<p><strong>3.2.1) 叔叔结点存在并且为红节点</strong></p>
+<p><strong>这种情况和父节点是祖父节点的左子节点一样</strong></p>
+<p><strong>3.2.1) 叔叔结点不存在或为黑节点</strong></p>
+<p><strong>新插入节点，为其父节点的左子节点（RL红色情况）</strong></p>
+<p><strong>处理：</strong></p>
+<ol>
+<li><strong>对P进行右旋。</strong></li>
+<li><strong>将P设置为当前节点，得到RR红色情况。</strong></li>
+<li><strong>按照RR红色情况处理（1.变颜色 2.左旋PP）。</strong></li>
+</ol>
+<p><img src="https://b3logfile.com/file/2021/02/image-689d6000.png?imageView2/2/w/1280/format/jpg/interlace/1/q/100" alt="">新插入节点，为其父节点的右子节点（RR红色情况）</p>
+<p><strong>处理：</strong></p>
+<ol>
+<li><strong>变颜色：将P设置为黑色，将PP设置为红色。</strong></li>
+<li><strong>对PP节点进行左旋。</strong></li>
+</ol>
+<p><img src="https://b3logfile.com/file/2021/02/image-ed746321.png?imageView2/2/w/1280/format/jpg/interlace/1/q/100" alt=""></p>
+<h5 id="toc_h5_14">(2) 总结：</h5>
+<pre><code> &nbsp;  /**
+ &nbsp; &nbsp; * 插入后修复红黑树平衡的方法
+ &nbsp; &nbsp; * |---情景1：红黑树为空树
+ &nbsp; &nbsp; * &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  处理：直接把插入结点作为根结点并设为黑节点。
+ &nbsp; &nbsp; * |---情景2：插入节点的父节点为黑色
+ &nbsp; &nbsp; * &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  处理：直接插入即可。
+ &nbsp; &nbsp; * |---情景3：插入节点的父节点为红色，祖父节点肯定为黑色
+ &nbsp; &nbsp; * |---情景3.1：插入节点的父节点为祖父节点的左子节点
+ &nbsp; &nbsp; * |---情景3.1.1：叔叔节点存在，并且为红色（父-叔 双红）
+ &nbsp; &nbsp; * &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  处理：父亲和叔叔节点改为黑色，爷爷节点改为红色，将爷爷节点设为当前节点继续平衡处理。
+ &nbsp; &nbsp; * |---情景3.1.2：叔叔节点不存在或者为黑色节点
+ &nbsp;
+ &nbsp; &nbsp; * |---情景3.1.2.1：插入节点为其父节点的右子节点（LR情况）
+ &nbsp; &nbsp; * &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  处理：对父亲节点进行左旋，得到LL情况，按照LL情况继续处理。
+ &nbsp; &nbsp; * |---情景3.1.2.2：插入节点为其父节点的左子节点（LL情况）
+ &nbsp; &nbsp; * &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  处理：父亲节点改为黑色，爷爷节点改为红色，对爷爷节点进行右旋
+ &nbsp; &nbsp; * |---情景3.2：插入节点的父节点为祖父节点的右子节点
+ &nbsp; &nbsp; * |---情景3.2.1：叔叔节点存在，并且为红色（父-叔 双红）
+ &nbsp; &nbsp; * &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  处理：父亲和叔叔节点改为黑色，爷爷节点改为红色，将爷爷节点设为当前节点继续平衡处理。
+ &nbsp; &nbsp; * |---情景3.2.2：叔叔节点不存在或者为黑色节点
+ &nbsp; &nbsp; * |---情景3.2.2.1：插入节点为其父节点的左子节点（RL情况）
+ &nbsp; &nbsp; * &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  处理：对父亲节点进行右旋，得到RR情况，按照RR情况继续处理。
+ &nbsp; &nbsp; * |---情景3.2.2.2：插入节点为其父节点的右子节点（RR情况）
+ &nbsp; &nbsp; * &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  处理：父亲节点改为黑色，爷爷节点改为红色，对爷爷节点进行左旋
+ &nbsp; &nbsp; */
+</code></pre>
+<h2 id="toc_h2_15">4. 二叉树的删除</h2>
+<p><strong>删除操作流程：</strong></p>
+<ol>
+<li><strong>首先删除删除节点的链表结构的引用</strong></li>
+<li><strong>删除删除节点的树结构引用</strong>
+<ol>
+<li><strong>删除节点左右子树都不为null，那么找到删除节点右子树的最小值节点，并将两者替换（颜色也要换）。用replacement记录删除节点的可替换节点，如果没有记录删除节点。</strong></li>
+<li><strong>删除节点的右子树为null，用replacement记录左子树。</strong></li>
+<li><strong>删除节点的左子树为null，用replacement记录右子树。</strong></li>
+<li><strong>删除节点的左右子树都为null，用replacement记录删除节点，表示没有可替换节点</strong></li>
+<li><strong>replacement不等于删除节点说明删除节点有子树，那么将删除节点的子树替换删除节点，除去删除节点的引用。</strong></li>
+<li><strong>然后在判断如果删除节点是黑节点，那么需要执行balanceDeletion(root，replacement)方法，自平衡操作。</strong></li>
+<li><strong>replacement等于删除节点，说明删除节点没有子树，那么直接从父节点掉对删除节点的引用。不需要平衡。</strong></li>
+</ol>
+</li>
+</ol>
+<p><strong>注意：1，2，3，4只会执行一个，5，6，7是顺序执行，5，7也只执行一个。</strong></p>
+<h3 id="toc_h3_16">4.1 removeTreeNode()</h3>
+<pre><code>/**
+ &nbsp; &nbsp; &nbsp; &nbsp; * Removes the given node, that must be present before this call.
+ &nbsp; &nbsp; &nbsp; &nbsp; * This is messier than typical red-black deletion code because we
+ &nbsp; &nbsp; &nbsp; &nbsp; * cannot swap the contents of an interior node with a leaf
+ &nbsp; &nbsp; &nbsp; &nbsp; * successor that is pinned by "next" pointers that are accessible
+ &nbsp; &nbsp; &nbsp; &nbsp; * independently during traversal. So instead we swap the tree
+ &nbsp; &nbsp; &nbsp; &nbsp; * linkages. If the current tree appears to have too few nodes,
+ &nbsp; &nbsp; &nbsp; &nbsp; * the bin is converted back to a plain bin. (The test triggers
+ &nbsp; &nbsp; &nbsp; &nbsp; * somewhere between 2 and 6 nodes, depending on tree structure).
+ &nbsp; &nbsp; &nbsp; &nbsp; * 先查找到树节点之后，然后删除一个树节点 删除节点调用的该方法，删除节点就是当前节点
+ &nbsp; &nbsp; &nbsp; &nbsp; * @param map this,就是当前的map
+ &nbsp; &nbsp; &nbsp; &nbsp; * @param tab 散列表数组
+ &nbsp; &nbsp; &nbsp; &nbsp; * @param movable
+ &nbsp; &nbsp; &nbsp; &nbsp; */
+ &nbsp; &nbsp; &nbsp; &nbsp;//首先从链表结构中解除删除节点的引用，然后从树结构中删除节点的引用
+ &nbsp; &nbsp; &nbsp; &nbsp;final void removeTreeNode(HashMap&lt;K,V&gt; map, Node&lt;K,V&gt;[] tab,
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;boolean movable) {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;//================================删除链表中的引用=========================
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;// n： table数组的长度
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;int n;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;if (tab == null || (n = tab.length) == 0)
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;return;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;// index 删除节点在数组中的索引
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;int index = (n - 1) &amp; hash;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;// first，root： 要删除节点所在桶位置的头节点，即树的根节点
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;// rl： 根节点的左节点
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;TreeNode&lt;K,V&gt; first = (TreeNode&lt;K,V&gt;)tab[index], root = first, rl;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;// sunc：要删除节点的下一个节点
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;// pred：删除节点的上一个节点
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;TreeNode&lt;K,V&gt; succ = (TreeNode&lt;K,V&gt;)next, pred = prev;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;// 删除节点的上一个节点是null，说明删除节点是根节点。下面是删除节点的工作。
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;if (pred == null)
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;// 将删除节点的下一个节点放到桶的第一个位置，作为头节点
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;tab[index] = first = succ;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;else
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;// 删除节点的上一个节点指向删除节点的下一个节点，将删除节点踢出。
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;pred.next = succ;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;if (succ != null)
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;// 删除节点的下一个节点认自己的上级。与上一行代码相互指向
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;succ.prev = pred;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;// 删除掉删除节点的工作已经完成
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;// 头节点为null，说明树没有节点了，直接返回。
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;if (first == null)
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;return;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;// root指向根节点。
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;if (root.parent != null)
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;root = root.root();
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;// 判断树是否需要退化
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;if (root == null || root.right == null ||
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  (rl = root.left) == null || rl.left == null) {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;// 说明树中的节点只有0或2或3个，那么需要从树退化链表。
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;// untreeify()方法，返回Node节点，将TreeNode节点替换为Node
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;tab[index] = first.untreeify(map); &nbsp;// too small
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;return;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;//==============================删除节点在树中的引用===========================
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;// p: 当前删除节点
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;// replacement: 替换掉删除节点的节点
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;TreeNode&lt;K,V&gt; p = this, pl = left, pr = right, replacement;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;// 情景1：删除节点的左右子树都不为null，这种情况将右子树的最小节点与删除节点交换
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;if (pl != null &amp;&amp; pr != null) {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;// s: 删除节点的右节点，sl：s.left
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;TreeNode&lt;K,V&gt; s = pr, sl;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;// 找到右子树的最小子节点
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;while ((sl = s.left) != null) // find successor
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;s = sl;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;// 让删除节点和右子树的最小值节点交换颜色
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;boolean c = s.red; s.red = p.red; p.red = c; // swap colors
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;// sr: 右树最小值节点的右节点，
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;// pp: 删除节点的父节点
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;TreeNode&lt;K,V&gt; sr = s.right;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;TreeNode&lt;K,V&gt; pp = p.parent;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;if (s == pr) { // p was s's direct parent
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;//删除节点作为s的右子节点
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;p.parent = s;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;s.right = p;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;else {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;TreeNode&lt;K,V&gt; sp = s.parent;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;if ((p.parent = sp) != null) {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;if (s == sp.left)
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;sp.left = p;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;else
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;sp.right = p;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;if ((s.right = pr) != null)
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;pr.parent = s;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;// 右子树的最小子节点的值来替换删除节点，那么删除节点的左节点一定为空。
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;p.left = null;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;// 将右子树最小子节点的右子树赋值给删除节点
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;if ((p.right = sr) != null)
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;sr.parent = p;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;// 将删除节点的左子树赋值给右子树的最小节点
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;if ((s.left = pl) != null)
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;pl.parent = s;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;// 将删除节点赋值给右子树的最小节点
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;if ((s.parent = pp) == null)
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;root = s;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;else if (p == pp.left)
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;pp.left = s;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;else
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;pp.right = s;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;// 这里判读和下面判断pl，pr 是否为null相同，找到可以替换删除节点的节点
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;if (sr != null)
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;replacement = sr;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;else
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;replacement = p;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;// 情景2：删除节点左子节点或右子节点为null，找到可以替换删除节点的节点
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;else if (pl != null)
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;replacement = pl;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;else if (pr != null)
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;replacement = pr;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;else
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;replacement = p;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;// replacement != p 说明删除节点p只有一个子节点。replacement就是可以替换掉删除节点的子节点
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;if (replacement != p) {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;// 那么直接让将删除节点替换。
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;TreeNode&lt;K,V&gt; pp = replacement.parent = p.parent;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;if (pp == null)
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;root = replacement;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;else if (p == pp.left)
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;pp.left = replacement;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;else
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;pp.right = replacement;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;p.left = p.right = p.parent = null;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;// 如果删除节点是黑节点，那么需要删除节点自平衡。
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;TreeNode&lt;K,V&gt; r = p.red ? root : balanceDeletion(root, replacement);
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;// 下面条件说明 删除节点p 没有子节点。
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;if (replacement == p) { &nbsp;// detach
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;// 使删除节点的父节点对删除节点的指针改为null
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;TreeNode&lt;K,V&gt; pp = p.parent;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;p.parent = null;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;if (pp != null) {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;if (p == pp.left)
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;pp.left = null;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;else if (p == pp.right)
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;pp.right = null;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;if (movable)
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;moveRootToFront(tab, r);
+ &nbsp; &nbsp; &nbsp;  }
+</code></pre>
+<h3 id="toc_h3_17">4.2balanceDeletion()</h3>
+<p><strong>删除节点之后的自平衡操作。就是左旋，右旋，变色操作。</strong></p>
+<pre><code>/**
+ &nbsp; &nbsp; &nbsp; &nbsp; * 删除节点之后的自平衡操作，执行这个方法，那么删除节点一定是黑色节点。
+ &nbsp; &nbsp; &nbsp; &nbsp; * @param root 树的根节点
+ &nbsp; &nbsp; &nbsp; &nbsp; * @param x 删除节点或者是删除节点的替换节点。需要自平衡
+ &nbsp; &nbsp; &nbsp; &nbsp; * @return
+ &nbsp; &nbsp; &nbsp; &nbsp; */
+ &nbsp; &nbsp; &nbsp; &nbsp;static &lt;K,V&gt; TreeNode&lt;K,V&gt; balanceDeletion(TreeNode&lt;K,V&gt; root,
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; TreeNode&lt;K,V&gt; x) {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;// xp: x的父节点
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;for (TreeNode&lt;K,V&gt; xp, xpl, xpr;;)  {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;// x是根节点
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;if (x == null || x == root)
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;return root;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;//x的父节点是根节点
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;else if ((xp = x.parent) == null) {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;x.red = false;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;return x;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;// x是红色，那么在x有替换节点的情况下，说明删除节点是黑色，替换节点需要变成黑色。
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;else if (x.red) {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;x.red = false;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;return root;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;// x是父节点的左子节点并且是黑色。那么x的父节点是红色。
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;else if ((xpl = xp.left) == x) {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;// x的兄弟节点存在并且是红色，此时情况就是 xp ： x ：xpr = 黑：黑：红色，所以不满足红黑树
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;if ((xpr = xp.right) != null &amp;&amp; xpr.red) {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;// x兄弟节点=黑色，父节点=红色，此时情况就是 红：黑：黑 满足
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;xpr.red = false;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;xp.red = true;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;//然后对父节点左旋
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;root = rotateLeft(root, xp);
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;xpr = (xp = x.parent) == null ? null : xp.right;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;if (xpr == null)
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;x = xp;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;else {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;TreeNode&lt;K,V&gt; sl = xpr.left, sr = xpr.right;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;if ((sr == null || !sr.red) &amp;&amp;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  (sl == null || !sl.red)) {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;xpr.red = true;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;x = xp;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;else {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;if (sr == null || !sr.red) {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;if (sl != null)
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;sl.red = false;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;xpr.red = true;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;root = rotateRight(root, xpr);
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;xpr = (xp = x.parent) == null ?
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;null : xp.right;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;if (xpr != null) {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;xpr.red = (xp == null) ? false : xp.red;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;if ((sr = xpr.right) != null)
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;sr.red = false;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;if (xp != null) {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;xp.red = false;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;root = rotateLeft(root, xp);
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;x = root;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;else { // symmetric
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;if (xpl != null &amp;&amp; xpl.red) {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;xpl.red = false;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;xp.red = true;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;root = rotateRight(root, xp);
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;xpl = (xp = x.parent) == null ? null : xp.left;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;if (xpl == null)
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;x = xp;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;else {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;TreeNode&lt;K,V&gt; sl = xpl.left, sr = xpl.right;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;if ((sl == null || !sl.red) &amp;&amp;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  (sr == null || !sr.red)) {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;xpl.red = true;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;x = xp;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;else {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;if (sl == null || !sl.red) {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;if (sr != null)
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;sr.red = false;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;xpl.red = true;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;root = rotateLeft(root, xpl);
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;xpl = (xp = x.parent) == null ?
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;null : xp.left;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;if (xpl != null) {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;xpl.red = (xp == null) ? false : xp.red;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;if ((sl = xpl.left) != null)
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;sl.red = false;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;if (xp != null) {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;xp.red = false;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;root = rotateRight(root, xp);
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;x = root;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp;  }
+</code></pre>
+<p><strong>看不下去了😭</strong></p>
+<h4 id="toc_h4_18">情景1：节点的左子树、右子树都不为null</h4>
+<p><strong>针对这种情况，通常为了简化操作，都会采用左子树的最大子节点或者右子树的最小子节点的值来替换当前节点的值，然后删除左子树的最大子节点或右子树的最小子节点，替换后需要删除的节点的可能情况为其他三种。</strong></p>
+<h4 id="toc_h4_19">情景2：节点的左子树为null、右子树不为null 或者 右子树为null，左子树不为null</h4>
+<p><strong>以下情景以左null右非null为例：</strong></p>
+<h5 id="toc_h5_20">情景2.1：需要删除的节点为红色节点</h5>
+<p><strong>根据红黑树的性质，其右子节点不可能为红色（违反性质4），不可能出现右子节点是黑色节点的情况（违反性质五）；所以右子节点只可能是NIL，直接删除该节点即可。</strong></p>
+<h5 id="toc_h5_21">情景2.2：需要删除的节点为黑色节点</h5>
+<p><strong>根据红黑树的性质，其右子节点要么就是NIL,要么是红色节点，且该红色节点的两个子节点为NIL。</strong></p>
+<ol>
+<li><strong>如果右子节点为NIL则符合左右子树都为null的情景，详见情景3解析；</strong></li>
+<li><strong>如果右子节点为红色，则把右子节点变成黑色并顶替该节点即可。</strong></li>
+</ol>
+<h4 id="toc_h4_22">情景3：两个子树均为null</h4>
+<p><strong>以下情景以该节点为父节点的左子节点为例：</strong></p>
+<h5 id="toc_h5_23">情景3.1：需要删除的节点为红色节点</h5>
+<p><strong>直接删除该节点即可。</strong></p>
+<h5 id="toc_h5_24">情景3.2：需要删除的节点为黑色节点</h5>
+<p><strong>因为该节点为黑色节点，删除该节点会导致该路径上的黑色节点数量 -1，并且因为没有子节点，根本无法通过子树内部修正路径；所以得考虑从该节点的兄弟节点处入手，让他匀一个黑色节点过来，因为该节点为黑色节点，所以其兄弟节点必然存在（性质5.1）且可能是红色节点，也可能是黑色节点。</strong></p>
+<h6 id="toc_h6_25">情景3.2.1：该节点的兄弟节点为红色</h6>
+<p><strong>他们的父节点一定是黑色节点。</strong></p>
+<p><strong>处理：</strong></p>
+<ol>
+<li><strong>将兄弟节点变为黑色，父亲节点变为红色</strong></li>
+<li><strong>如果该节点为父节点的左子节点，则对父节点进行左旋处理，反之则进行右旋处理。</strong></li>
+</ol>
+<p><strong>此时情景转化为3.2.2。</strong></p>
+<p><img src="https://b3logfile.com/file/2021/02/solo-fetchupload-9092995738842610203-1d5f80a5.png?imageView2/2/w/1280/format/jpg/interlace/1/q/100" alt="">--&gt;<img src="https://b3logfile.com/file/2021/02/solo-fetchupload-1782734283770285347-e1306d00.png?imageView2/2/w/1280/format/jpg/interlace/1/q/100" alt=""></p>
+<h6 id="toc_h6_26">情景3.2.2：该节点的兄弟节点为黑色</h6>
+<p><strong>他们的父节点则颜色不定。</strong></p>
+<h6 id="toc_h6_27">情景3.2.2.1：该节点的远侄子节点为红色且该节点为父节点的左子节点</h6>
+<p><strong>没有上色的节点表示黑色红色均可，注意如果SL为黑色，则SL必为NULL节点。</strong></p>
+<p><strong>处理：</strong></p>
+<ol>
+<li><strong>将P和S的颜色对调。</strong></li>
+<li><strong>对P节点进行左旋处理。</strong></li>
+<li><strong>把SR节点变成黑色，并删除D即可。</strong></li>
+</ol>
+<p><img src="https://b3logfile.com/file/2021/02/solo-fetchupload-6556838423668543336-c38596eb.png?imageView2/2/w/1280/format/jpg/interlace/1/q/100" alt="">--&gt;<img src="https://b3logfile.com/file/2021/02/solo-fetchupload-8555803905486831455-1dea946f.png?imageView2/2/w/1280/format/jpg/interlace/1/q/100" alt=""></p>
+<h6 id="toc_h6_28">情景3.2.2.2：该节点的远侄子节点为红色且该节点为父节点的右子节点</h6>
+<p><strong>处理：</strong></p>
+<ol>
+<li><strong>将P和S的颜色对调。</strong></li>
+<li><strong>对P节点进行右旋处理。</strong></li>
+<li><strong>把SL节点变成黑色，并删除D即可</strong></li>
+</ol>
+<p><img src="https://b3logfile.com/file/2021/02/solo-fetchupload-4743988366952740905-adf0f8a5.png?imageView2/2/w/1280/format/jpg/interlace/1/q/100" alt="">--&gt;<img src="https://b3logfile.com/file/2021/02/solo-fetchupload-2706717374622978331-c27fdc37.png?imageView2/2/w/1280/format/jpg/interlace/1/q/100" alt=""></p>
+<h6 id="toc_h6_29">情景3.2.2.3：远侄子节点为黑色，近侄子节点为红色，该节点为父亲节点的左孩子</h6>
+<p><strong>处理：</strong></p>
+<ol>
+<li><strong>SL节点颜色设为P节点颜色。</strong></li>
+<li><strong>将P节点颜色设为黑色。</strong></li>
+<li><strong>将S节点右旋。</strong></li>
+<li><strong>将P节点左旋。</strong></li>
+</ol>
+<p><img src="https://b3logfile.com/file/2021/02/solo-fetchupload-133302212508450250-1fdd109c.png?imageView2/2/w/1280/format/jpg/interlace/1/q/100" alt=""></p>
+<h6 id="toc_h6_30">情景3.2.2.4：远侄子节点为黑色，近侄子节点为红色，该节点为父亲节点的右孩子</h6>
+<p><strong>处理：</strong></p>
+<ol>
+<li><strong>SR节点颜色设为P节点颜色。</strong></li>
+<li><strong>将P节点颜色设为黑色。</strong></li>
+<li><strong>将S节点左旋。</strong></li>
+<li><strong>将P节点右旋。</strong></li>
+</ol>
+<p><img src="https://b3logfile.com/file/2021/02/solo-fetchupload-6439792832625374117-122be780.png?imageView2/2/w/1280/format/jpg/interlace/1/q/100" alt="">-</p>
+<h6 id="toc_h6_31">情景3.2.3：父亲节p为红色，兄弟节点和兄弟节点的两个孩子（只能是NULL节点）都为黑色</h6>
+<p><strong>处理：</strong></p>
+<ol>
+<li><strong>将父亲节点P改成黑色，将兄弟节点S改成红色。</strong></li>
+<li><strong>然后删除D即可。</strong></li>
+</ol>
+<p><img src="https://b3logfile.com/file/2021/02/solo-fetchupload-4603039583413471805-f098d10f.png?imageView2/2/w/1280/format/jpg/interlace/1/q/100" alt="">--&gt;<img src="https://b3logfile.com/file/2021/02/solo-fetchupload-6596548301412751992-b5745634.png?imageView2/2/w/1280/format/jpg/interlace/1/q/100" alt=""></p>
+<h6 id="toc_h6_32">情景3.2.4：父亲节点p，兄弟节点s和兄弟节点的两个孩子（只能为NULL节点）都为黑色</h6>
+<p><strong>处理：</strong></p>
+<ol>
+<li><strong>将兄弟节点S的颜色改成红色。</strong></li>
+<li><strong>然后删除D。</strong></li>
+<li><strong>以P为起始节点继续进行自平衡操作。</strong></li>
+</ol>
+<p><img src="https://b3logfile.com/file/2021/02/solo-fetchupload-8749786494900611777-bca5216f.png?imageView2/2/w/1280/format/jpg/interlace/1/q/100" alt="">--&gt;<img src="https://b3logfile.com/file/2021/02/solo-fetchupload-831968004401319948-a929f9bf.png?imageView2/2/w/1280/format/jpg/interlace/1/q/100" alt=""></p>
+<h3 id="toc_h3_33">总结：</h3>
+<pre><code>/**
+ &nbsp; &nbsp; * 删除红黑树自平衡方法
+ &nbsp; &nbsp; *
+ &nbsp; &nbsp; * |---情景1：左右子树均不为空
+ &nbsp; &nbsp; * &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  处理：寻找后继节点进行替换操作，更新待平衡节点为替换后的节点。
+ &nbsp; &nbsp; * |---情景2. 左右子树有一个为空
+ &nbsp; &nbsp; * |---情景2.1：需要删除的节点为红色节点
+ &nbsp; &nbsp; * &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  处理：直接删除。
+ &nbsp; &nbsp; * |---情景2.2：需要删除的节点为黑色节点
+ &nbsp; &nbsp; * &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  处理：如果一个子节点为红色，则把子节点变成黑色并替换该节点，删除替换后的节点。
+ &nbsp; &nbsp; * |---情景3：两个子树均为null
+ &nbsp; &nbsp; * |---情景3.1：需要删除的节点为红色节点
+ &nbsp; &nbsp; * &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  处理：直接删除。
+ &nbsp; &nbsp; * |---情景3.2：需要删除的节点为黑色节点
+ &nbsp; &nbsp; * |---情景3.2.1：该节点的兄弟节点为红色
+ &nbsp; &nbsp; * &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  处理：将兄弟节点变为黑色，父亲节点变为红色，
+ &nbsp; &nbsp; * &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  若该节点为父节点的左子节点，则对父节点进行左旋处理，反之则进行右旋处理
+ &nbsp; &nbsp; * &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  此时情景转化为3.2.2。
+ &nbsp; &nbsp; * |---情景3.2.2：该节点的兄弟节点为黑色
+ &nbsp; &nbsp; * |---情景3.2.2.1：该节点的远侄子节点为红色且该节点为父节点的左子节点
+ &nbsp; &nbsp; * &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  处理：将父节点和兄弟节点的颜色对调。
+ &nbsp; &nbsp; * &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  对父节点进行左旋处理。
+ &nbsp; &nbsp; * &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  把远侄子节点变成黑色，并删除目标节点即可。
+ &nbsp; &nbsp; * |---情景3.2.2.2：该节点的远侄子节点为红色且该节点为父节点的右子节点
+ &nbsp; &nbsp; * &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  处理：将父节点和兄弟节点的颜色对调。
+ &nbsp; &nbsp; * &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  对父节点进行右旋处理。
+ &nbsp; &nbsp; * &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  把远侄子节点变成黑色，并删除目标节点即可。
+ &nbsp; &nbsp; * |---情景3.2.2.3：远侄子节点为黑色，近侄子节点为红色，该节点为父亲节点的左孩子
+ &nbsp; &nbsp; * &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  处理：将近侄子节点颜色设为父节点颜色。
+ &nbsp; &nbsp; * &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  将父节点颜色设为黑色。
+ &nbsp; &nbsp; * &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  将兄弟节点右旋。
+ &nbsp; &nbsp; * &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  将父节点节点左旋。
+ &nbsp; &nbsp; * |---情景3.2.2.4：远侄子节点为黑色，近侄子节点为红色，该节点为父亲节点的右孩子
+ &nbsp; &nbsp; * &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  处理：将近侄子节点颜色设为父节点颜色。
+ &nbsp; &nbsp; * &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  将父节点颜色设为黑色。
+ &nbsp; &nbsp; * &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  将兄弟节点左旋。
+ &nbsp; &nbsp; * &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  将父节点节点右旋。
+ &nbsp; &nbsp; * |---情景3.2.3：父亲节为红色，兄弟节点和兄弟节点的两个孩子（只能是NULL节点）都为黑色
+ &nbsp; &nbsp; * &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  处理：将父节点改成黑色，将兄弟节点改成红色。
+ &nbsp; &nbsp; * &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  然后删除目标节点即可。
+ &nbsp; &nbsp; * |---情景3.2.4：父亲节点，兄弟节点和兄弟节点的两个孩子（只能为NULL节点）都为黑色
+ &nbsp; &nbsp; * &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  处理：将兄弟节点改成红色。
+ &nbsp; &nbsp; * &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  删除目标节点。
+ &nbsp; &nbsp; * &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  以父节点为目标节点继续进行自平衡操作
+ &nbsp; &nbsp; *
+ &nbsp; &nbsp; */
+</code></pre>
+<h2 id="toc_h2_34">5 红黑树查找</h2>
+<h3 id="toc_h3_35">5.1 getTreeNode方法</h3>
+<pre><code>/**
+ &nbsp; &nbsp; &nbsp; &nbsp; * Calls find for root node.
+ &nbsp; &nbsp; &nbsp; &nbsp; * @param h 要查找节点的hash值
+ &nbsp; &nbsp; &nbsp; &nbsp; * @param k 要查找节点的k
+ &nbsp; &nbsp; &nbsp; &nbsp; * @return 找到的节点，不存在返回null
+ &nbsp; &nbsp; &nbsp; &nbsp; */
+final TreeNode&lt;K,V&gt; getTreeNode(int h, Object k) {
+ &nbsp; &nbsp;// 如果当前节点不是根节点，那么先调用root()方法，返回根节点，根节点调用find，从根节点开始查找节点
+ &nbsp; &nbsp;return ((parent != null) ? root() : this).find(h, k, null);
+}
+</code></pre>
+<h3 id="toc_h3_36">5.2 find()</h3>
+<pre><code>/**
+ &nbsp; &nbsp; &nbsp; &nbsp; * Finds the node starting at root p with the given hash and key.
+ &nbsp; &nbsp; &nbsp; &nbsp; * The kc argument caches comparableClassFor(key) upon first use
+ &nbsp; &nbsp; &nbsp; &nbsp; * comparing keys.
+ &nbsp; &nbsp; &nbsp; &nbsp; * 从一个桶为的头节点开始查找，即从树的根开始
+ &nbsp; &nbsp; &nbsp; &nbsp; * @param h
+ &nbsp; &nbsp; &nbsp; &nbsp; * @param k
+ &nbsp; &nbsp; &nbsp; &nbsp; * @param kc 如果key是Comparable接口的实现，那么可以通过比较器比较
+ &nbsp; &nbsp; &nbsp; &nbsp; * @return 找到了返回节点，找不到返回null
+ &nbsp; &nbsp; &nbsp; &nbsp; */
+final TreeNode&lt;K,V&gt; find(int h, Object k, Class&lt;?&gt; kc) {
+ &nbsp; &nbsp;// p: 树的根节点
+ &nbsp; &nbsp;TreeNode&lt;K,V&gt; p = this;
+ &nbsp; &nbsp;// 遍历树，查找节点，找到后返回
+ &nbsp; &nbsp;do {
+ &nbsp; &nbsp; &nbsp; &nbsp;int ph, dir; K pk;
+ &nbsp; &nbsp; &nbsp; &nbsp;TreeNode&lt;K,V&gt; pl = p.left, pr = p.right, q;
+ &nbsp; &nbsp; &nbsp; &nbsp;if ((ph = p.hash) &gt; h)
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;p = pl;
+ &nbsp; &nbsp; &nbsp; &nbsp;else if (ph &lt; h)
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;p = pr;
+ &nbsp; &nbsp; &nbsp; &nbsp;else if ((pk = p.key) == k || (k != null &amp;&amp; k.equals(pk)))
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;return p;
+ &nbsp; &nbsp; &nbsp; &nbsp;else if (pl == null)
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;p = pr;
+ &nbsp; &nbsp; &nbsp; &nbsp;else if (pr == null)
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;p = pl;
+ &nbsp; &nbsp; &nbsp; &nbsp;else if ((kc != null ||
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  (kc = comparableClassFor(k)) != null) &amp;&amp;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; (dir = compareComparables(kc, k, pk)) != 0)
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;p = (dir &lt; 0) ? pl : pr;
+ &nbsp; &nbsp; &nbsp; &nbsp;else if ((q = pr.find(h, k, kc)) != null)
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;return q;
+ &nbsp; &nbsp; &nbsp; &nbsp;else
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;p = pl;
+ &nbsp;  } while (p != null);
+ &nbsp; &nbsp;return null;
+}
+</code></pre>
+<h2 id="toc_h2_37">6 实现HashMap</h2>
+<p><strong>使用数组+红黑树实现HashMap</strong></p>
+<pre><code>class MyHashMap {
+ &nbsp; &nbsp;private static class TreeNode {
+ &nbsp; &nbsp; &nbsp; &nbsp;private int key;
+ &nbsp; &nbsp; &nbsp; &nbsp;private int value;
+ &nbsp; &nbsp; &nbsp; &nbsp;private boolean color;
+ &nbsp; &nbsp; &nbsp; &nbsp;private TreeNode left;
+ &nbsp; &nbsp; &nbsp; &nbsp;private TreeNode right;
+ &nbsp; &nbsp; &nbsp; &nbsp;private TreeNode parent;
+
+ &nbsp; &nbsp; &nbsp; &nbsp;private TreeNode(int key, int value) {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;this.key = key;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;this.value = value;
+ &nbsp; &nbsp; &nbsp;  }
+ &nbsp;  }
+
+ &nbsp; &nbsp;private static final boolean RED = false;
+ &nbsp; &nbsp;private static final boolean BLACK = true;
+ &nbsp; &nbsp;private TreeNode[] hashtable = new TreeNode[1024];
+ &nbsp; &nbsp;private int currentSize;
+
+ &nbsp; &nbsp;public void put(int key, int value) {
+ &nbsp; &nbsp; &nbsp; &nbsp;if (currentSize &gt;= hashtable.length) {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;resize(); // 从结果来看，加载因子选 1.0 效率较高。
+ &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp; &nbsp;int index = key &amp; (hashtable.length - 1);
+ &nbsp; &nbsp; &nbsp; &nbsp;insert(index, new TreeNode(key, value));
+ &nbsp;  }
+
+ &nbsp; &nbsp;public int get(int key) {
+ &nbsp; &nbsp; &nbsp; &nbsp;int index = key &amp; (hashtable.length - 1);
+ &nbsp; &nbsp; &nbsp; &nbsp;TreeNode node = getNode(index, key);
+ &nbsp; &nbsp; &nbsp; &nbsp;return node == null ? -1 : node.value;
+ &nbsp;  }
+
+ &nbsp; &nbsp;public void remove(int key) {
+ &nbsp; &nbsp; &nbsp; &nbsp;int index = key &amp; (hashtable.length - 1);
+ &nbsp; &nbsp; &nbsp; &nbsp;delete(index, key);
+ &nbsp;  }
+
+ &nbsp; &nbsp;/**
+ &nbsp; &nbsp; * 对哈希表进行扩容。
+ &nbsp; &nbsp; */
+ &nbsp; &nbsp;private void resize() {
+ &nbsp; &nbsp; &nbsp; &nbsp;TreeNode[] oldTable = hashtable;
+ &nbsp; &nbsp; &nbsp; &nbsp;hashtable = new TreeNode[hashtable.length &lt;&lt; 1];
+ &nbsp; &nbsp; &nbsp; &nbsp;for (TreeNode root : oldTable) {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;postorderTraversal(root);
+ &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp; &nbsp;currentSize &gt;&gt;= 1;
+ &nbsp;  }
+
+ &nbsp; &nbsp;/**
+ &nbsp; &nbsp; * 获取指定位置上的指定结点。
+ &nbsp; &nbsp; * @param index
+ &nbsp; &nbsp; * @param key
+ &nbsp; &nbsp; * @return
+ &nbsp; &nbsp; */
+ &nbsp; &nbsp;private TreeNode getNode(int index, int key) {
+ &nbsp; &nbsp; &nbsp; &nbsp;TreeNode current = hashtable[index];
+ &nbsp; &nbsp; &nbsp; &nbsp;while (current != null) {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;if (current.key == key) {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;break;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;if (current.key &lt; key) {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;current = current.right;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  } else {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;current = current.left;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp; &nbsp;return current;
+ &nbsp;  }
+
+ &nbsp; &nbsp;/**
+ &nbsp; &nbsp; * 在指定位置上插入结点。
+ &nbsp; &nbsp; * @param index
+ &nbsp; &nbsp; * @param insert
+ &nbsp; &nbsp; */
+ &nbsp; &nbsp;private void insert(int index, TreeNode insert) {
+ &nbsp; &nbsp; &nbsp; &nbsp;TreeNode current = hashtable[index], parent = null; // 分别保存当前结点及其父结点。
+ &nbsp; &nbsp; &nbsp; &nbsp;while (current != null) {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;parent = current;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;if (current.key == insert.key) {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;current.value = insert.value;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;return;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;if (current.key &lt; insert.key) {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;current = current.right;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  } else {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;current = current.left;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp; &nbsp;insert.parent = parent;
+ &nbsp; &nbsp; &nbsp; &nbsp;if (parent == null) {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;hashtable[index] = insert;
+ &nbsp; &nbsp; &nbsp;  } else if (parent.key &lt; insert.key) {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;parent.right = insert;
+ &nbsp; &nbsp; &nbsp;  } else {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;parent.left = insert;
+ &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp; &nbsp;currentSize++;
+ &nbsp; &nbsp; &nbsp; &nbsp;fixAfterInsertion(index, insert);
+ &nbsp;  }
+
+ &nbsp; &nbsp;/**
+ &nbsp; &nbsp; * 删除指定位置上的指定结点。
+ &nbsp; &nbsp; * @param index
+ &nbsp; &nbsp; * @param key
+ &nbsp; &nbsp; */
+ &nbsp; &nbsp;private void delete(int index, int key) {
+ &nbsp; &nbsp; &nbsp; &nbsp;TreeNode delete = getNode(index, key);
+ &nbsp; &nbsp; &nbsp; &nbsp;if (delete == null) {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;return;
+ &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp; &nbsp;if (delete.left != null &amp;&amp; delete.right != null) {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;TreeNode successor = delete.right;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;while (successor.left != null) {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;successor = successor.left;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;delete.key = successor.key;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;delete.value = successor.value;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;delete = successor;
+ &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp; &nbsp;TreeNode replacement = delete.left == null ? delete.right : delete.left;
+ &nbsp; &nbsp; &nbsp; &nbsp;if (replacement == null) {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;fixAfterDeletion(index, delete);
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;if (delete.parent == null) {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;hashtable[index] = null;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  } else if (delete.parent.left == delete) {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;delete.parent.left = null;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  } else {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;delete.parent.right = null;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp;  } else { // 被删除的结点只有一个子结点，那它一定是黑色结点，且它的子结点为红色。
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;replacement.parent = delete.parent;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;if (delete.parent == null) {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;hashtable[index] = replacement;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  } else if (delete.parent.left == delete) {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;delete.parent.left = replacement;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  } else {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;delete.parent.right = replacement;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;replacement.color = BLACK;
+ &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp; &nbsp;currentSize--;
+ &nbsp;  }
+
+ &nbsp; &nbsp;/**
+ &nbsp; &nbsp; * 对插入后的结点进行调整。
+ &nbsp; &nbsp; *
+ &nbsp; &nbsp; * @param index
+ &nbsp; &nbsp; * @param insert
+ &nbsp; &nbsp; */
+ &nbsp; &nbsp;private void fixAfterInsertion(int index, TreeNode insert) {
+ &nbsp; &nbsp; &nbsp; &nbsp;// 只有父结点是红色才进行处理。
+ &nbsp; &nbsp; &nbsp; &nbsp;while (colorOf(insert.parent) == RED) {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;// 分别保存当前结点的父结点、叔父结点、祖父结点。
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;TreeNode parent = insert.parent, uncle = sibling(parent), grand = parent.parent;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;// 不管是哪种情况，祖父结点都需要染成红色。
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;grand.color = RED;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;if (colorOf(uncle) == BLACK) { // 叔父结点为黑色。
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;if (grand.left == parent) {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;if (parent.right == insert) {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;rotationLeft(index, parent); // LR 情况：先对父结点进行左旋转。
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;parent = insert;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;rotationRight(index, grand); // LL 情况：对祖父结点进行右旋转。
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  } else {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;if (parent.left == insert) {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;rotationRight(index, parent); // RL 情况：先对父结点进行右旋转。
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;parent = insert;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;rotationLeft(index, grand); // RR 情况：对祖父结点进行左旋转。
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;parent.color = BLACK; // 将旋转后的中心结点染成黑色。
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;insert = hashtable[index]; // 处理完直接退出循环。
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  } else { // 叔父结点为红色，则将父结点与叔父结点都染成黑色，将祖父结点作为新插入的结点继续处理。
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;uncle.color = BLACK;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;parent.color = BLACK;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;insert = grand;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp; &nbsp;hashtable[index].color = BLACK; // 根结点必须是黑色。
+ &nbsp;  }
+
+ &nbsp; &nbsp;/**
+ &nbsp; &nbsp; * 对删除后的结点进行调整。
+ &nbsp; &nbsp; * @param index
+ &nbsp; &nbsp; * @param delete
+ &nbsp; &nbsp; */
+ &nbsp; &nbsp;private void fixAfterDeletion(int index, TreeNode delete) {
+ &nbsp; &nbsp; &nbsp; &nbsp;while (delete.parent != null &amp;&amp; delete.color == BLACK) { // 只有删除的是黑色结点才进行处理。
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;// 分别保存当前结点的父结点、兄弟结点。
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;TreeNode parent = delete.parent, sibling = sibling(delete);
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;if (sibling.color == BLACK) { // 兄弟结点是黑色。
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;if (colorOf(sibling.left) == BLACK &amp;&amp; colorOf(sibling.right) == BLACK) { // 兄弟结点没有红色子结点。
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;if (parent.color == BLACK) {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;delete = parent;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;parent.color = BLACK;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;sibling.color = RED;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  } else { // 兄弟结点有红色子结点。
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;if (parent.left == sibling) {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;if (colorOf(sibling.left) == BLACK) {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;rotationLeft(index, sibling); // LR 情况：先对兄弟结点进行左旋转。
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;sibling = sibling.parent;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;rotationRight(index, parent); // LL 情况：对父结点进行右旋转。
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  } else {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;if (colorOf(sibling.right) == BLACK) {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;rotationRight(index, sibling); // RL 情况：先对兄弟结点进行右旋转。
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;sibling = sibling.parent;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;rotationLeft(index, parent); // RR 情况：对父结点进行左旋转。
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;sibling.color = parent.color; // 旋转后中心结点继承父结点的颜色。
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;sibling.left.color = BLACK;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;sibling.right.color = BLACK;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;delete = hashtable[index]; // 处理完直接退出循环。
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  } else { // 兄弟结点是红色。
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;if (parent.left == sibling) {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;rotationRight(index, parent);
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  } else {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;rotationLeft(index, parent);
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;parent.color = RED;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;sibling.color = BLACK;
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp;  }
+ &nbsp;  }
+
+ &nbsp; &nbsp;/**
+ &nbsp; &nbsp; * 获取指定结点的兄弟结点。
+ &nbsp; &nbsp; * @param node
+ &nbsp; &nbsp; * @return
+ &nbsp; &nbsp; */
+ &nbsp; &nbsp;private TreeNode sibling(TreeNode node) {
+ &nbsp; &nbsp; &nbsp; &nbsp;if (node.parent.left == node) {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;return node.parent.right;
+ &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp; &nbsp;return node.parent.left;
+ &nbsp;  }
+
+ &nbsp; &nbsp;/**
+ &nbsp; &nbsp; * 对指定位置上的指定结点进行左旋转。
+ &nbsp; &nbsp; * 以某个结点作为支点(旋转结点)，其右子结点变为旋转结点的父结点，
+ &nbsp; &nbsp; * 右子结点的左子结点变为旋转结点的右子结点，左子结点保持不变。
+ &nbsp; &nbsp; * @param index 桶位置
+ &nbsp; &nbsp; * @param node 旋转节点
+ &nbsp; &nbsp; */
+ &nbsp; &nbsp;private void rotationLeft(int index, TreeNode node) {
+ &nbsp; &nbsp; &nbsp; &nbsp;TreeNode newRoot = node.right; // 结点的右子结点会成为这颗子树的根结点。
+ &nbsp; &nbsp; &nbsp; &nbsp;node.right = newRoot.left;
+ &nbsp; &nbsp; &nbsp; &nbsp;if (newRoot.left != null) {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;newRoot.left.parent = node;
+ &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp; &nbsp;newRoot.left = node;
+ &nbsp; &nbsp; &nbsp; &nbsp;newRoot.parent = node.parent;
+ &nbsp; &nbsp; &nbsp; &nbsp;if (node.parent == null) {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;hashtable[index] = newRoot;
+ &nbsp; &nbsp; &nbsp;  } else if (node.parent.left == node) {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;node.parent.left = newRoot;
+ &nbsp; &nbsp; &nbsp;  } else {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;node.parent.right = newRoot;
+ &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp; &nbsp;node.parent = newRoot;
+ &nbsp;  }
+
+ &nbsp; &nbsp;/**
+ &nbsp; &nbsp; * 对指定位置上的指定结点进行右旋转。
+ &nbsp; &nbsp; * 以某个结点作为支点(旋转结点)，其左子结点变为旋转结点的父结点，
+ &nbsp; &nbsp; * 左子结点的右子结点变为旋转结点的左子结点，右子结点保持不变。
+ &nbsp; &nbsp; * @param index 桶位置
+ &nbsp; &nbsp; * @param node 旋转节点
+ &nbsp; &nbsp; */
+ &nbsp; &nbsp;private void rotationRight(int index, TreeNode node) {
+ &nbsp; &nbsp; &nbsp; &nbsp;TreeNode newRoot = node.left; // 结点的左子结点会成为这颗子树的根结点。
+ &nbsp; &nbsp; &nbsp; &nbsp;node.left = newRoot.right;
+ &nbsp; &nbsp; &nbsp; &nbsp;if (newRoot.right != null) {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;newRoot.right.parent = node;
+ &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp; &nbsp;newRoot.right = node;
+ &nbsp; &nbsp; &nbsp; &nbsp;newRoot.parent = node.parent;
+ &nbsp; &nbsp; &nbsp; &nbsp;if (node.parent == null) {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;hashtable[index] = newRoot;
+ &nbsp; &nbsp; &nbsp;  } else if (node.parent.left == node) {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;node.parent.left = newRoot;
+ &nbsp; &nbsp; &nbsp;  } else {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;node.parent.right = newRoot;
+ &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp; &nbsp;node.parent = newRoot;
+ &nbsp;  }
+
+ &nbsp; &nbsp;/**
+ &nbsp; &nbsp; *  获取指定结点的颜色。
+ &nbsp; &nbsp; * @param node
+ &nbsp; &nbsp; * @return
+ &nbsp; &nbsp; */
+ &nbsp; &nbsp;private boolean colorOf(TreeNode node) {
+ &nbsp; &nbsp; &nbsp; &nbsp;return node == null || node.color;
+ &nbsp;  }
+
+ &nbsp; &nbsp;/**
+ &nbsp; &nbsp; * 对结点进行后序遍历。
+ &nbsp; &nbsp; * @param node
+ &nbsp; &nbsp; */
+ &nbsp; &nbsp;private void postorderTraversal(TreeNode node) {
+ &nbsp; &nbsp; &nbsp; &nbsp;if (node == null) {
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;return;
+ &nbsp; &nbsp; &nbsp;  }
+ &nbsp; &nbsp; &nbsp; &nbsp;postorderTraversal(node.left);
+ &nbsp; &nbsp; &nbsp; &nbsp;postorderTraversal(node.right);
+ &nbsp; &nbsp; &nbsp; &nbsp;node.left = node.right = node.parent = null;
+ &nbsp; &nbsp; &nbsp; &nbsp;node.color = RED;
+ &nbsp; &nbsp; &nbsp; &nbsp;int index = node.key &amp; (hashtable.length - 1);
+ &nbsp; &nbsp; &nbsp; &nbsp;insert(index, node);
+ &nbsp;  }
+}
+</code></pre>
+                        <div>
+                            <hr>
+
+标题：算法：红黑树<br>
+作者：<a href="https://gyyspace.github.io" target="_blank">function001</a><br>
+地址：<a href="https://gyyspace.github.io/articles/2024/07/21/1721547131201.html" target="_blank">https://gyyspace.github.io/articles/2024/07/21/1721547131201.html</a><br>
+
+<!-- 签名档内可使用 HTML、JavaScript -->
+<br>
+                        </div>
+                </div>
+                <footer>
+                    <div class="post-tags">
+                            <a rel="tag" href="https://gyyspace.github.io/tags/%E7%AE%97%E6%B3%95">
+                                算法</a>
+                            <a rel="tag" href="https://gyyspace.github.io/tags/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84">
+                                数据结构</a>
+                    </div>
+                    <div class="post-nav fn-clear">
+                            <div class="post-nav-prev post-nav-item fn-right">
+                                <a href="https://gyyspace.github.io/articles/2024/07/21/1721547059362.html" rel="prev"
+                                   title="算法：查找算法">
+                                    算法：查找算法 >
+                                </a>
+                            </div>
+                            <div class="post-nav-next post-nav-item fn-left">
+                                <a href="https://gyyspace.github.io/articles/2024/07/21/1721547230220.html" rel="next" title="算法：排序算法">
+                                    < 算法：排序算法
+                                </a>
+                            </div>
+                    </div>
+                </footer>
+            </article>
+        </div>
+            <div id="gitalk-container"></div>
+            <div id="b3logsolocomments"></div>
+            <div id="vcomment" data-name="function001" data-postId="1721547131201"></div>
+            <div id="relevantArticles"></div>
+            <div id="randomArticles"></div>
+<div class="sidebar-toggle">
+    <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+    <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+    <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+</div>
+
+<aside class="sidebar">
+<ul class="article__toc">
+        <li class="toc__h1">
+            <a href="#toc_h1_0">红黑树底层详解</a>
+        </li>
+        <li class="toc__h2">
+            <a href="#toc_h2_1">1 红黑树的性质</a>
+        </li>
+        <li class="toc__h2">
+            <a href="#toc_h2_2">2 红黑树的自平衡（左旋、右旋和变色）</a>
+        </li>
+        <li class="toc__h3">
+            <a href="#toc_h3_3">1、变色</a>
+        </li>
+        <li class="toc__h3">
+            <a href="#toc_h3_4">2、左旋</a>
+        </li>
+        <li class="toc__h3">
+            <a href="#toc_h3_5">3、右旋</a>
+        </li>
+        <li class="toc__h2">
+            <a href="#toc_h2_6">3 红黑树的插入</a>
+        </li>
+        <li class="toc__h3">
+            <a href="#toc_h3_7">3.1 红黑树的树化</a>
+        </li>
+        <li class="toc__h4">
+            <a href="#toc_h4_8">3.1.1 链表结构替换</a>
+        </li>
+        <li class="toc__h4">
+            <a href="#toc_h4_9">3.1.2 链表树化</a>
+        </li>
+        <li class="toc__h3">
+            <a href="#toc_h3_10">3.2 红黑树的插入</a>
+        </li>
+        <li class="toc__h3">
+            <a href="#toc_h3_11">3.3 重要方法</a>
+        </li>
+        <li class="toc__h4">
+            <a href="#toc_h4_12">3.3.1 balanceInsertion()</a>
+        </li>
+        <li class="toc__h5">
+            <a href="#toc_h5_13">(1) 自平衡流程</a>
+        </li>
+        <li class="toc__h5">
+            <a href="#toc_h5_14">(2) 总结：</a>
+        </li>
+        <li class="toc__h2">
+            <a href="#toc_h2_15">4. 二叉树的删除</a>
+        </li>
+        <li class="toc__h3">
+            <a href="#toc_h3_16">4.1 removeTreeNode()</a>
+        </li>
+        <li class="toc__h3">
+            <a href="#toc_h3_17">4.2balanceDeletion()</a>
+        </li>
+        <li class="toc__h4">
+            <a href="#toc_h4_18">情景1：节点的左子树、右子树都不为null</a>
+        </li>
+        <li class="toc__h4">
+            <a href="#toc_h4_19">情景2：节点的左子树为null、右子树不为null 或者 右子树为null，左子树不为null</a>
+        </li>
+        <li class="toc__h5">
+            <a href="#toc_h5_20">情景2.1：需要删除的节点为红色节点</a>
+        </li>
+        <li class="toc__h5">
+            <a href="#toc_h5_21">情景2.2：需要删除的节点为黑色节点</a>
+        </li>
+        <li class="toc__h4">
+            <a href="#toc_h4_22">情景3：两个子树均为null</a>
+        </li>
+        <li class="toc__h5">
+            <a href="#toc_h5_23">情景3.1：需要删除的节点为红色节点</a>
+        </li>
+        <li class="toc__h5">
+            <a href="#toc_h5_24">情景3.2：需要删除的节点为黑色节点</a>
+        </li>
+        <li class="toc__h6">
+            <a href="#toc_h6_25">情景3.2.1：该节点的兄弟节点为红色</a>
+        </li>
+        <li class="toc__h6">
+            <a href="#toc_h6_26">情景3.2.2：该节点的兄弟节点为黑色</a>
+        </li>
+        <li class="toc__h6">
+            <a href="#toc_h6_27">情景3.2.2.1：该节点的远侄子节点为红色且该节点为父节点的左子节点</a>
+        </li>
+        <li class="toc__h6">
+            <a href="#toc_h6_28">情景3.2.2.2：该节点的远侄子节点为红色且该节点为父节点的右子节点</a>
+        </li>
+        <li class="toc__h6">
+            <a href="#toc_h6_29">情景3.2.2.3：远侄子节点为黑色，近侄子节点为红色，该节点为父亲节点的左孩子</a>
+        </li>
+        <li class="toc__h6">
+            <a href="#toc_h6_30">情景3.2.2.4：远侄子节点为黑色，近侄子节点为红色，该节点为父亲节点的右孩子</a>
+        </li>
+        <li class="toc__h6">
+            <a href="#toc_h6_31">情景3.2.3：父亲节p为红色，兄弟节点和兄弟节点的两个孩子（只能是NULL节点）都为黑色</a>
+        </li>
+        <li class="toc__h6">
+            <a href="#toc_h6_32">情景3.2.4：父亲节点p，兄弟节点s和兄弟节点的两个孩子（只能为NULL节点）都为黑色</a>
+        </li>
+        <li class="toc__h3">
+            <a href="#toc_h3_33">总结：</a>
+        </li>
+        <li class="toc__h2">
+            <a href="#toc_h2_34">5 红黑树查找</a>
+        </li>
+        <li class="toc__h3">
+            <a href="#toc_h3_35">5.1 getTreeNode方法</a>
+        </li>
+        <li class="toc__h3">
+            <a href="#toc_h3_36">5.2 find()</a>
+        </li>
+        <li class="toc__h2">
+            <a href="#toc_h2_37">6 实现HashMap</a>
+        </li>
+</ul></aside>
+    </div>
+</main>
+<footer class="footer">
+    <div class="wrapper">
+        <div class="fn-clear">
+            <a href="https://gyyspace.github.io">echo洋</a>
+            
+            <div class="fn-right">
+            </div>
+        </div>
+        <div class="fn-clear">
+            &copy; 2024
+            <a href="https://gyyspace.github.io">echo洋</a>
+            
+        </div>
+    </div>
+</footer>
+<div class="back-to-top" onclick="Util.goTop()"></div>
+
+<script>
+  var Label = {
+    speech: true,
+    servePath: "https://gyyspace.github.io",
+    staticServePath: "https://gyyspace.github.io",
+    luteAvailable: false,
+    hljsStyle: 'github',
+    langLabel: "zh_CN",
+    version: "4.4.0",
+    staticSite: true,
+    showCodeBlockLn: false,
+    articleId: "1721547131201",
+  }
+</script>
+<script src="https://gyyspace.github.io/skins/next/js/common.min.js?1721540580809"></script>
+<script type="text/javascript">
+    Label.tocLabel = "目录"
+    Label.siteViewLabel = "站点概览"
+</script>
+
+<script type="text/javascript">
+    Util.addScript('https://gyyspace.github.io/js/page.min.js?1721540580809', 'soloPageScript')
+    var page = new Page({
+        "commentContentCannotEmptyLabel": "评论不能为空",
+        "oId": "1721547131201",
+        "blogHost": "https://gyyspace.github.io",
+        "randomArticles1Label": "随机阅读：",
+        "externalRelevantArticles1Label": "站外相关阅读："
+    });
+    $(document).ready(function () {
+        page.load();
+    page.tips.externalRelevantArticlesDisplayCount = "0";
+        page.loadRandomArticles();
+        page.loadRelevantArticles('1721547131201', '<h4>相关阅读：</h4>');
+    NexT.initArticle()
+    });
+</script>
+</body>
+</html>
+
+<!-- Generated by Latke (https://github.com/88250/latke) in 7ms, 2024/07/21 15:56:20 -->

@@ -6,58 +6,137 @@
     <atom:link href="https://gyyspace.github.io/rss.xml" rel="self" type="application/rss+xml"/>
     <description/>
     <generator>Solo, v4.4.0, https://b3log.org/solo</generator>
-    <lastBuildDate>Sun, 21 Jul 2024 13:50:56 +0800</lastBuildDate>
+    <lastBuildDate>Sun, 21 Jul 2024 15:56:20 +0800</lastBuildDate>
     <language>zh-cn</language>
     <item>
-      <title>Redis：集群cluster</title>
-      <link>https://gyyspace.github.io/articles/2024/06/09/1717937447426.html</link>
+      <title>算法：排序算法</title>
+      <link>https://gyyspace.github.io/articles/2024/07/21/1721547230220.html</link>
       <description>
-        <![CDATA[<p><strong>集群，即Redis Cluster，是Redis 3.0开始引入的分布式存储方案。</strong></p>
-<p>集群由多个节点(Node)组成，Redis的数据分布在这些节点中。集群中的节点分为主节点和从节点：只有主节点负责读写请求和集群信息的维护；从节点只进行主节点数据和状态信息的复制。</p>]]>
+        <![CDATA[<p>常见排序算法的实现以及时间复杂度。</p>]]>
       </description>
       <author>function001</author>
-      <guid>https://gyyspace.github.io/articles/2024/06/09/1717937447426.html</guid>
-      <category>Redis</category>
-      <pubDate>Sun, 09 Jun 2024 20:50:47 +0800</pubDate>
+      <guid>https://gyyspace.github.io/articles/2024/07/21/1721547230220.html</guid>
+      <category>待分类</category>
+      <pubDate>Sun, 21 Jul 2024 15:33:50 +0800</pubDate>
     </item>
     <item>
-      <title>Redis：哨兵sentinel</title>
-      <link>https://gyyspace.github.io/articles/2024/06/09/1717936928663.html</link>
+      <title>算法：红黑树</title>
+      <link>https://gyyspace.github.io/articles/2024/07/21/1721547131201.html</link>
       <description>
-        <![CDATA[<p><strong>哨兵的核心功能是主节点的自动故障转移</strong>。下面是Redis官方文档对于哨兵功能的描述：</p>
-<ul>
-<li><strong>监控（Monitoring）：哨兵会不断地检查主节点和从节点是否运作正常。</strong></li>
-<li><strong>自动故障转移（Automatic failover）：当主节点不能正常工作时，哨兵会开始自动故障转移操作，它会将失效主节点的其中一个从节点升级为新的主节点，并让其他从节点改为复制新的主节点。</strong></li>
-<li><strong>配置提供者（Configuration provider）：客户端在初始化时，通过连接哨兵来获得当前Redis服务的主节点地址。</strong></li>
-<li>**通知（Notification）：哨兵可以将故障转移的结果发送给客户端。</li>
-</ul>]]>
+        <![CDATA[<p>详解红黑树数据结构</p>]]>
       </description>
       <author>function001</author>
-      <guid>https://gyyspace.github.io/articles/2024/06/09/1717936928663.html</guid>
-      <category>Redis</category>
-      <pubDate>Sun, 09 Jun 2024 20:48:39 +0800</pubDate>
+      <guid>https://gyyspace.github.io/articles/2024/07/21/1721547131201.html</guid>
+      <category>数据结构</category>
+      <category>算法</category>
+      <pubDate>Sun, 21 Jul 2024 15:32:11 +0800</pubDate>
     </item>
     <item>
-      <title>Redis：主从复制</title>
-      <link>https://gyyspace.github.io/articles/2024/06/09/1717936680892.html</link>
+      <title>算法：查找算法</title>
+      <link>https://gyyspace.github.io/articles/2024/07/21/1721547059362.html</link>
       <description>
-        <![CDATA[<p>Redis主从复制是一个多Redis实例进行数据同步的过程，其中一个实例是主实例（Master），其他实例是从实例（Slave）。主实例负责处理命令请求，而从实例则 periodically 地从主实例拉取数据副本。</p>]]>
+        <![CDATA[<ol>
+<li><strong>线性查找</strong></li>
+<li><strong>二分查找</strong></li>
+<li><strong>插值查找</strong></li>
+<li><strong>斐波那契查找</strong></li>
+</ol>]]>
       </description>
       <author>function001</author>
-      <guid>https://gyyspace.github.io/articles/2024/06/09/1717936680892.html</guid>
-      <category>Redis</category>
-      <pubDate>Sun, 09 Jun 2024 20:38:00 +0800</pubDate>
+      <guid>https://gyyspace.github.io/articles/2024/07/21/1721547059362.html</guid>
+      <category>算法</category>
+      <category>数据结构</category>
+      <pubDate>Sun, 21 Jul 2024 15:30:59 +0800</pubDate>
     </item>
     <item>
-      <title>Redis：持久化</title>
-      <link>https://gyyspace.github.io/articles/2024/06/09/1717912783769.html</link>
+      <title>算法：堆&amp;栈</title>
+      <link>https://gyyspace.github.io/articles/2024/07/21/1721544405263.html</link>
       <description>
-        <![CDATA[<p><strong>持久化的功能：Redis是内存数据库，数据都是存储在内存中，为了避免进程退出导致数据的永久丢失，需要定期将Redis中的数据以某种形式(数据或命令)从内存保存到硬盘；当下次Redis重启时，利用持久化文件实现数据恢复。除此之外，为了进行灾难备份，可以将持久化文件拷贝到一个远程位置。</strong></p>]]>
+        <![CDATA[<p>使用堆和栈解决算法问题。</p>]]>
       </description>
       <author>function001</author>
-      <guid>https://gyyspace.github.io/articles/2024/06/09/1717912783769.html</guid>
-      <category>Redis</category>
-      <pubDate>Sun, 09 Jun 2024 13:59:43 +0800</pubDate>
+      <guid>https://gyyspace.github.io/articles/2024/07/21/1721544405263.html</guid>
+      <category>数据结构</category>
+      <category>算法</category>
+      <pubDate>Sun, 21 Jul 2024 15:28:53 +0800</pubDate>
+    </item>
+    <item>
+      <title>并发编程：进程、线程</title>
+      <link>https://gyyspace.github.io/articles/2024/07/21/1721546762645.html</link>
+      <description>
+        <![CDATA[<p>程序，进程，线程，协程。</p>]]>
+      </description>
+      <author>function001</author>
+      <guid>https://gyyspace.github.io/articles/2024/07/21/1721546762645.html</guid>
+      <category>并发编程</category>
+      <pubDate>Sun, 21 Jul 2024 15:26:02 +0800</pubDate>
+    </item>
+    <item>
+      <title>算法：数组</title>
+      <link>https://gyyspace.github.io/articles/2024/07/21/1721546193766.html</link>
+      <description>
+        <![CDATA[<p>最常见的结构-数组，与数组应用相关的算法题。</p>]]>
+      </description>
+      <author>function001</author>
+      <guid>https://gyyspace.github.io/articles/2024/07/21/1721546193766.html</guid>
+      <category>数据结构</category>
+      <category>算法</category>
+      <pubDate>Sun, 21 Jul 2024 15:16:33 +0800</pubDate>
+    </item>
+    <item>
+      <title>算法：数学知识</title>
+      <link>https://gyyspace.github.io/articles/2024/07/21/1721546109578.html</link>
+      <description>
+        <![CDATA[<p>和数学知识相关的算法题。</p>]]>
+      </description>
+      <author>function001</author>
+      <guid>https://gyyspace.github.io/articles/2024/07/21/1721546109578.html</guid>
+      <category>数据结构</category>
+      <category>算法</category>
+      <pubDate>Sun, 21 Jul 2024 15:15:09 +0800</pubDate>
+    </item>
+    <item>
+      <title>算法：动态规划</title>
+      <link>https://gyyspace.github.io/articles/2024/07/21/1721543745774.html</link>
+      <description>
+        <![CDATA[<p><strong>动态规划问题的一般形式就是求最值</strong>。动态规划其实是运筹学的一种最优化方法，只不过在计算机问题上应用比较多，比如求<strong>最长</strong>递增子序列呀，<strong>最小</strong>编辑距离呀等等。</p>]]>
+      </description>
+      <author>function001</author>
+      <guid>https://gyyspace.github.io/articles/2024/07/21/1721543745774.html</guid>
+      <category>算法</category>
+      <category>数据结构</category>
+      <pubDate>Sun, 21 Jul 2024 14:43:35 +0800</pubDate>
+    </item>
+    <item>
+      <title>算法：DFS&amp;BFS</title>
+      <link>https://gyyspace.github.io/articles/2024/07/21/1721543855065.html</link>
+      <description>
+        <![CDATA[<p>解决一个回溯问题，实际上就是一个决策树的遍历过程**。你只需要思考 3 个问题：</p>
+<ol>
+<li><strong>路径</strong>：也就是已经做出的选择。</li>
+<li><strong>选择列表</strong>：也就是你当前可以做的选择。</li>
+<li><strong>结束条件</strong>：也就是到达决策树底层，无法再做选择的条件。</li>
+</ol>]]>
+      </description>
+      <author>function001</author>
+      <guid>https://gyyspace.github.io/articles/2024/07/21/1721543855065.html</guid>
+      <category>算法</category>
+      <category>数据结构</category>
+      <pubDate>Sun, 21 Jul 2024 14:37:35 +0800</pubDate>
+    </item>
+    <item>
+      <title>算法：二叉树</title>
+      <link>https://gyyspace.github.io/articles/2024/07/21/1721542137927.html</link>
+      <description>
+        <![CDATA[<p><strong>递归算法的关键要明确函数的定义，相信这个定义，而不要跳进递归细节。</strong></p>
+<p>写二叉树的算法题，都是基于递归框架的，我们先要搞清楚 <code>root</code> 节点它自己要做什么，然后根据题目要求选择使用前序，中序，后续的递归框架。</p>
+<p>二叉树题目的难点在于如何通过题目的要求思考出每一个节点需要做什么，这个只能通过多刷题进行练习了。</p>]]>
+      </description>
+      <author>function001</author>
+      <guid>https://gyyspace.github.io/articles/2024/07/21/1721542137927.html</guid>
+      <category>算法</category>
+      <category>数据结构</category>
+      <pubDate>Sun, 21 Jul 2024 14:35:57 +0800</pubDate>
     </item>
   </channel>
 </rss>
