@@ -1,73 +1,55 @@
 <!DOCTYPE html>
 <html>
-<head>
-<meta charset="utf-8"/><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"/><meta name="theme-color" content="#3b3e43"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"/><meta name="apple-mobile-web-app-status-bar-style" content="black"><meta name="format-detection" content="telephone=no"/><title>Redis：哨兵sentinel - echo洋</title><meta name="description" content="哨兵的核心功能是主节点的自动故障转移。下面是Redis官方文档对于哨兵功能的描述： 监控（Monitoring）：哨兵会不断地检查主节点和从节点是否运作正常。 自动故障转移（Automatic failover）：当主节点不能正常工作时，哨兵会开始自动故障转移操作，它会将失效主节点的其中一个从节点升级为新的主节点，并让其他从节点改为复制新的主节点。 配置提供者（Configuration provider）：客户端在初始化时，通过连接哨兵来获得当前Redis服务的主节点地址。 **通知（Notification）：哨兵可以将故障转移的结果发送给客户端。"/><meta property="og:description" content="哨兵的核心功能是主节点的自动故障转移。下面是Redis官方文档对于哨兵功能的描述： 监控（Monitoring）：哨兵会不断地检查主节点和从节点是否运作正常。 自动故障转移（Automatic failover）：当主节点不能正常工作时，哨兵会开始自动故障转移操作，它会将失效主节点的其中一个从节点升级为新的主节点，并让其他从节点改为复制新的主节点。 配置提供者（Configuration provider）：客户端在初始化时，通过连接哨兵来获得当前Redis服务的主节点地址。 **通知（Notification）：哨兵可以将故障转移的结果发送给客户端。"/>    <meta name="keywords" content="Solo,Java,博客,开源"/><link rel="dns-prefetch" href="https://gyyspace.github.io"/><link rel="dns-prefetch" href="https://cdn.jsdelivr.net"/><link rel="preconnect" href="https://gyyspace.github.io"><link rel="icon" type="image/png" href="https://b3log.org/images/brand/solo-128.png"/><link rel="apple-touch-icon" href="https://b3log.org/images/brand/solo-128.png"><link rel="shortcut icon" type="image/x-icon" href="https://b3log.org/images/brand/solo-128.png"><meta name="copyright" content="B3log"/><meta http-equiv="Window-target" content="_top"/><meta property="og:locale" content="zh_CN"/><meta property="og:title" content="Redis：哨兵sentinel - echo洋"/><meta property="og:site_name" content="echo洋"/><meta property="og:url"      content="https://gyyspace.github.io/articles/2024/06/09/1717936928663.html?"/><meta property="og:image" content="https://b3log.org/images/brand/solo-128.png"/><link rel="search" type="application/opensearchdescription+xml" title="Redis：哨兵sentinel - echo洋" href="/opensearch.xml"><link href="https://gyyspace.github.io/rss.xml" title="RSS" type="application/rss+xml" rel="alternate"/><link rel="manifest" href="https://gyyspace.github.io/manifest.json">        <link rel="canonical" href="https://gyyspace.github.io/articles/2024/06/09/1717936928663.html">        <link rel="stylesheet"
-              href="https://gyyspace.github.io/skins/next/css/base.css?1721540580809"/>
+    <head>
+<meta charset="utf-8"/><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"/><meta name="theme-color" content="#3b3e43"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"/><meta name="apple-mobile-web-app-status-bar-style" content="black"><meta name="format-detection" content="telephone=no"/><title>Redis：哨兵sentinel - echo洋</title><meta name="description" content="哨兵的核心功能是主节点的自动故障转移。下面是Redis官方文档对于哨兵功能的描述： 监控（Monitoring）：哨兵会不断地检查主节点和从节点是否运作正常。 自动故障转移（Automatic failover）：当主节点不能正常工作时，哨兵会开始自动故障转移操作，它会将失效主节点的其中一个从节点升级为新的主节点，并让其他从节点改为复制新的主节点。 配置提供者（Configuration provider）：客户端在初始化时，通过连接哨兵来获得当前Redis服务的主节点地址。 **通知（Notification）：哨兵可以将故障转移的结果发送给客户端。"/><meta property="og:description" content="哨兵的核心功能是主节点的自动故障转移。下面是Redis官方文档对于哨兵功能的描述： 监控（Monitoring）：哨兵会不断地检查主节点和从节点是否运作正常。 自动故障转移（Automatic failover）：当主节点不能正常工作时，哨兵会开始自动故障转移操作，它会将失效主节点的其中一个从节点升级为新的主节点，并让其他从节点改为复制新的主节点。 配置提供者（Configuration provider）：客户端在初始化时，通过连接哨兵来获得当前Redis服务的主节点地址。 **通知（Notification）：哨兵可以将故障转移的结果发送给客户端。"/>    <meta name="keywords" content="Solo,Java,博客,开源"/><link rel="dns-prefetch" href="https://gyyspace.github.io"/><link rel="dns-prefetch" href="https://cdn.jsdelivr.net"/><link rel="preconnect" href="https://gyyspace.github.io"><link rel="icon" type="image/png" href="https://b3log.org/images/brand/solo-128.png"/><link rel="apple-touch-icon" href="https://b3log.org/images/brand/solo-128.png"><link rel="shortcut icon" type="image/x-icon" href="https://b3log.org/images/brand/solo-128.png"><meta name="copyright" content="B3log"/><meta http-equiv="Window-target" content="_top"/><meta property="og:locale" content="zh_CN"/><meta property="og:title" content="Redis：哨兵sentinel - echo洋"/><meta property="og:site_name" content="echo洋"/><meta property="og:url"      content="https://gyyspace.github.io/articles/2024/06/09/1717936928663.html?"/><meta property="og:image" content="https://b3log.org/images/brand/solo-128.png"/><link rel="search" type="application/opensearchdescription+xml" title="Redis：哨兵sentinel - echo洋" href="/opensearch.xml"><link href="https://gyyspace.github.io/rss.xml" title="RSS" type="application/rss+xml" rel="alternate"/><link rel="manifest" href="https://gyyspace.github.io/manifest.json">        <link rel="canonical" href="https://gyyspace.github.io/articles/2024/06/09/1717936928663.html">            <link rel="stylesheet"
+                  href="https://gyyspace.github.io/skins/favourite/css/base.css?1721540580809"/>
             <link rel="prev" title="Redis：主从复制" href="https://gyyspace.github.io/articles/2024/06/09/1717936680892.html">
             <link rel="next" title="Redis：集群cluster" href="https://gyyspace.github.io/articles/2024/06/09/1717937447426.html">
-    <script src="https://gyyspace.github.io/js/lib/vditor/dist/js/icons/ant.js?v=3.9.7" async="" id="vditorIconScript"></script></head>
-<body>
-<header class="header">
-    <div class="header-line"></div>
-    <div class="fn-clear wrapper">
-        <div class="logo-wrap">
-            <a href="https://gyyspace.github.io" rel="start">
-                <span class="logo-line-before"><i></i></span>
-                <span class="site-title">echo洋</span>
-                <span class="logo-line-after"><i></i></span>
-            </a>
-        </div>
-
-        <div class="site-nav-toggle fn-right"
-             onclick="$('.header-line').toggle();$('nav').children('.menu').slideToggle();">
-            <span class="btn-bar"></span>
-            <span class="btn-bar"></span>
-            <span class="btn-bar"></span>
-        </div>
-
-        <nav>
-            <ul class="menu">
-                    <li class="menu-item">
-                        <a href="/tags/Redis" target="_blank" rel="section">
-                            Redis 的设计与实现
-                        </a>
-                    </li>
-                    <li class="menu-item">
-                        <a href="/tags/算法" target="_blank" rel="section">
-                            算法
-                        </a>
-                    </li>
-            </ul>
-
-        </nav>
+    <script src="https://gyyspace.github.io/js/lib/vditor/dist/js/icons/ant.js?v=3.9.7" async="" id="vditorIconScript"></script>    </head>
+    <body>
+        
+<div class="top">
+    <div id="navigation">
+        <a rel="nofollow" href="https://gyyspace.github.io" class="home">首页</a>
+        <a href="https://gyyspace.github.io/tags.html" class="about">标签墙</a>
+            <a href="/tags/Redis" class="Guestbook" target="_blank"
+               class="Redis 的设计与实现">Redis 的设计与实现</a>
+            <a href="/tags/算法" class="Guestbook" target="_blank"
+               class="算法">算法</a>
+        <a rel="alternate" href="https://gyyspace.github.io/rss.xml" class="classifiche">RSS</a>
     </div>
-</header><main class="main">
-    <div class="wrapper">
-        <div class="content">
-            <article class="posts-expand">
-                <header class="post-header">
-                    <h2 class="post-title">
-                        Redis：哨兵sentinel
-                    </h2>
-                    <div class="post-meta">
-                            <span class="post-time">
-                                    更新于
-                                <time>
-                                    2024-06-09
-                                </time>
-                            </span>
-                        <span class="post-comments-count">
-                                &nbsp; | &nbsp;
-                                <a href="https://gyyspace.github.io/articles/2024/06/09/1717936928663.html#b3logsolocomments">
-                                    <span data-uvstatcmt="1717936928663">0</span> 条评论</a>
-                        </span>
-                        &nbsp; | &nbsp; 热度
-                        <span data-uvstaturl="https://gyyspace.github.io/articles/2024/06/09/1717936928663.html">0</span>°C
-                    </div>
-                </header>
-
-                <div class="post-body post-body--article vditor-reset">
-                    <p><img src="https://b3logfile.com/bing/20220720.jpg?imageView2/1/w/960/h/540/interlace/1/q/100" alt=""></p>
+    <div class="thinks"></div>
+</div>        <div class="wrapper">
+            <div class="content">
+<div class="header">
+    <h1 class="title">
+        <a href="https://gyyspace.github.io" id="logoTitle" >
+            echo洋
+        </a>
+    </h1>
+    <span class="sub-title"></span>
+</div>                <div class="roundtop"></div>
+                <div class="body">
+                    <div class="left main">
+                        <div class="article">
+                            <h2 class="article-title">
+                                <a class="no-underline" href="https://gyyspace.github.io/articles/2024/06/09/1717936928663.html">
+                                    Redis：哨兵sentinel
+                                </a>
+                            </h2>
+                            <div class="posttime-blue">
+                                <div class="posttime-MY">
+                                    2024-06
+                                </div>
+                                <div class="posttime-D">
+                                    09
+                                </div>
+                            </div>
+                            <div class="article-abstract">
+                                <div class="note">
+                                    <div class="corner"></div>
+                                    <div class="substance vditor-reset">
+                                        <p><img src="https://b3logfile.com/bing/20220720.jpg?imageView2/1/w/960/h/540/interlace/1/q/100" alt=""></p>
 <h1 id="toc_h1_0">1 概述</h1>
 <h2 id="toc_h2_1">1.1 作用</h2>
 <p><strong>从宏观角度回顾一下Redis实现高可用相关的技术。它们包括：持久化、复制、哨兵和集群，其主要作用和解决的问题是：</strong></p>
@@ -242,8 +224,8 @@ redis-server sentinel-26379.conf --sentinel
 <h1 id="toc_h1_27">7 参考文档</h1>
 <p><a href="https://www.cnblogs.com/kismetv/p/9609938.html" target="_blank">https://www.cnblogs.com/kismetv/p/9609938.html</a></p>
 <p><strong>redis的设计与实现</strong></p>
-                        <div>
-                            <hr>
+                                        <div class="marginTop12">
+                                            <hr>
 
 标题：Redis：哨兵sentinel<br>
 作者：<a href="https://gyyspace.github.io" target="_blank">function001</a><br>
@@ -251,41 +233,78 @@ redis-server sentinel-26379.conf --sentinel
 
 <!-- 签名档内可使用 HTML、JavaScript -->
 <br>
-                        </div>
-                </div>
-                <footer>
-                    <div class="post-tags">
-                            <a rel="tag" href="https://gyyspace.github.io/tags/Redis">
-                                Redis</a>
-                    </div>
-                    <div class="post-nav fn-clear">
-                            <div class="post-nav-prev post-nav-item fn-right">
-                                <a href="https://gyyspace.github.io/articles/2024/06/09/1717936680892.html" rel="prev"
-                                   title="Redis：主从复制">
-                                    Redis：主从复制 >
-                                </a>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="post-nav-next post-nav-item fn-left">
-                                <a href="https://gyyspace.github.io/articles/2024/06/09/1717937447426.html" rel="next" title="Redis：集群cluster">
-                                    < Redis：集群cluster
+                            <div class="margin25">
+                                <a rel="nofollow" href="https://gyyspace.github.io/articles/2024/06/09/1717936928663.html" class="left">
+                                    <span class="left article-browserIcon" title="浏览"></span>
+                                    <span class="count"><span data-uvstaturl="https://gyyspace.github.io/articles/2024/06/09/1717936928663.html">0</span></span>
                                 </a>
+                                <div class="left">
+                                    <span class="tagsIcon" title="标签"></span>
+                                    <span class="count">
+                                        <a rel="tag" href="https://gyyspace.github.io/tags/Redis">
+                                            Redis</a>
+                                    </span>
+                                </div>
+                                <a rel="nofollow" href="https://gyyspace.github.io/articles/2024/06/09/1717936928663.html#b3logsolocomments" class="left">
+                                    <span class="left articles-commentIcon" title="评论"></span>
+                                    <span class="count" data-uvstatcmt="1717936928663">0</span>
+                                </a>
+                                <div class="right">
+                                    <a rel="nofollow" href="#b3logsolocomments" class="right">
+                                        回复»
+                                    </a>
+                                </div>
+                                <div class="clear"></div>
                             </div>
-                    </div>
-                </footer>
-            </article>
-        </div>
-            <div id="gitalk-container"></div>
-            <div id="b3logsolocomments"></div>
-            <div id="vcomment" data-name="function001" data-postId="1717936928663"></div>
-            <div id="relevantArticles"></div>
-            <div id="randomArticles"></div>
-<div class="sidebar-toggle">
-    <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
-    <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
-    <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
-</div>
 
-<aside class="sidebar">
+                            <div class="margin25">
+                                <div class="right">
+                                    <a href="https://gyyspace.github.io/articles/2024/06/09/1717937447426.html">新一篇：Redis：集群cluster</a>
+                                </div>
+                                <div class="clear"></div>
+                                <div class="right">
+                                    <a href="https://gyyspace.github.io/articles/2024/06/09/1717936680892.html">旧一篇：Redis：主从复制</a>
+                                </div>
+                                <div class="clear"></div>
+                            </div>
+                            <div id="relevantArticles" class="article-relative"></div>
+                            <div id="randomArticles" class="article-relative"></div>
+                            <div id="externalRelevantArticles" class="article-relative"></div>
+                        </div>
+                            <div id="gitalk-container" class="comments"
+                                 style="padding-top: 15px"></div>
+                            <div id="b3logsolocomments"></div>
+                            <div id="vcomment"
+                                 class="comments"
+                                 style="padding-top: 15px"
+                                 data-name="function001" data-postId="1717936928663"></div>
+                    </div>
+                    <div class="right">
+<div id="sideNavi" class="side-navi">
+    <div class="rings"></div>
+    <div class="null"></div>
+    <div class="item">
+        <div class="antefatto">
+            <h4>公告</h4>
+        </div>
+        <div class="marginLeft12 marginTop12">
+            Open Source, Open Mind, <br/>Open Sight, Open Future!
+
+<!-- 公告栏可使用 HTML、JavaScript，比如可以在此加入第三方统计 js -->
+            <div class="marginTop12">
+            </div>
+        </div>
+    </div>
+    <div class="line"></div>
+
+        <div class="item navi-comments">
+            <div class="ads">
+                <h4>目录</h4>
+            </div>
 <ul class="article__toc">
         <li class="toc__h1">
             <a href="#toc_h1_0">1 概述</a>
@@ -371,26 +390,43 @@ redis-server sentinel-26379.conf --sentinel
         <li class="toc__h1">
             <a href="#toc_h1_27">7 参考文档</a>
         </li>
-</ul></aside>
-    </div>
-</main>
-<footer class="footer">
-    <div class="wrapper">
-        <div class="fn-clear">
-            <a href="https://gyyspace.github.io">echo洋</a>
-            
-            <div class="fn-right">
+</ul>        </div>
+    <div class="rings" style="bottom: 0px;"></div>
+</div>
+                    </div>
+                    <div class="clear"></div>
+                </div>
+                <div class="roundbottom"></div>
             </div>
         </div>
-        <div class="fn-clear">
-            &copy; 2024
-            <a href="https://gyyspace.github.io">echo洋</a>
-            
-        </div>
+        <div class="footer">
+            <div class="footer-icon"><div class="left" id="statistic">
+    <span>
+        浏览数：
+        <span class='error-msg'>
+            <span data-uvstaturl="https://gyyspace.github.io">0</span>
+        </span>
+        &nbsp;&nbsp;
+    </span>
+    <span>
+        文章总数：
+        <span class='error-msg'>
+            15
+        </span>
+        &nbsp;&nbsp;
+    </span>
+</div>
+<div class="clear"></div>
+</div>
+<div class="info">
+    <div class="copyright">
+        <br>
+        <span>&copy; 2024</span> <a href="https://gyyspace.github.io">echo洋</a> 
     </div>
-</footer>
-<div class="back-to-top" onclick="Util.goTop()"></div>
-
+    <div class="right goTop">
+        <span onclick="Util.goTop();">顶部</span>
+    </div>
+</div>
 <script>
   var Label = {
     speech: true,
@@ -405,12 +441,14 @@ redis-server sentinel-26379.conf --sentinel
     articleId: "1717936928663",
   }
 </script>
-<script src="https://gyyspace.github.io/skins/next/js/common.min.js?1721540580809"></script>
+<script type="text/javascript" src="https://gyyspace.github.io/js/common.min.js?1721540580809" charset="utf-8"></script>
 <script type="text/javascript">
-    Label.tocLabel = "目录"
-    Label.siteViewLabel = "站点概览"
+    $(document).ready(function () {
+        Util.setTopBar()
+    });
 </script>
 
+        </div>
 <script type="text/javascript">
     Util.addScript('https://gyyspace.github.io/js/page.min.js?1721540580809', 'soloPageScript')
     var page = new Page({
@@ -422,13 +460,12 @@ redis-server sentinel-26379.conf --sentinel
     });
     $(document).ready(function () {
         page.load();
-    page.tips.externalRelevantArticlesDisplayCount = "0";
+        page.tips.externalRelevantArticlesDisplayCount = "0";
         page.loadRandomArticles();
         page.loadRelevantArticles('1717936928663', '<h4>相关阅读：</h4>');
-    NexT.initArticle()
     });
 </script>
-</body>
+    </body>
 </html>
 
-<!-- Generated by Latke (https://github.com/88250/latke) in 5ms, 2024/07/21 16:13:58 -->
+<!-- Generated by Latke (https://github.com/88250/latke) in 15ms, 2024/07/21 16:16:34 -->

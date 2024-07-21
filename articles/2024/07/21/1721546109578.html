@@ -1,73 +1,55 @@
 <!DOCTYPE html>
 <html>
-<head>
-<meta charset="utf-8"/><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"/><meta name="theme-color" content="#3b3e43"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"/><meta name="apple-mobile-web-app-status-bar-style" content="black"><meta name="format-detection" content="telephone=no"/><title>算法：数学知识 - echo洋</title><meta name="description" content="和数学知识相关的算法题。"/><meta property="og:description" content="和数学知识相关的算法题。"/>    <meta name="keywords" content="Solo,Java,博客,开源"/><link rel="dns-prefetch" href="https://gyyspace.github.io"/><link rel="dns-prefetch" href="https://cdn.jsdelivr.net"/><link rel="preconnect" href="https://gyyspace.github.io"><link rel="icon" type="image/png" href="https://b3log.org/images/brand/solo-128.png"/><link rel="apple-touch-icon" href="https://b3log.org/images/brand/solo-128.png"><link rel="shortcut icon" type="image/x-icon" href="https://b3log.org/images/brand/solo-128.png"><meta name="copyright" content="B3log"/><meta http-equiv="Window-target" content="_top"/><meta property="og:locale" content="zh_CN"/><meta property="og:title" content="算法：数学知识 - echo洋"/><meta property="og:site_name" content="echo洋"/><meta property="og:url"      content="https://gyyspace.github.io/articles/2024/07/21/1721546109578.html?"/><meta property="og:image" content="https://b3log.org/images/brand/solo-128.png"/><link rel="search" type="application/opensearchdescription+xml" title="算法：数学知识 - echo洋" href="/opensearch.xml"><link href="https://gyyspace.github.io/rss.xml" title="RSS" type="application/rss+xml" rel="alternate"/><link rel="manifest" href="https://gyyspace.github.io/manifest.json">        <link rel="canonical" href="https://gyyspace.github.io/articles/2024/07/21/1721546109578.html">        <link rel="stylesheet"
-              href="https://gyyspace.github.io/skins/next/css/base.css?1721540580809"/>
+    <head>
+<meta charset="utf-8"/><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"/><meta name="theme-color" content="#3b3e43"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"/><meta name="apple-mobile-web-app-status-bar-style" content="black"><meta name="format-detection" content="telephone=no"/><title>算法：数学知识 - echo洋</title><meta name="description" content="和数学知识相关的算法题。"/><meta property="og:description" content="和数学知识相关的算法题。"/>    <meta name="keywords" content="Solo,Java,博客,开源"/><link rel="dns-prefetch" href="https://gyyspace.github.io"/><link rel="dns-prefetch" href="https://cdn.jsdelivr.net"/><link rel="preconnect" href="https://gyyspace.github.io"><link rel="icon" type="image/png" href="https://b3log.org/images/brand/solo-128.png"/><link rel="apple-touch-icon" href="https://b3log.org/images/brand/solo-128.png"><link rel="shortcut icon" type="image/x-icon" href="https://b3log.org/images/brand/solo-128.png"><meta name="copyright" content="B3log"/><meta http-equiv="Window-target" content="_top"/><meta property="og:locale" content="zh_CN"/><meta property="og:title" content="算法：数学知识 - echo洋"/><meta property="og:site_name" content="echo洋"/><meta property="og:url"      content="https://gyyspace.github.io/articles/2024/07/21/1721546109578.html?"/><meta property="og:image" content="https://b3log.org/images/brand/solo-128.png"/><link rel="search" type="application/opensearchdescription+xml" title="算法：数学知识 - echo洋" href="/opensearch.xml"><link href="https://gyyspace.github.io/rss.xml" title="RSS" type="application/rss+xml" rel="alternate"/><link rel="manifest" href="https://gyyspace.github.io/manifest.json">        <link rel="canonical" href="https://gyyspace.github.io/articles/2024/07/21/1721546109578.html">            <link rel="stylesheet"
+                  href="https://gyyspace.github.io/skins/favourite/css/base.css?1721540580809"/>
             <link rel="prev" title="算法：堆&栈" href="https://gyyspace.github.io/articles/2024/07/21/1721544405263.html">
             <link rel="next" title="算法：数组" href="https://gyyspace.github.io/articles/2024/07/21/1721546193766.html">
-    <script src="https://gyyspace.github.io/js/lib/vditor/dist/js/icons/ant.js?v=3.9.7" async="" id="vditorIconScript"></script></head>
-<body>
-<header class="header">
-    <div class="header-line"></div>
-    <div class="fn-clear wrapper">
-        <div class="logo-wrap">
-            <a href="https://gyyspace.github.io" rel="start">
-                <span class="logo-line-before"><i></i></span>
-                <span class="site-title">echo洋</span>
-                <span class="logo-line-after"><i></i></span>
-            </a>
-        </div>
-
-        <div class="site-nav-toggle fn-right"
-             onclick="$('.header-line').toggle();$('nav').children('.menu').slideToggle();">
-            <span class="btn-bar"></span>
-            <span class="btn-bar"></span>
-            <span class="btn-bar"></span>
-        </div>
-
-        <nav>
-            <ul class="menu">
-                    <li class="menu-item">
-                        <a href="/tags/Redis" target="_blank" rel="section">
-                            Redis 的设计与实现
-                        </a>
-                    </li>
-                    <li class="menu-item">
-                        <a href="/tags/算法" target="_blank" rel="section">
-                            算法
-                        </a>
-                    </li>
-            </ul>
-
-        </nav>
+    <script src="https://gyyspace.github.io/js/lib/vditor/dist/js/icons/ant.js?v=3.9.7" async="" id="vditorIconScript"></script>    </head>
+    <body>
+        
+<div class="top">
+    <div id="navigation">
+        <a rel="nofollow" href="https://gyyspace.github.io" class="home">首页</a>
+        <a href="https://gyyspace.github.io/tags.html" class="about">标签墙</a>
+            <a href="/tags/Redis" class="Guestbook" target="_blank"
+               class="Redis 的设计与实现">Redis 的设计与实现</a>
+            <a href="/tags/算法" class="Guestbook" target="_blank"
+               class="算法">算法</a>
+        <a rel="alternate" href="https://gyyspace.github.io/rss.xml" class="classifiche">RSS</a>
     </div>
-</header><main class="main">
-    <div class="wrapper">
-        <div class="content">
-            <article class="posts-expand">
-                <header class="post-header">
-                    <h2 class="post-title">
-                        算法：数学知识
-                    </h2>
-                    <div class="post-meta">
-                            <span class="post-time">
-                                    发表于
-                                <time>
-                                    2024-07-21
-                                </time>
-                            </span>
-                        <span class="post-comments-count">
-                                &nbsp; | &nbsp;
-                                <a href="https://gyyspace.github.io/articles/2024/07/21/1721546109578.html#b3logsolocomments">
-                                    <span data-uvstatcmt="1721546109578">0</span> 条评论</a>
-                        </span>
-                        &nbsp; | &nbsp; 热度
-                        <span data-uvstaturl="https://gyyspace.github.io/articles/2024/07/21/1721546109578.html">0</span>°C
-                    </div>
-                </header>
-
-                <div class="post-body post-body--article vditor-reset">
-                    <p><img src="https://b3logfile.com/bing/20230823.jpg?imageView2/1/w/960/h/540/interlace/1/q/100" alt=""></p>
+    <div class="thinks"></div>
+</div>        <div class="wrapper">
+            <div class="content">
+<div class="header">
+    <h1 class="title">
+        <a href="https://gyyspace.github.io" id="logoTitle" >
+            echo洋
+        </a>
+    </h1>
+    <span class="sub-title"></span>
+</div>                <div class="roundtop"></div>
+                <div class="body">
+                    <div class="left main">
+                        <div class="article">
+                            <h2 class="article-title">
+                                <a class="no-underline" href="https://gyyspace.github.io/articles/2024/07/21/1721546109578.html">
+                                    算法：数学知识
+                                </a>
+                            </h2>
+                            <div class="posttime-blue">
+                                <div class="posttime-MY">
+                                    2024-07
+                                </div>
+                                <div class="posttime-D">
+                                    21
+                                </div>
+                            </div>
+                            <div class="article-abstract">
+                                <div class="note">
+                                    <div class="corner"></div>
+                                    <div class="substance vditor-reset">
+                                        <p><img src="https://b3logfile.com/bing/20230823.jpg?imageView2/1/w/960/h/540/interlace/1/q/100" alt=""></p>
 <h1 id="toc_h1_0">求两个数的最大公共因数</h1>
 <pre><code>static long gcd(long x,long y) {
     return y==0? x: gcd(y, x%y);
@@ -618,8 +600,8 @@ int[] getRandom(ListNode head, int k) {
     return res;
 }
 </code></pre>
-                        <div>
-                            <hr>
+                                        <div class="marginTop12">
+                                            <hr>
 
 标题：算法：数学知识<br>
 作者：<a href="https://gyyspace.github.io" target="_blank">function001</a><br>
@@ -627,43 +609,82 @@ int[] getRandom(ListNode head, int k) {
 
 <!-- 签名档内可使用 HTML、JavaScript -->
 <br>
-                        </div>
-                </div>
-                <footer>
-                    <div class="post-tags">
-                            <a rel="tag" href="https://gyyspace.github.io/tags/%E7%AE%97%E6%B3%95">
-                                算法</a>
-                            <a rel="tag" href="https://gyyspace.github.io/tags/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84">
-                                数据结构</a>
-                    </div>
-                    <div class="post-nav fn-clear">
-                            <div class="post-nav-prev post-nav-item fn-right">
-                                <a href="https://gyyspace.github.io/articles/2024/07/21/1721544405263.html" rel="prev"
-                                   title="算法：堆&栈">
-                                    算法：堆&栈 >
-                                </a>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="post-nav-next post-nav-item fn-left">
-                                <a href="https://gyyspace.github.io/articles/2024/07/21/1721546193766.html" rel="next" title="算法：数组">
-                                    < 算法：数组
+                            <div class="margin25">
+                                <a rel="nofollow" href="https://gyyspace.github.io/articles/2024/07/21/1721546109578.html" class="left">
+                                    <span class="left article-browserIcon" title="浏览"></span>
+                                    <span class="count"><span data-uvstaturl="https://gyyspace.github.io/articles/2024/07/21/1721546109578.html">0</span></span>
                                 </a>
+                                <div class="left">
+                                    <span class="tagsIcon" title="标签"></span>
+                                    <span class="count">
+                                        <a rel="tag" href="https://gyyspace.github.io/tags/%E7%AE%97%E6%B3%95">
+                                            算法</a>,
+                                    </span>
+                                    <span class="count">
+                                        <a rel="tag" href="https://gyyspace.github.io/tags/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84">
+                                            数据结构</a>
+                                    </span>
+                                </div>
+                                <a rel="nofollow" href="https://gyyspace.github.io/articles/2024/07/21/1721546109578.html#b3logsolocomments" class="left">
+                                    <span class="left articles-commentIcon" title="评论"></span>
+                                    <span class="count" data-uvstatcmt="1721546109578">0</span>
+                                </a>
+                                <div class="right">
+                                    <a rel="nofollow" href="#b3logsolocomments" class="right">
+                                        回复»
+                                    </a>
+                                </div>
+                                <div class="clear"></div>
                             </div>
-                    </div>
-                </footer>
-            </article>
-        </div>
-            <div id="gitalk-container"></div>
-            <div id="b3logsolocomments"></div>
-            <div id="vcomment" data-name="function001" data-postId="1721546109578"></div>
-            <div id="relevantArticles"></div>
-            <div id="randomArticles"></div>
-<div class="sidebar-toggle">
-    <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
-    <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
-    <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
-</div>
 
-<aside class="sidebar">
+                            <div class="margin25">
+                                <div class="right">
+                                    <a href="https://gyyspace.github.io/articles/2024/07/21/1721546193766.html">新一篇：算法：数组</a>
+                                </div>
+                                <div class="clear"></div>
+                                <div class="right">
+                                    <a href="https://gyyspace.github.io/articles/2024/07/21/1721544405263.html">旧一篇：算法：堆&栈</a>
+                                </div>
+                                <div class="clear"></div>
+                            </div>
+                            <div id="relevantArticles" class="article-relative"></div>
+                            <div id="randomArticles" class="article-relative"></div>
+                            <div id="externalRelevantArticles" class="article-relative"></div>
+                        </div>
+                            <div id="gitalk-container" class="comments"
+                                 style="padding-top: 15px"></div>
+                            <div id="b3logsolocomments"></div>
+                            <div id="vcomment"
+                                 class="comments"
+                                 style="padding-top: 15px"
+                                 data-name="function001" data-postId="1721546109578"></div>
+                    </div>
+                    <div class="right">
+<div id="sideNavi" class="side-navi">
+    <div class="rings"></div>
+    <div class="null"></div>
+    <div class="item">
+        <div class="antefatto">
+            <h4>公告</h4>
+        </div>
+        <div class="marginLeft12 marginTop12">
+            Open Source, Open Mind, <br/>Open Sight, Open Future!
+
+<!-- 公告栏可使用 HTML、JavaScript，比如可以在此加入第三方统计 js -->
+            <div class="marginTop12">
+            </div>
+        </div>
+    </div>
+    <div class="line"></div>
+
+        <div class="item navi-comments">
+            <div class="ads">
+                <h4>目录</h4>
+            </div>
 <ul class="article__toc">
         <li class="toc__h1">
             <a href="#toc_h1_0">求两个数的最大公共因数</a>
@@ -767,26 +788,43 @@ int[] getRandom(ListNode head, int k) {
         <li class="toc__h2">
             <a href="#toc_h2_33">398. 随机数索引</a>
         </li>
-</ul></aside>
-    </div>
-</main>
-<footer class="footer">
-    <div class="wrapper">
-        <div class="fn-clear">
-            <a href="https://gyyspace.github.io">echo洋</a>
-            
-            <div class="fn-right">
+</ul>        </div>
+    <div class="rings" style="bottom: 0px;"></div>
+</div>
+                    </div>
+                    <div class="clear"></div>
+                </div>
+                <div class="roundbottom"></div>
             </div>
         </div>
-        <div class="fn-clear">
-            &copy; 2024
-            <a href="https://gyyspace.github.io">echo洋</a>
-            
-        </div>
+        <div class="footer">
+            <div class="footer-icon"><div class="left" id="statistic">
+    <span>
+        浏览数：
+        <span class='error-msg'>
+            <span data-uvstaturl="https://gyyspace.github.io">0</span>
+        </span>
+        &nbsp;&nbsp;
+    </span>
+    <span>
+        文章总数：
+        <span class='error-msg'>
+            15
+        </span>
+        &nbsp;&nbsp;
+    </span>
+</div>
+<div class="clear"></div>
+</div>
+<div class="info">
+    <div class="copyright">
+        <br>
+        <span>&copy; 2024</span> <a href="https://gyyspace.github.io">echo洋</a> 
     </div>
-</footer>
-<div class="back-to-top" onclick="Util.goTop()"></div>
-
+    <div class="right goTop">
+        <span onclick="Util.goTop();">顶部</span>
+    </div>
+</div>
 <script>
   var Label = {
     speech: true,
@@ -801,12 +839,14 @@ int[] getRandom(ListNode head, int k) {
     articleId: "1721546109578",
   }
 </script>
-<script src="https://gyyspace.github.io/skins/next/js/common.min.js?1721540580809"></script>
+<script type="text/javascript" src="https://gyyspace.github.io/js/common.min.js?1721540580809" charset="utf-8"></script>
 <script type="text/javascript">
-    Label.tocLabel = "目录"
-    Label.siteViewLabel = "站点概览"
+    $(document).ready(function () {
+        Util.setTopBar()
+    });
 </script>
 
+        </div>
 <script type="text/javascript">
     Util.addScript('https://gyyspace.github.io/js/page.min.js?1721540580809', 'soloPageScript')
     var page = new Page({
@@ -818,13 +858,12 @@ int[] getRandom(ListNode head, int k) {
     });
     $(document).ready(function () {
         page.load();
-    page.tips.externalRelevantArticlesDisplayCount = "0";
+        page.tips.externalRelevantArticlesDisplayCount = "0";
         page.loadRandomArticles();
         page.loadRelevantArticles('1721546109578', '<h4>相关阅读：</h4>');
-    NexT.initArticle()
     });
 </script>
-</body>
+    </body>
 </html>
 
-<!-- Generated by Latke (https://github.com/88250/latke) in 20ms, 2024/07/21 16:13:58 -->
+<!-- Generated by Latke (https://github.com/88250/latke) in 20ms, 2024/07/21 16:16:34 -->
