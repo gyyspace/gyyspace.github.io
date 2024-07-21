@@ -6,8 +6,48 @@
     <atom:link href="https://gyyspace.github.io/rss.xml" rel="self" type="application/rss+xml"/>
     <description/>
     <generator>Solo, v4.4.0, https://b3log.org/solo</generator>
-    <lastBuildDate>Sun, 09 Jun 2024 14:14:41 +0800</lastBuildDate>
+    <lastBuildDate>Sun, 21 Jul 2024 13:50:56 +0800</lastBuildDate>
     <language>zh-cn</language>
+    <item>
+      <title>Redis：集群cluster</title>
+      <link>https://gyyspace.github.io/articles/2024/06/09/1717937447426.html</link>
+      <description>
+        <![CDATA[<p><strong>集群，即Redis Cluster，是Redis 3.0开始引入的分布式存储方案。</strong></p>
+<p>集群由多个节点(Node)组成，Redis的数据分布在这些节点中。集群中的节点分为主节点和从节点：只有主节点负责读写请求和集群信息的维护；从节点只进行主节点数据和状态信息的复制。</p>]]>
+      </description>
+      <author>function001</author>
+      <guid>https://gyyspace.github.io/articles/2024/06/09/1717937447426.html</guid>
+      <category>Redis</category>
+      <pubDate>Sun, 09 Jun 2024 20:50:47 +0800</pubDate>
+    </item>
+    <item>
+      <title>Redis：哨兵sentinel</title>
+      <link>https://gyyspace.github.io/articles/2024/06/09/1717936928663.html</link>
+      <description>
+        <![CDATA[<p><strong>哨兵的核心功能是主节点的自动故障转移</strong>。下面是Redis官方文档对于哨兵功能的描述：</p>
+<ul>
+<li><strong>监控（Monitoring）：哨兵会不断地检查主节点和从节点是否运作正常。</strong></li>
+<li><strong>自动故障转移（Automatic failover）：当主节点不能正常工作时，哨兵会开始自动故障转移操作，它会将失效主节点的其中一个从节点升级为新的主节点，并让其他从节点改为复制新的主节点。</strong></li>
+<li><strong>配置提供者（Configuration provider）：客户端在初始化时，通过连接哨兵来获得当前Redis服务的主节点地址。</strong></li>
+<li>**通知（Notification）：哨兵可以将故障转移的结果发送给客户端。</li>
+</ul>]]>
+      </description>
+      <author>function001</author>
+      <guid>https://gyyspace.github.io/articles/2024/06/09/1717936928663.html</guid>
+      <category>Redis</category>
+      <pubDate>Sun, 09 Jun 2024 20:48:39 +0800</pubDate>
+    </item>
+    <item>
+      <title>Redis：主从复制</title>
+      <link>https://gyyspace.github.io/articles/2024/06/09/1717936680892.html</link>
+      <description>
+        <![CDATA[<p>Redis主从复制是一个多Redis实例进行数据同步的过程，其中一个实例是主实例（Master），其他实例是从实例（Slave）。主实例负责处理命令请求，而从实例则 periodically 地从主实例拉取数据副本。</p>]]>
+      </description>
+      <author>function001</author>
+      <guid>https://gyyspace.github.io/articles/2024/06/09/1717936680892.html</guid>
+      <category>Redis</category>
+      <pubDate>Sun, 09 Jun 2024 20:38:00 +0800</pubDate>
+    </item>
     <item>
       <title>Redis：持久化</title>
       <link>https://gyyspace.github.io/articles/2024/06/09/1717912783769.html</link>

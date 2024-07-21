@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8"/><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"/><meta name="theme-color" content="#3b3e43"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"/><meta name="apple-mobile-web-app-status-bar-style" content="black"><meta name="format-detection" content="telephone=no"/><title>Redis：主从复制 - echo洋</title><meta name="description" content="Redis主从复制是一个多Redis实例进行数据同步的过程，其中一个实例是主实例（Master），其他实例是从实例（Slave）。主实例负责处理命令请求，而从实例则 periodically 地从主实例拉取数据副本。"/><meta property="og:description" content="Redis主从复制是一个多Redis实例进行数据同步的过程，其中一个实例是主实例（Master），其他实例是从实例（Slave）。主实例负责处理命令请求，而从实例则 periodically 地从主实例拉取数据副本。"/>    <meta name="keywords" content="Solo,Java,博客,开源"/><link rel="dns-prefetch" href="https://gyyspace.github.io"/><link rel="dns-prefetch" href="https://cdn.jsdelivr.net"/><link rel="preconnect" href="https://gyyspace.github.io"><link rel="icon" type="image/png" href="https://b3log.org/images/brand/solo-128.png"/><link rel="apple-touch-icon" href="https://b3log.org/images/brand/solo-128.png"><link rel="shortcut icon" type="image/x-icon" href="https://b3log.org/images/brand/solo-128.png"><meta name="copyright" content="B3log"/><meta http-equiv="Window-target" content="_top"/><meta property="og:locale" content="zh_CN"/><meta property="og:title" content="Redis：主从复制 - echo洋"/><meta property="og:site_name" content="echo洋"/><meta property="og:url"      content="https://gyyspace.github.io/articles/2024/06/09/1717936680892.html?"/><meta property="og:image" content="https://b3log.org/images/brand/solo-128.png"/><link rel="search" type="application/opensearchdescription+xml" title="Redis：主从复制 - echo洋" href="/opensearch.xml"><link href="https://gyyspace.github.io/rss.xml" title="RSS" type="application/rss+xml" rel="alternate"/><link rel="manifest" href="https://gyyspace.github.io/manifest.json">        <link rel="canonical" href="https://gyyspace.github.io/articles/2024/06/09/1717936680892.html">        <link rel="stylesheet"
+              href="https://gyyspace.github.io/skins/next/css/base.css?1721540580809"/>
+            <link rel="prev" title="Redis：持久化" href="https://gyyspace.github.io/articles/2024/06/09/1717912783769.html">
+            <link rel="next" title="Redis：哨兵sentinel" href="https://gyyspace.github.io/articles/2024/06/09/1717936928663.html">
+    <script src="https://gyyspace.github.io/js/lib/vditor/dist/js/icons/ant.js?v=3.9.7" async="" id="vditorIconScript"></script></head>
+<body>
+<header class="header">
+    <div class="header-line"></div>
+    <div class="fn-clear wrapper">
+        <div class="logo-wrap">
+            <a href="https://gyyspace.github.io" rel="start">
+                <span class="logo-line-before"><i></i></span>
+                <span class="site-title">echo洋</span>
+                <span class="logo-line-after"><i></i></span>
+            </a>
+        </div>
+
+        <div class="site-nav-toggle fn-right"
+             onclick="$('.header-line').toggle();$('nav').children('.menu').slideToggle();">
+            <span class="btn-bar"></span>
+            <span class="btn-bar"></span>
+            <span class="btn-bar"></span>
+        </div>
+
+        <nav>
+            <ul class="menu">
+                    <li class="menu-item">
+                        <a href="/tags/Redis" target="_blank" rel="section">
+                            Redis 的设计与实现
+                        </a>
+                    </li>
+            </ul>
+
+        </nav>
+    </div>
+</header><main class="main">
+    <div class="wrapper">
+        <div class="content">
+            <article class="posts-expand">
+                <header class="post-header">
+                    <h2 class="post-title">
+                        Redis：主从复制
+                    </h2>
+                    <div class="post-meta">
+                            <span class="post-time">
+                                    发表于
+                                <time>
+                                    2024-06-09
+                                </time>
+                            </span>
+                        <span class="post-comments-count">
+                                &nbsp; | &nbsp;
+                                <a href="https://gyyspace.github.io/articles/2024/06/09/1717936680892.html#b3logsolocomments">
+                                    <span data-uvstatcmt="1717936680892">0</span> 条评论</a>
+                        </span>
+                        &nbsp; | &nbsp; 热度
+                        <span data-uvstaturl="https://gyyspace.github.io/articles/2024/06/09/1717936680892.html">0</span>°C
+                    </div>
+                </header>
+
+                <div class="post-body post-body--article vditor-reset">
+                    <p><img src="https://b3logfile.com/bing/20200410.jpg?imageView2/1/w/960/h/540/interlace/1/q/100" alt=""></p>
+<h1 id="toc_h1_0">1 使用主从复制</h1>
+<h2 id="toc_h2_1">1.1 搭建环境</h2>
+<p><strong>为了便于示例操作，我们可以开启不同的端口实现不同的redis示例。在这里开启三个节点6379作为主机，6380，6381作为从机。实现一主二从。</strong></p>
+<p><strong>进入redis安装目录：</strong></p>
+<p><img src="https://b3logfile.com/file/2021/11/image-eeb41c24.png?imageView2/2/w/1280/format/jpg/interlace/1/q/100" alt="image.png"></p>
+<p><strong>配置文件在gconfig（根据自己的目录来操作）中，复制两个redis.conf文件，分别为redis6380.conf，redis6381.conf。</strong></p>
+<p><img src="https://b3logfile.com/file/2021/11/image-8d711cd3.png?imageView2/2/w/1280/format/jpg/interlace/1/q/100" alt="image.png"></p>
+<p><strong>然后修改对应的信息。</strong></p>
+<ol>
+<li><strong>端口</strong></li>
+<li><strong>pid 名字</strong></li>
+<li><strong>log文件名字</strong></li>
+<li><strong>dump.rdb 名字</strong></li>
+<li><strong>如果主机设置的有密码，那么从机需要在配置文件中设置masterauth选项，选项的值就是主机的密码。</strong></li>
+</ol>
+<p><strong>修改完毕之后，启动我们的3个redis服务器，可以通过进程信息查看！</strong></p>
+<p><strong>redis启动命令，因为6379我已经启动过了所以这里只需要启动这两个。</strong></p>
+<p><img src="https://b3logfile.com/file/2021/11/image-42fd4efe.png?imageView2/2/w/1280/format/jpg/interlace/1/q/100" alt="image.png"></p>
+<p><img src="https://b3logfile.com/file/2021/11/image-4e13e566.png?imageView2/2/w/1280/format/jpg/interlace/1/q/100" alt="image.png"></p>
+<h2 id="toc_h2_2">1.2 建立复制</h2>
+<p>**需要注意，**<strong>主从复制的开启，完全是在从节点发起的；不需要我们在主节点做任何事情。</strong></p>
+<p><strong>从节点开启主从复制，有3种方式：</strong></p>
+<p><strong>（1）配置文件</strong></p>
+<p>**在从服务器的配置文件中加入：slaveof <strong><masterport></masterport></strong> **<masterip><strong>masterip masterport</strong></masterip></p>
+<p><strong>（2）启动命令</strong></p>
+<p><strong>redis-server启动命令后加入 --slaveof <strong><masterip></masterip></strong> masterip masterport</strong></p>
+<p><strong>（3）客户端命令</strong></p>
+<p><strong>Redis服务器启动后，直接通过客户端执行命令：slaveof masterip masterport，则该Redis实例成为从节点。</strong></p>
+<p><strong>上述3种方式是等效的，后两种方式服务器重启后就会失效。</strong></p>
+<p><strong>下面以客户端命令的方式为例，看一下当执行了slaveof后，Redis主节点和从节点的变化。</strong></p>
+<p><strong>客户端连接命令：redis-cli -h host -p port -a password</strong></p>
+<p><img src="https://b3logfile.com/file/2021/11/image-3afcf386.png?imageView2/2/w/1280/format/jpg/interlace/1/q/100" alt="image.png"></p>
+<p><strong>然后我们查看一下复制是否建立：</strong></p>
+<p><strong>在从机中执行命令 info replication</strong></p>
+<p><img src="https://b3logfile.com/file/2021/11/image-9cac6c1a.png?imageView2/2/w/1280/format/jpg/interlace/1/q/100" alt="image.png"></p>
+<p><strong>可以看到 role: slave</strong></p>
+<p><strong>看一下主机的信息</strong></p>
+<p><img src="https://b3logfile.com/file/2021/11/image-5804a587.png?imageView2/2/w/1280/format/jpg/interlace/1/q/100" alt="image.png"></p>
+<p><strong>到了这里就建立了复制，完成了一主二从。</strong></p>
+<h2 id="toc_h2_3">1.3 断开复制</h2>
+<p>**通过slaveof <strong><masterip></masterip></strong> **<masterport><strong>命令建立主从复制关系以后，可以通过slaveof no one断开。需要注意的是，从节点断开复制后，不会删除已有的数据，只是不再接受主节点新的数据变化。</strong></masterport></p>
+<p><strong>从节点执行slaveof no one后，会变回主节点。</strong></p>
+<h1 id="toc_h1_4">2 主从复制原理</h1>
+<h2 id="toc_h2_5">2.1 连接建立阶段</h2>
+<h3 id="toc_h3_6">2.1.1 设置主服务器的地址和端口</h3>
+<p><strong>客户端向从服务器发送slaveof 127.0.0.1 6379的命令：</strong></p>
+<p><strong>从服务器首先会将客户端给定的主服务器IP地址127.0.0.1以及端口6379保存到服务器状态的masterhost属性和masterport属性里面。</strong></p>
+<p><img src="https://b3logfile.com/file/2021/11/image-0e68af30.png?imageView2/2/w/1280/format/jpg/interlace/1/q/100" alt="image.png"></p>
+<p><strong>需要注意的是，****slaveof*</strong>*是异步命令，从服务器完成主节点ip<strong>和port</strong>的保存后，向发送slaveof<strong>命令的客户端直接返回OK</strong>，实际的复制操作在这之后才开始进行。**</p>
+<h3 id="toc_h3_7">2.1.2 建立socket连接</h3>
+<p><strong>从服务器每秒1次调用复制定时函数replicationCron()，如果发现了有主服务器可以连接，便会根据主节点的ip和port，创建socket连接。如果连接成功，则：</strong></p>
+<p><strong>从服务器：为该socket建立一个专门处理复制工作的文件事件处理器，负责后续的复制工作，如接收RDB文件、接收命令传播等。</strong></p>
+<p>**主服务器：接收到从节点的socket连接后（即accept之后），为该socket创建相应的客户端状态，**<strong>并将从服务器看做是连接到主节点的一个客户端，后面的步骤会以从节点向主服务器发送命令请求的形式来进行。</strong></p>
+<h3 id="toc_h3_8">2.1.3 发送Ping命令</h3>
+<p><strong>从节点成为主节点的客户端之后，做的第一件事就是向主节点发送一个PING命令，</strong></p>
+<p>**目的是：**<strong>检查套接字的读写状态是否正常，检查主服务器能否正常处理命令请求。</strong></p>
+<p><strong>从节点发送ping命令后，可能出现3种情况：</strong></p>
+<p><strong>（1）返回pong：说明socket连接正常，且主节点当前可以处理请求，复制过程继续。</strong></p>
+<p><strong>（2）超时：一定时间后从节点仍未收到主节点的回复，说明socket连接不可用，则从节点断开socket连接，并重连。</strong></p>
+<p><strong>（3）返回pong以外的结果：如果主节点返回其他结果，如正在处理超时运行的脚本，说明主节点当前无法处理命令，则从节点断开socket连接，并重连。</strong></p>
+<p><img src="https://b3logfile.com/file/2021/11/image-307cfd9a.png?imageView2/2/w/1280/format/jpg/interlace/1/q/100" alt="image.png"></p>
+<h3 id="toc_h3_9">2.1.4 身份验证</h3>
+<p><strong>如果从节点中设置了masterauth选项，则从节点需要向主节点进行身份验证；没有设置该选项，则不需要验证。从节点进行身份验证是通过向主节点发送auth命令进行的，auth命令的参数即为配置文件中的masterauth的值。</strong></p>
+<p><strong>身份验证可能出现的情况：</strong></p>
+<p><strong>（1）如果主服务器没有设置requirepass选项（即没有设置密码），并且从服务器也没有设置masterauth选项，那么主服务器将继续执行从服务器发送的命令，复制工作可以继续进行。</strong></p>
+<p><strong>（2）如果从服务器通过AUTH命令发送的密码和主服务器requirepass选项所设置的密码相同，那么主服务器将继续执行从服务器发送的命令，复制工作可以继续执行。</strong></p>
+<p><strong>（3）与（2）相反，如果密码不同，那么主服务器将返回一个invalid password错误</strong></p>
+<p><strong>（4）如果主服务器设置了requirepass选项，但从服务器没有设置masterauth选项，那么主服务器将返回一个NOAUTH错误，另一方面，如果主服务器没有设置requirepass选项，但从服务器却设置了masterauth选项，那么主服务器返回一个no password is set 错误。</strong></p>
+<p><strong>所有的错误都会导致从服务器终止目前的复制工作，并从创建套接字开始重新执行复制，直到身份验证通过，或者从服务器放弃执行复制为止。</strong></p>
+<p><img src="https://b3logfile.com/file/2021/11/image-d1b3fc6b.png?imageView2/2/w/1280/format/jpg/interlace/1/q/100" alt="image.png"></p>
+<h3 id="toc_h3_10">2.2.5 发送从服务器端口信息</h3>
+<p><strong>身份验证之后，从节点会向主节点发送其监听的端口号，主节点将该信息保存到该从节点对应的客户端的slave_listening_port字段中；</strong></p>
+<p><strong>该端口信息除了在主节点中执行info Replication时显示以外，没有其他作用。</strong></p>
+<p><img src="https://b3logfile.com/file/2021/11/image-b4c89deb.png?imageView2/2/w/1280/format/jpg/interlace/1/q/100" alt="image.png"></p>
+<h2 id="toc_h2_11">2.2 数据同步阶段</h2>
+<p><strong>主从节点之间的连接建立以后，便可以开始进行数据同步，该阶段可以理解为从节点数据的初始化。具体执行的方式是：从节点向主节点发送psync命令（Redis2.8以前是sync命令），开始同步。并将自己的数据库更新至主服务器数据库当前所处的状态。</strong></p>
+<p><strong>数据同步阶段是主从复制最核心的阶段，根据主从节点当前状态的不同，可以分为全量复制和部分复制。</strong></p>
+<p><strong>需要注意的是，在数据同步阶段之前，从节点是主节点的客户端，主节点不是从节点的客户端；而到了这一阶段及以后，主从节点互为客户端。原因在于：在此之前，主节点只需要响应从节点的请求即可，不需要主动发请求，而在数据同步阶段和后面的命令传播阶段，主节点需要主动向从节点发送请求（如推送缓冲区中的写命令，发送保存在复制积压缓冲区里面的写命令），才能完成复制。</strong></p>
+<h3 id="toc_h3_12">2.2.1 全量复制和部分复制</h3>
+<p><strong>在Redis2.8以前，从节点向主节点发送sync命令请求同步数据，此时的同步方式是全量复制；在Redis2.8及以后，从节点可以发送psync命令请求同步数据，此时根据主从节点当前状态的不同，同步方式可能是全量复制或部分复制。</strong></p>
+<ol>
+<li><strong>全量复制：用于初次复制或其他无法进行部分复制的情况，将主节点中的所有数据都发送给从节点，通过让主服务器创建并发送RDB文件，以及向从服务器发送保存在缓冲区里面的写命令来进行同步，是一个非常重型的操作。</strong></li>
+<li><strong>部分复制：用于网络中断，断线等情况后的复制，当从服务器在断线后重新连接主服务器时，如果条件允许，主服务器只将中断期间执行的写命令发送给从服务器，从服务器只需要接收这些写命令，与全量复制相比更加高效。需要注意的是，如果网络中断时间过长，导致主节点没有能够完整地保存中断期间执行的写命令，则无法进行部分复制，仍使用全量复制。</strong></li>
+</ol>
+<h3 id="toc_h3_13">2.2.2 全量复制的实现</h3>
+<p><strong>Redis通过psync命令进行全量复制的过程如下：</strong></p>
+<p><strong>（1）从节点判断无法进行部分复制，向主节点发送全量复制的请求；或从节点发送部分复制的请求，但主节点判断无法进行部分复制；具体判断过程需要在讲述了部分复制原理后再介绍。</strong></p>
+<p><strong>（2）主节点收到全量复制的命令后，执行bgsave，在后台生成RDB文件，并使用一个缓冲区（称为复制缓冲区）记录从现在开始执行的所有写命令</strong></p>
+<p><strong>（3）主节点的bgsave执行完成后，将RDB文件发送给从节点；****从节点首先清除自己的旧数据，然后载入接收的*</strong>*RDB<strong>文件**，将数据库状态更新至主节点执行bgsave时的数据库状态</strong></p>
+<p><strong>（4）主节点将前述复制缓冲区中的所有写命令发送给从节点，从节点执行这些写命令，将数据库状态更新至主节点的最新状态</strong></p>
+<p><strong>（5）如果从节点开启了AOF，则会触发bgrewriteaof的执行，从而保证AOF文件更新至主节点的最新状态</strong></p>
+<p><strong>通过全量复制的过程可以看出，全量复制是非常重型的操作：</strong></p>
+<p><strong>（1）主节点通过bgsave命令fork子进程进行RDB持久化，该过程是非常消耗CPU、内存(页表复制)、硬盘IO的；</strong></p>
+<p><strong>（2）主节点通过网络将RDB文件发送给从节点，对主从节点的带宽都会带来很大的消耗</strong></p>
+<p><strong>（3）从节点清空老数据、载入新RDB文件的过程是阻塞的，无法响应客户端的命令；如果从节点执行bgrewriteaof，也会带来额外的消耗</strong></p>
+<h3 id="toc_h3_14">2.2.3 部分复制的实现</h3>
+<p><strong>由于全量复制在主节点数据量较大时效率太低，因此Redis2.8开始提供部分复制，用于处理网络中断时的数据同步。</strong></p>
+<p><strong>部分复制功能由三个部分组成：</strong></p>
+<ol>
+<li><strong>主服务器的复制偏移量（replication offset）和从服务器的复制偏移量。</strong></li>
+<li><strong>主服务器的复制积压缓存区（replication backlog）。</strong></li>
+<li><strong>服务器的运行ID（run ID）。</strong></li>
+</ol>
+<h4 id="toc_h4_15">2.2.3.1 复制偏移量</h4>
+<p><strong>主节点和从节点分别维护一个复制偏移量（offset），代表的是****主节点向从节点传递的字节数</strong>；主节点每次向从节点传播N个字节数据时，主节点的offset增加N；从节点每次收到主节点传来的N个字节数据时，从节点的offset增加N。</p>
+<p><strong>offset用于判断主从节点的数据库状态是否一致：如果二者offset相同，则一致；如果offset不同，则不一致，此时可以根据两个offset找出从节点缺少的那部分数据。例如，如果主节点的offset是1000，而从节点的offset是500，那么部分复制就需要将offset为501-1000的数据传递给从节点。而offset为501-1000的数据存储的位置，就是下面要介绍的复制积压缓冲区。</strong></p>
+<h4 id="toc_h4_16">2.2.3.2 复制积压缓冲区</h4>
+<p><strong>复制积压缓冲区是由主节点维护的、固定长度的、先进先出(FIFO)队列，默认大小1MB；当主节点开始有从节点时创建，其作用是备份主节点最近发送给从节点的数据。注意，无论主节点有一个还是多个从节点，都只需要一个复制积压缓冲区。</strong></p>
+<p><strong>在命令传播阶段，主节点除了将写命令发送给从节点，还会发送一份给复制积压缓冲区，作为写命令的备份；</strong></p>
+<p><img src="https://b3logfile.com/file/2021/11/image-fb3ddcdd.png?imageView2/2/w/1280/format/jpg/interlace/1/q/100" alt="image.png"></p>
+<p><strong>除了存储写命令，复制积压缓冲区中还存储了其中的每个字节对应的复制偏移量（offset）。由于复制积压缓冲区定长且是先进先出，所以它保存的是主节点最近执行的写命令；时间较早的写命令会被挤出缓冲区。</strong></p>
+<p><img src="https://b3logfile.com/file/2021/11/image-d6610a8f.png?imageView2/2/w/1280/format/jpg/interlace/1/q/100" alt="image.png"></p>
+<p><strong>由于该缓冲区长度固定且有限，因此可以备份的写命令也有限，当主从节点offset的差距过大超过缓冲区长度时，将无法执行部分复制，只能执行全量复制。</strong></p>
+<p><strong>反过来说，为了提高网络中断时部分复制执行的概率，可以根据需要增大复制积压缓冲区的大小(通过配置repl-backlog-size)；例如如果网络中断的平均时间是60s，而主节点平均每秒产生的写命令(特定协议格式)所占的字节数为100KB，则复制积压缓冲区的平均需求为6MB，保险起见，可以设置为12MB，来保证绝大多数断线情况都可以使用部分复制。</strong></p>
+<p><strong>从节点将offset发送给主节点后，主节点根据offset和缓冲区大小决定能否执行部分复制：</strong></p>
+<ul>
+<li><strong>如果offset偏移量之后的数据，仍然都在复制积压缓冲区里，则执行部分复制；</strong></li>
+<li><strong>如果offset偏移量之后的数据已不在复制积压缓冲区中（数据已被挤出），则执行全量复制</strong></li>
+</ul>
+<p><img src="https://b3logfile.com/file/2021/11/image-09b96512.png?imageView2/2/w/1280/format/jpg/interlace/1/q/100" alt="image.png"></p>
+<h4 id="toc_h4_17">2.2.3.3 服务器运行ID</h4>
+<p><strong>每个Redis节点(无论主从)，在启动时都会自动生成一个随机ID(每次启动都不一样)，由40个随机的十六进制字符组成；runid用来唯一识别一个Redis节点。通过info Server命令，可以查看节点的runid。</strong></p>
+<p><strong>主从节点初次复制时，主节点将自己的runid发送给从节点，从节点将这个runid保存起来；当断线重连时，从节点会将这个runid发送给主节点；主节点根据runid判断能否进行部分复制：</strong></p>
+<ul>
+<li><strong>如果从节点保存的runid与主节点现在的runid相同，说明主从节点之前同步过，主节点会继续尝试使用部分复制(到底能不能部分复制还要看offset和复制积压缓冲区的情况)；</strong></li>
+<li><strong>如果从节点保存的runid与主节点现在的runid不同，说明从节点在断线前同步的Redis节点并不是当前的主节点，只能进行全量复制。</strong></li>
+</ul>
+<h3 id="toc_h3_18">2.2.4 PSYNC命令的实现</h3>
+<p><strong>在了解了复制偏移量、复制积压缓冲区、节点运行id之后，本节将介绍psync命令的参数和返回值，从而说明psync命令执行过程中，主从节点是如何确定使用全量复制还是部分复制的。</strong></p>
+<p><strong>PSYNC命令的调用方法有两种：</strong></p>
+<ol>
+<li><strong>如果从服务器以前没有复制过任何主服务器，或者之前执行过SLAVEOF no noe命令，那么从服务器再开始一次新的复制时就向主服务器发送PSYNC ? -1命令，主动请求主服务器进行全量复制。</strong></li>
+<li><strong>相反的，如果从服务器已经复制过某个主服务器，那么从服务器在开始一次新的复制时将向主服务器发送PSYNC &lt; runid&gt;  &lt; offset&gt; 命令，接收到这个命令的主服务器会通过这两个参数来判断应该对从服务器执行哪种同步操作。</strong></li>
+</ol>
+<p><strong>接收到PSYNC命令的主服务器会向从服务器返回以下三种回复的其中一种：</strong></p>
+<ol>
+<li><strong>如果主服务器返回 +FULLRESYNC &lt; runid&gt; &lt; offset&gt;回复，那么表示主服务器将与从服务器执行全量复制，runid就是这个主服务器的运行id，从服务器会将这个ID保存起来，在下一次发送PSYNC命令时使用，offset是主服务器当前的复制偏移量，从服务器会将这个值作为自己的初始化偏移量。</strong></li>
+<li><strong>如果主服务器返回+CONTINUE 回复，那么主服务器会将与从服务器执行部分复制操作，从服务器只要等着主服务器将自己缺少的那部分数据发送过来就可以了。</strong></li>
+<li><strong>如果主服务器返回-ERR回复，那么表示主服务器的版本低于Redis2.8，他识别不了PSYNC命令，从服务器将向主服务器发送SYNC命令，执行全量复制。</strong></li>
+</ol>
+<p><img src="https://b3logfile.com/file/2021/11/image-a156d1d9.png?imageView2/2/w/1280/format/jpg/interlace/1/q/100" alt="image.png"></p>
+<h2 id="toc_h2_19">2.3 命令传播阶段</h2>
+<p><strong>数据同步阶段完成后，主从节点进入命令传播阶段；在这个阶段主节点将自己执行的写命令发送给从节点，从节点接收命令并执行，从而保证主从节点数据的一致性。</strong></p>
+<p><strong>在命令传播阶段，除了发送写命令，主从节点还维持着心跳机制：PING和REPLCONF ACK。</strong></p>
+<p><strong>延迟与不一致</strong></p>
+<p>**需要注意的是，**<strong>命令传播是异步的过程</strong>，即主节点发送写命令后并不会等待从节点的回复；因此实际上主从节点之间很难保持实时的一致性，延迟在所难免。数据不一致的程度，与主从节点之间的网络状况、主节点写命令的执行频率、以及主节点中的repl-disable-tcp-nodelay配置等有关。</p>
+<p><strong>repl-disable-tcp-nodelay no：该配置作用于命令传播阶段，控制主节点是否禁止与从节点的TCP_NODELAY；默认no，即不禁止TCP_NODELAY。当设置为yes时，TCP会对包进行合并从而减少带宽，但是发送的频率会降低，从节点数据延迟增加，一致性变差；具体发送频率与Linux内核的配置有关，默认配置为40ms。当设置为no时，TCP会立马将主节点的数据发送给从节点，带宽增加但延迟变小。</strong></p>
+<p><strong>一般来说，只有当应用对Redis数据不一致的容忍度较高，且主从节点之间网络状况不好时，才会设置为yes；多数情况使用默认值no。</strong></p>
+<h3 id="toc_h3_20">2.3.1 心跳检测</h3>
+<p><strong>在命令传播阶段，除了发送写命令，主从节点还维持着心跳机制：PING和REPLCONF ACK。心跳机制对于主从复制的超时判断、数据安全等有作用。</strong></p>
+<h4 id="toc_h4_21">2.3.1.1 主-&gt;从 PING</h4>
+<p><strong>每隔指定的时间，****主节点会向从节点发送*</strong>*PING<strong>命令**，这个PING命令的作用，主要是为了让从节点进行超时判断。</strong></p>
+<p><strong>PING发送的频率由repl-ping-slave-period参数控制，单位是秒，默认值是10s。</strong></p>
+<h4 id="toc_h4_22">2.3.1.2 从-&gt;主 REPLCONF ACK</h4>
+<p><strong>在命令传播阶段，从服务器默认会以每秒一次的频率，向主服务器发送命令：</strong></p>
+<p><strong>REPLCONF ACK &lt;replication_offset &gt;</strong></p>
+<p><strong>replication_offset是从服务器当前的复制偏移量。</strong></p>
+<p><strong>发送REPLCONF ACK命令对于主从服务器有三个作用：</strong></p>
+<p><strong>（1）检测主从服务器的网络连接状态。</strong></p>
+<p><strong>实时监测主从节点网络状态：该命令会被主节点用于复制超时的判断。</strong></p>
+<p><strong>如果主服务器超过一秒钟没有收到从服务器发来的REPLCONF ACK命令，那么主服务器就知道主从服务器之间的连接出现问题了。</strong></p>
+<p><strong>此外，在主节点中使用info Replication，可以看到其从节点的状态中的lag值，代表的是主节点上次收到该REPLCONF ACK命令的时间间隔，在正常情况下，该值应该是0或1。</strong></p>
+<p><strong>（2）辅助实现min-slaves选项。</strong></p>
+<p><strong>辅助保证从节点的数量和延迟：Redis主节点中使用min-slaves-to-write和min-slaves-max-lag参数，来保证主节点在不安全的情况下不会执行写命令；所谓不安全，是指从节点数量太少，或延迟过高。例如min-slaves-to-write和min-slaves-max-lag分别是3和10，含义是如果从节点数量小于3个，或所有从节点的延迟值（lag）都大于10s，则主节点拒绝执行写命令。而这里从节点延迟值的获取，就是通过主节点接收到REPLCONF ACK命令的时间来判断的，即前面所说的info Replication中的lag值。</strong></p>
+<p><strong>（3）检测命令丢失</strong></p>
+<p><strong>检测命令丢失：从节点发送了自身的offset，主节点会与自己的offset对比，如果从节点数据缺失（如网络丢包），主节点会推送缺失的数据（这里也会利用复制积压缓冲区）。****注意，*</strong>*offset<strong>和复制积压缓冲区，不仅可以用于部分复制，也可以用于处理命令丢失等情形；区别在于前者是在断线重连后进行的，而后者是在主从节点没有断线的情况下进行的。**</strong></p>
+<h1 id="toc_h1_23">3 总结</h1>
+<ol>
+<li><strong>主从复制的作用：宏观的了解主从复制是为了解决什么样的问题，即数据冗余、故障恢复、读负载均衡等。</strong></li>
+<li><strong>主从复制的操作：即slaveof命令。</strong></li>
+<li><strong>主从复制的原理：主从复制包括了连接建立阶段、数据同步阶段、命令传播阶段；其中数据同步阶段，有全量复制和部分复制两种数据同步方式；命令传播阶段，主从节点之间有PING和REPLCONF ACK命令互相进行心跳检测。</strong></li>
+</ol>
+<h1 id="toc_h1_24">4 参考文章</h1>
+<p><a href="https://www.cnblogs.com/kismetv/p/9236731.html" target="_blank">https://www.cnblogs.com/kismetv/p/9236731.html</a></p>
+<p><strong>redis的设计与实现</strong></p>
+                        <div>
+                            <hr>
+
+标题：Redis：主从复制<br>
+作者：<a href="https://gyyspace.github.io" target="_blank">function001</a><br>
+地址：<a href="https://gyyspace.github.io/articles/2024/06/09/1717936680892.html" target="_blank">https://gyyspace.github.io/articles/2024/06/09/1717936680892.html</a><br>
+
+<!-- 签名档内可使用 HTML、JavaScript -->
+<br>
+                        </div>
+                </div>
+                <footer>
+                    <div class="post-tags">
+                            <a rel="tag" href="https://gyyspace.github.io/tags/Redis">
+                                Redis</a>
+                    </div>
+                    <div class="post-nav fn-clear">
+                            <div class="post-nav-prev post-nav-item fn-right">
+                                <a href="https://gyyspace.github.io/articles/2024/06/09/1717912783769.html" rel="prev"
+                                   title="Redis：持久化">
+                                    Redis：持久化 >
+                                </a>
+                            </div>
+                            <div class="post-nav-next post-nav-item fn-left">
+                                <a href="https://gyyspace.github.io/articles/2024/06/09/1717936928663.html" rel="next" title="Redis：哨兵sentinel">
+                                    < Redis：哨兵sentinel
+                                </a>
+                            </div>
+                    </div>
+                </footer>
+            </article>
+        </div>
+            <div id="gitalk-container"></div>
+            <div id="b3logsolocomments"></div>
+            <div id="vcomment" data-name="function001" data-postId="1717936680892"></div>
+            <div id="relevantArticles"></div>
+            <div id="randomArticles"></div>
+<div class="sidebar-toggle">
+    <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+    <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+    <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+</div>
+
+<aside class="sidebar">
+<ul class="article__toc">
+        <li class="toc__h1">
+            <a href="#toc_h1_0">1 使用主从复制</a>
+        </li>
+        <li class="toc__h2">
+            <a href="#toc_h2_1">1.1 搭建环境</a>
+        </li>
+        <li class="toc__h2">
+            <a href="#toc_h2_2">1.2 建立复制</a>
+        </li>
+        <li class="toc__h2">
+            <a href="#toc_h2_3">1.3 断开复制</a>
+        </li>
+        <li class="toc__h1">
+            <a href="#toc_h1_4">2 主从复制原理</a>
+        </li>
+        <li class="toc__h2">
+            <a href="#toc_h2_5">2.1 连接建立阶段</a>
+        </li>
+        <li class="toc__h3">
+            <a href="#toc_h3_6">2.1.1 设置主服务器的地址和端口</a>
+        </li>
+        <li class="toc__h3">
+            <a href="#toc_h3_7">2.1.2 建立socket连接</a>
+        </li>
+        <li class="toc__h3">
+            <a href="#toc_h3_8">2.1.3 发送Ping命令</a>
+        </li>
+        <li class="toc__h3">
+            <a href="#toc_h3_9">2.1.4 身份验证</a>
+        </li>
+        <li class="toc__h3">
+            <a href="#toc_h3_10">2.2.5 发送从服务器端口信息</a>
+        </li>
+        <li class="toc__h2">
+            <a href="#toc_h2_11">2.2 数据同步阶段</a>
+        </li>
+        <li class="toc__h3">
+            <a href="#toc_h3_12">2.2.1 全量复制和部分复制</a>
+        </li>
+        <li class="toc__h3">
+            <a href="#toc_h3_13">2.2.2 全量复制的实现</a>
+        </li>
+        <li class="toc__h3">
+            <a href="#toc_h3_14">2.2.3 部分复制的实现</a>
+        </li>
+        <li class="toc__h4">
+            <a href="#toc_h4_15">2.2.3.1 复制偏移量</a>
+        </li>
+        <li class="toc__h4">
+            <a href="#toc_h4_16">2.2.3.2 复制积压缓冲区</a>
+        </li>
+        <li class="toc__h4">
+            <a href="#toc_h4_17">2.2.3.3 服务器运行ID</a>
+        </li>
+        <li class="toc__h3">
+            <a href="#toc_h3_18">2.2.4 PSYNC命令的实现</a>
+        </li>
+        <li class="toc__h2">
+            <a href="#toc_h2_19">2.3 命令传播阶段</a>
+        </li>
+        <li class="toc__h3">
+            <a href="#toc_h3_20">2.3.1 心跳检测</a>
+        </li>
+        <li class="toc__h4">
+            <a href="#toc_h4_21">2.3.1.1 主->从 PING</a>
+        </li>
+        <li class="toc__h4">
+            <a href="#toc_h4_22">2.3.1.2 从->主 REPLCONF ACK</a>
+        </li>
+        <li class="toc__h1">
+            <a href="#toc_h1_23">3 总结</a>
+        </li>
+        <li class="toc__h1">
+            <a href="#toc_h1_24">4 参考文章</a>
+        </li>
+</ul></aside>
+    </div>
+</main>
+<footer class="footer">
+    <div class="wrapper">
+        <div class="fn-clear">
+            <a href="https://gyyspace.github.io">echo洋</a>
+            
+            <div class="fn-right">
+            </div>
+        </div>
+        <div class="fn-clear">
+            &copy; 2024
+            <a href="https://gyyspace.github.io">echo洋</a>
+            
+        </div>
+    </div>
+</footer>
+<div class="back-to-top" onclick="Util.goTop()"></div>
+
+<script>
+  var Label = {
+    speech: true,
+    servePath: "https://gyyspace.github.io",
+    staticServePath: "https://gyyspace.github.io",
+    luteAvailable: false,
+    hljsStyle: 'github',
+    langLabel: "zh_CN",
+    version: "4.4.0",
+    staticSite: true,
+    showCodeBlockLn: false,
+    articleId: "1717936680892",
+  }
+</script>
+<script src="https://gyyspace.github.io/skins/next/js/common.min.js?1721540580809"></script>
+<script type="text/javascript">
+    Label.tocLabel = "目录"
+    Label.siteViewLabel = "站点概览"
+</script>
+
+<script type="text/javascript">
+    Util.addScript('https://gyyspace.github.io/js/page.min.js?1721540580809', 'soloPageScript')
+    var page = new Page({
+        "commentContentCannotEmptyLabel": "评论不能为空",
+        "oId": "1717936680892",
+        "blogHost": "https://gyyspace.github.io",
+        "randomArticles1Label": "随机阅读：",
+        "externalRelevantArticles1Label": "站外相关阅读："
+    });
+    $(document).ready(function () {
+        page.load();
+    page.tips.externalRelevantArticlesDisplayCount = "0";
+        page.loadRandomArticles();
+        page.loadRelevantArticles('1717936680892', '<h4>相关阅读：</h4>');
+    NexT.initArticle()
+    });
+</script>
+</body>
+</html>
+
+<!-- Generated by Latke (https://github.com/88250/latke) in 7ms, 2024/07/21 13:50:56 -->

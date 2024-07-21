@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8"/><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"/><meta name="theme-color" content="#3b3e43"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"/><meta name="apple-mobile-web-app-status-bar-style" content="black"><meta name="format-detection" content="telephone=no"/><title>Redis：集群cluster - echo洋</title><meta name="description" content="集群，即Redis Cluster，是Redis 3.0开始引入的分布式存储方案。 集群由多个节点(Node)组成，Redis的数据分布在这些节点中。集群中的节点分为主节点和从节点：只有主节点负责读写请求和集群信息的维护；从节点只进行主节点数据和状态信息的复制。"/><meta property="og:description" content="集群，即Redis Cluster，是Redis 3.0开始引入的分布式存储方案。 集群由多个节点(Node)组成，Redis的数据分布在这些节点中。集群中的节点分为主节点和从节点：只有主节点负责读写请求和集群信息的维护；从节点只进行主节点数据和状态信息的复制。"/>    <meta name="keywords" content="Solo,Java,博客,开源"/><link rel="dns-prefetch" href="https://gyyspace.github.io"/><link rel="dns-prefetch" href="https://cdn.jsdelivr.net"/><link rel="preconnect" href="https://gyyspace.github.io"><link rel="icon" type="image/png" href="https://b3log.org/images/brand/solo-128.png"/><link rel="apple-touch-icon" href="https://b3log.org/images/brand/solo-128.png"><link rel="shortcut icon" type="image/x-icon" href="https://b3log.org/images/brand/solo-128.png"><meta name="copyright" content="B3log"/><meta http-equiv="Window-target" content="_top"/><meta property="og:locale" content="zh_CN"/><meta property="og:title" content="Redis：集群cluster - echo洋"/><meta property="og:site_name" content="echo洋"/><meta property="og:url"      content="https://gyyspace.github.io/articles/2024/06/09/1717937447426.html?"/><meta property="og:image" content="https://b3log.org/images/brand/solo-128.png"/><link rel="search" type="application/opensearchdescription+xml" title="Redis：集群cluster - echo洋" href="/opensearch.xml"><link href="https://gyyspace.github.io/rss.xml" title="RSS" type="application/rss+xml" rel="alternate"/><link rel="manifest" href="https://gyyspace.github.io/manifest.json">        <link rel="canonical" href="https://gyyspace.github.io/articles/2024/06/09/1717937447426.html">        <link rel="stylesheet"
+              href="https://gyyspace.github.io/skins/next/css/base.css?1721540580809"/>
+            <link rel="prev" title="Redis：哨兵sentinel" href="https://gyyspace.github.io/articles/2024/06/09/1717936928663.html">
+    <script src="https://gyyspace.github.io/js/lib/vditor/dist/js/icons/ant.js?v=3.9.7" async="" id="vditorIconScript"></script></head>
+<body>
+<header class="header">
+    <div class="header-line"></div>
+    <div class="fn-clear wrapper">
+        <div class="logo-wrap">
+            <a href="https://gyyspace.github.io" rel="start">
+                <span class="logo-line-before"><i></i></span>
+                <span class="site-title">echo洋</span>
+                <span class="logo-line-after"><i></i></span>
+            </a>
+        </div>
+
+        <div class="site-nav-toggle fn-right"
+             onclick="$('.header-line').toggle();$('nav').children('.menu').slideToggle();">
+            <span class="btn-bar"></span>
+            <span class="btn-bar"></span>
+            <span class="btn-bar"></span>
+        </div>
+
+        <nav>
+            <ul class="menu">
+                    <li class="menu-item">
+                        <a href="/tags/Redis" target="_blank" rel="section">
+                            Redis 的设计与实现
+                        </a>
+                    </li>
+            </ul>
+
+        </nav>
+    </div>
+</header><main class="main">
+    <div class="wrapper">
+        <div class="content">
+            <article class="posts-expand">
+                <header class="post-header">
+                    <h2 class="post-title">
+                        Redis：集群cluster
+                    </h2>
+                    <div class="post-meta">
+                            <span class="post-time">
+                                    发表于
+                                <time>
+                                    2024-06-09
+                                </time>
+                            </span>
+                        <span class="post-comments-count">
+                                &nbsp; | &nbsp;
+                                <a href="https://gyyspace.github.io/articles/2024/06/09/1717937447426.html#b3logsolocomments">
+                                    <span data-uvstatcmt="1717937447426">0</span> 条评论</a>
+                        </span>
+                        &nbsp; | &nbsp; 热度
+                        <span data-uvstaturl="https://gyyspace.github.io/articles/2024/06/09/1717937447426.html">0</span>°C
+                    </div>
+                </header>
+
+                <div class="post-body post-body--article vditor-reset">
+                    <p><img src="https://b3logfile.com/bing/20180530.jpg?imageView2/1/w/960/h/540/interlace/1/q/100" alt=""></p>
+<h1 id="toc_h1_0">1 概述</h1>
+<p><strong>集群，即Redis Cluster，是Redis 3.0开始引入的分布式存储方案。</strong></p>
+<p><strong>集群由多个节点(Node)组成，Redis的数据分布在这些节点中。集群中的节点分为主节点和从节点：只有主节点负责读写请求和集群信息的维护；从节点只进行主节点数据和状态信息的复制。</strong></p>
+<p><strong>集群的作用，可以归纳为两点：</strong></p>
+<ol>
+<li><strong>数据分区：数据分区(或称数据分片)是集群最核心的功能。</strong></li>
+</ol>
+<p><strong>集群将数据分散到多个节点，一方面突破了Redis单机内存大小的限制，存储容量大大增加；另一方面每个主节点都可以对外提供读服务和写服务，大大提高了集群的响应能力。</strong></p>
+<ol start="2">
+<li><strong>高可用：集群支持主从复制和主节点的自动故障转移（与哨兵类似）；当任一节点发生故障时，集群仍然可以对外提供服务。</strong></li>
+</ol>
+<h1 id="toc_h1_1">2 部署集群</h1>
+<p><strong>搭建一个简单的集群：所有节点在同一台服务器上，以端口号进行区分；配置从简。3个主节点端口号：7000/7001/7002</strong></p>
+<h2 id="toc_h2_2">2.1 redis命令搭建</h2>
+<h3 id="toc_h3_3">2.1.1 启动节点</h3>
+<p><strong>节点配置文件，以端口为7002的为例：</strong></p>
+<pre><code>
+# 配置文件进行了精简，完整配置可自行和官方提供的完整conf文件进行对照。端口号自行对应修改
+#后台启动的意思
+daemonize yes 
+#端口号
+port 7002
+# 日志文件
+logfile "cluster-node-7002.log"
+ # 开启集群
+cluster-enabled yes
+# 集群持久化配置文件，内容包含其它节点的状态，持久化变量等，会自动生成在上面配置的dir目录下
+cluster-config-file cluster-node-7002.conf
+# 集群节点不可用的最大时间(毫秒)，如果主节点在指定时间内不可达，那么会进行故障转移
+cluster-node-timeout 5000
+# 云服务器上部署需指定公网ip
+cluster-announce-ip 公网ip地址
+# 允许外部连接
+protected-mode no
+# 定义生成rdb文件的名称
+dbfilename "dump-7002.rdb"
+
+</code></pre>
+<p><strong>cluster-enabled</strong> ：一个节点就是一个运行在集群模式下的Redis服务器，Redis服务器在启动时会根据cluster-enabled配置选项是否为yes来决定是否开启服务器的集群模式。</p>
+<p><strong>cluster-config-file</strong>：<strong>该参数指定了集群配置文件</strong>的位置。每个节点在运行过程中，会维护一份集群配置文件；每当集群信息发生变化时（如增减节点），集群内所有节点会将最新信息更新到该配置文件；当节点重启后，会重新读取该配置文件，获取集群信息，可以方便的重新加入到集群中。<strong>也就是说，当*</strong>*Redis<strong>节点以集群模式启动时，会首先寻找是否有集群配置文件，如果有则使用文件中的配置启动，如果没有，则初始化配置并将配置保存到文件中**。集群配置文件由Redis节点维护，不需要人工修改。</strong></p>
+<p><strong>之后就可以启动服务：例：</strong><code>redis-server redis-7000.conf</code></p>
+<p><strong>然后可以通过cluster nodes命令查看节点的状态：</strong></p>
+<p><img src="https://b3logfile.com/file/2021/11/image-f606487a.png?imageView2/2/w/1280/format/jpg/interlace/1/q/100" alt="image.png"></p>
+<p>**其中返回值第一项表示节点id，由40个16进制字符串组成，节点id与 **<a href="https://www.gyyspace.top/articles/2021/11/16/1637042107512.html" target="_blank">主从复制</a> 一文中提到的runId不同：Redis每次启动runId都会重新创建，但是节点id只在集群初始化时创建一次，然后保存到集群配置文件中，以后节点重新启动时会直接在集群配置文件中读取。</p>
+<p><strong>其他节点使用相同办法启动，不再赘述。需要特别注意，在启动节点阶段，节点是没有主从关系的，因此从节点不需要加slaveof配置。</strong></p>
+<p><img src="https://b3logfile.com/file/2021/11/image-915d4472.png?imageView2/2/w/1280/format/jpg/interlace/1/q/100" alt="image.png"></p>
+<h3 id="toc_h3_4">2.1.2 创建集群</h3>
+<p><strong>节点启动之后都是一个独立的集群，并不知道其他节点的存在，需要进行节点握手，将独立的节点组成一个网络。</strong></p>
+<p><strong>节点加入集群命令：</strong></p>
+<pre><code>cluster meet ip port
+</code></pre>
+<p><strong>创建集群命令：</strong></p>
+<pre><code>redis-cli --cluster create 172.17.0.13:6381 172.17.0.13:6382 --cluster-replicas 1
+
+</code></pre>
+<p><strong>运行上面命令结果：</strong></p>
+<p><img src="https://b3logfile.com/file/2021/11/image-bbc968b6.png?imageView2/2/w/1280/format/jpg/interlace/1/q/100" alt="image.png"></p>
+<p><strong>查看集群的节点，以7000为例：</strong></p>
+<p><img src="https://b3logfile.com/file/2021/11/image-a2dd1774.png?imageView2/2/w/1280/format/jpg/interlace/1/q/100" alt="image.png"></p>
+<p><strong>至此集群就创建成功了！！！</strong></p>
+<h3 id="toc_h3_5">2.1.3 创建过程遇到的问题</h3>
+<p><strong>问题1：</strong></p>
+<p><strong>在实际操作中发现 cluster meet ip port 中ip地址如果使用公网ip，那么加入集群的节点就会握手失败。</strong></p>
+<p><strong>解决方法：</strong></p>
+<p><strong>在配置文件中加入：</strong></p>
+<pre><code># 云服务器上部署需指定公网ip
+cluster-announce-ip 公网ip地址
+</code></pre>
+<p><strong>同时注意在云服务器上需要开放端口和安全组，能够外部连接。</strong></p>
+<p><strong>问题2：</strong></p>
+<p><strong>搭建Redis集群的过程中，执行到cluster create <strong><ip></ip></strong>:</strong><port>** ... 的时候，发现程序在阻塞，显示：Waiting for the cluster to join 的字样，然后就无休无尽的等待... 如图：**</port></p>
+<p><img src="https://b3logfile.com/file/2021/11/image-dc1435d9.png?imageView2/2/w/1280/format/jpg/interlace/1/q/100" alt="image.png"></p>
+<p><strong>解决方法：</strong></p>
+<p><strong>开放Redis服务的两个TCP端口。譬如Redis客户端连接端口为6379，而Redis服务在集群中还有一个叫集群总线端口，其端口为客户端连接端口加上10000，即 6379 + 10000 = 16379。所以开放每个集群节点的客户端端口和集群总线端口才能成功创建集群！</strong></p>
+<blockquote>
+<p><strong>客户端端口：客户端访问Redis服务器的端口</strong></p>
+<p><strong>集群总线端口：用二进制协议(gossip协议)的点对点集群通信的端口。用于节点的失败侦测、配置更新、故障转移授权，等等。</strong></p>
+<p><strong>总而言之，客户端端口提供的是外部客户端访问服务的端口；而集群总线端口是提供集群内部各个Redis服务之间的通信。</strong></p>
+</blockquote>
+<h2 id="toc_h2_6">2.2 集群方案设计</h2>
+<p><strong>设计集群方案时，至少要考虑以下因素：</strong></p>
+<p><strong>（1）高可用要求：根据故障转移的原理</strong>**，至少需要3个主节点才能完成故障转移，且3个主节点不应在同一台物理机上**；<strong>每个主节点至少需要1个从节点，且主从节点不应在一台物理机上；因此高可用集群至少包含6个节点。</strong></p>
+<p><strong>（2）数据量和访问量：估算应用需要的数据量和总访问量(考虑业务发展，留有冗余)，结合每个主节点的容量和能承受的访问量(可以通过benchmark得到较准确估计)，计算需要的主节点数量。</strong></p>
+<p><strong>（3）节点数量限制：Redis官方给出的节点数量限制为1000，主要是考虑节点间通信带来的消耗。在实际应用中应尽量避免大集群；如果节点数量不足以满足应用对Redis数据量和访问量的要求，可以考虑：(1)业务分割，大集群分为多个小集群；(2)减少不必要的数据；(3)调整数据过期策略等。</strong></p>
+<p><strong>（4）适度冗余：Redis可以在不影响集群服务的情况下增加节点，因此节点数量适当冗余即可，不用太大。</strong></p>
+<h1 id="toc_h1_7">3 集群原理</h1>
+<h2 id="toc_h2_8">3.1 集群的数据结构</h2>
+<p><strong>clusterNode结构保存了一个节点的当前状态，比如节点的创建时间、节点的名字、节点当前的配置纪元、节点的IP地址和端口号等等。</strong></p>
+<p><strong>每个节点都会使用-一个clusterNode结构来记录自己的状态，并为集群中的所有其他节点(包括主节点和从节点)都创建-一个相应的clusterNode结构，以此来记录其他节点的状态：</strong></p>
+<p><img src="https://b3logfile.com/file/2021/11/image-9bffff5a.png?imageView2/2/w/1280/format/jpg/interlace/1/q/100" alt="image.png"></p>
+<p><strong>clusterNode结构的link属性是一个clusterLink结构，该结构保存了连接节点所需的有关信息：套接字描述符，输入缓冲区，输出缓存区：</strong></p>
+<p><img src="https://b3logfile.com/file/2021/11/image-ae7312cb.png?imageView2/2/w/1280/format/jpg/interlace/1/q/100" alt="image.png"></p>
+<p><strong>最后，每个节点都保存着-一个clusterState结构，这个结构记录了在当前节点的视</strong> <strong>角下，集群目前所处的状态，例如集群是在线还是下线，集群包含多少个节点，集群当前的</strong> <strong>配置纪元，诸如此类: .</strong></p>
+<p><img src="https://b3logfile.com/file/2021/11/image-e61cfb70.png?imageView2/2/w/1280/format/jpg/interlace/1/q/100" alt="image.png"></p>
+<h2 id="toc_h2_9">3.2 cluster meet 命令实现</h2>
+<p><strong>通过向节点A发送cluster meet ip port 命令，可以让另一个节点B加入A节点的集群中。</strong></p>
+<p><strong>收到命令的节点A将于节点B进行握手（handShake）以此来确定彼此的存在，握手流程：</strong></p>
+<ol>
+<li><strong>节点A会为节点B创建一个ClusterNode结构，并将该结构添加到自己的clusterState.nodes字典里面。</strong></li>
+<li><strong>节点A根据Cluster meet 命令给定的IP地址和端口号，向节点B发送一条MEET消息。</strong></li>
+<li><strong>节点B将接受到节点A发送的MEET消息，节点B会为节点A创建一个clusterNode结构，并将该结构添加到自己的clusterState.nodes字典中。</strong></li>
+<li><strong>节点B将向节点A返回一条PONG消息。</strong></li>
+<li><strong>节点A接收到节点B返回的PONG消息，通过这条PONG消息节点A可以知道节点B已经成功地接收到自己发送的MEET消息。</strong></li>
+<li><strong>节点A向节点B返回一条PING消息</strong></li>
+<li><strong>节点B接收到节点A返回的PING消息，通过这条PING消息节点B可以知道节点A已经成功接收到自己返回的PONG消息，握手完成。</strong></li>
+</ol>
+<p><img src="https://b3logfile.com/file/2021/11/image-441e5b0a.png?imageView2/2/w/1280/format/jpg/interlace/1/q/100" alt="image.png"></p>
+<p><strong>最后，节点A会将节点B的信息通过Gossip协议传播给集群中的其他节点，让其他节点也与节点B进行握手，最终，节点B会被集群中的所有节点认识。</strong></p>
+<h2 id="toc_h2_10">3.2 集群的数据分区</h2>
+<h3 id="toc_h3_11">3.2.1 数据分区方案</h3>
+<p><strong>数据分区有****顺序分区、哈希分区</strong>等，其中哈希分区由于其天然的随机性，使用广泛；<strong>集群的分区方案便是哈希分区的一种。</strong></p>
+<p><strong>哈希分区的基本思路是：对数据的特征值（如key）进行哈希，然后根据哈希值决定数据落在哪个节点。常见的哈希分区包括：****哈希取余分区、一致性哈希分区、带虚拟节点的一致性哈希分区</strong>等。</p>
+<p><strong>衡量数据分区方法好坏的标准有很多，其中比较重要的两个因素是(1)数据分布是否均匀(2)增加或删减节点对数据分布的影响。由于哈希的随机性，哈希分区基本可以保证数据分布均匀；因此在比较哈希分区方案时，重点要看增减节点对数据分布的影响。</strong></p>
+<p><strong>（1）哈希取余分区</strong></p>
+<p><strong>哈希取余分区思路非常简单：计算key的hash值，然后对节点数量进行取余，从而决定数据映射到哪个节点上。该方案最大的问题是，当新增或删减节点时，节点数量发生变化，系统中所有的数据都需要重新计算映射关系，引发大规模数据迁移。</strong></p>
+<p><strong>（2）一致性哈希分区</strong></p>
+<p><strong>一致性哈希算法将整个哈希值空间组织成一个虚拟的圆环，如下图所示，范围为0-2^32-1；对于每个数据，根据key计算hash值，确定数据在环上的位置，然后从此位置沿环顺时针行走，找到的第一台服务器就是其应该映射到的服务器。</strong></p>
+<p><img src="https://b3logfile.com/file/2021/11/image-39a561dc.png?imageView2/2/w/1280/format/jpg/interlace/1/q/100" alt="image.png"></p>
+<p><strong>与哈希取余分区相比，一致性哈希分区将增减节点的影响限制在相邻节点。以上图为例，如果在node1和node2之间增加node5，则只有node2中的一部分数据会迁移到node5；如果去掉node2，则原node2中的数据只会迁移到node4中，只有node4会受影响。</strong></p>
+<p>**一致性哈希分区的主要问题在于，**<strong>当节点数量较少时，增加或删减节点，对单个节点的影响可能很大，造成数据的严重不平衡</strong>。还是以上图为例，如果去掉node2，node4中的数据由总数据的1/4左右变为1/2左右，与其他节点相比负载过高。</p>
+<p><strong>（3）带虚拟节点的一致性哈希分区</strong></p>
+<p><strong>该方案在一致性哈希分区的基础上，引入了虚拟节点的概念。****Redis*</strong>*集群使用的便是该方案，其中的虚拟节点称为槽（slot**）**。槽是介于数据和实际节点之间的虚拟概念；每个实际节点包含一定数量的槽，每个槽包含哈希值在一定范围内的数据。引入槽以后，数据的映射关系由数据hash-&gt;实际节点，变成了数据hash-&gt;槽-&gt;实际节点。**</p>
+<p><strong>在使用了槽的一致性哈希分区中，槽是数据管理和迁移的基本单位。槽解耦了数据和实际节点之间的关系，增加或删除节点对系统的影响很小</strong>。仍以上图为例，系统中有4个实际节点，假设为其分配16个槽(0-15)； 槽0-3位于node1，4-7位于node2，以此类推。如果此时删除node2，只需要将槽4-7重新分配即可，例如槽4-5分配给node1，槽6分配给node3，槽7分配给node4；可以看出删除node2后，数据在其他节点的分布仍然较为均衡。</p>
+<p><strong>槽的数量一般远小于2^32，远大于实际节点的数量；在Redis集群中，槽的数量为16384。</strong></p>
+<p><strong>下面这张图很好的总结了Redis集群将数据映射到实际节点的过程：</strong></p>
+<p><img src="https://b3logfile.com/file/2021/11/image-81c26648.png?imageView2/2/w/1280/format/jpg/interlace/1/q/100" alt="image.png"></p>
+<h3 id="toc_h3_12">3.2.2 数据管理基本单位槽（slot）</h3>
+<p><strong>Redis集群通过分片的方式来保存数据库中的键值对:集群的整个数据库被分为16384个槽( slot ),数据库中的每个键都属于这16384个槽的其中-一个，集群中的每个节点可以处理0个或最多16384 个槽。</strong></p>
+<p><strong>当数据库中的16384个槽都有节点在处理时,集群处于上线状态(ok);相反地，如果数据库中有任何一个槽没有得到处理，那么集群处于下线状态( fail )。</strong></p>
+<p><strong>（1）指派槽</strong></p>
+<p><strong>通过向节点发送CLUSTER ADDSLOTS命令，我们可以将一个或多个槽指派（assign）给节点：</strong></p>
+<p><strong>CLUSTER ADDSLOTS &lt; slot &gt; [slot ...]</strong></p>
+<p><strong>例：</strong></p>
+<p><strong>127.0.0.1:8000&gt; CLUSTER ADDSLOTS 0 1 2 ... 10000</strong></p>
+<p><strong>（2）保存槽信息</strong></p>
+<p><strong>clusterNode结构的slots，numslots属性保存槽的相关信息。</strong></p>
+<p><img src="https://b3logfile.com/file/2021/11/image-a39b27cf.png?imageView2/2/w/1280/format/jpg/interlace/1/q/100" alt="image.png"></p>
+<p><strong>slots属性是一个二进制位数组，这个数组的大小是16284/8=2048个字节，共包含16384个二进制位。</strong></p>
+<p><strong>redis以0为起始索引，16383为终止索引，slots[i] = 1表示该节点负责槽i，=0表示不负责槽i</strong></p>
+<p><strong>numslots属性则记录节点负责处理槽的数量，即slots数组中值为1的数量。</strong></p>
+<p><strong>（3）传播槽信息</strong></p>
+<p><strong>一个节点除了会将自己负责处理的槽记录在clusterNode结构的slots属性和numslots属性外，他还会将自己的slots数组通过消息发送给集群中的其他节点，以此来告知其它节点自己目前负责处理哪些槽。</strong></p>
+<p><strong>当节点A通过消息从节点B那里接收到节点B的slots数组时，节点A会在自己的clusterState. nodes字典中查找节点B对应的clusterNode结构，并对结构中的slots数组进行保存或者更新。</strong></p>
+<p><strong>因为集群中的每个节点都会将自己的slots数组通过消息发送给集群中的其他节点，并且每个接收到slots数组的节点都会将数组保存到相应节点的clusterNode结构里面。因此，集群中的每个节点都会知道数据库中的16384个槽分别被指派给了集群中的哪些节点。</strong></p>
+<p><strong>（4）保存集群中所有槽信息</strong></p>
+<p><strong>clusterState结构中slots数组记录集群中所有16384个槽的指派信息：</strong></p>
+<p><img src="https://b3logfile.com/file/2021/11/image-4004e07a.png?imageView2/2/w/1280/format/jpg/interlace/1/q/100" alt="image.png"></p>
+<p><strong>slots数组包含16384个项，每个数组项都是一个指向clusterNode结构的指针。如果为null表示这个槽没有分派给任何节点。</strong></p>
+<h3 id="toc_h3_13">3.2.3 cluster addslots 命令实现</h3>
+<p><strong>CLUSTER ADDSLOTS命令接受一个或多个槽作为参数，并将所有输入的槽指派给接收该命令的节点负责。</strong></p>
+<p><img src="https://b3logfile.com/file/2021/11/image-1ff9b382.png?imageView2/2/w/1280/format/jpg/interlace/1/q/100" alt="image.png"></p>
+<h2 id="toc_h2_14">3.3 集群中执行命令</h2>
+<p><strong>在对数据库中的16384个槽都进行了指派之后，集群就会进入上线状态，这时客户端就可以向集群中的节点发送数据命令了。</strong></p>
+<p><strong>客户端向节点发送与数据库键有关命令时，接收命令的节点会计算出命令要处理键属于哪个槽，并检查这个槽是否指派给自己：</strong></p>
+<ol>
+<li><strong>如果键所在槽就是当前节点，那么直接执行命令。</strong></li>
+<li><strong>如果不在当前节点，那么节点会向客户端返回个亿MOVEN错误，指引客户端跳转（redirect）到正确节点，并再次发送之前想要执行的命令。</strong></li>
+</ol>
+<p><img src="https://b3logfile.com/file/2021/11/image-636ae2e0.png?imageView2/2/w/1280/format/jpg/interlace/1/q/100" alt="image.png"></p>
+<h3 id="toc_h3_15">3.3.1 计算key属于哪个槽</h3>
+<p><img src="https://b3logfile.com/file/2021/11/image-2f407526.png?imageView2/2/w/1280/format/jpg/interlace/1/q/100" alt="image.png"></p>
+<p><strong>以上代码就是计算key属于按个槽的代码，其中CRC16(key)语句计算key的CRC-16校验和。</strong></p>
+<p><strong>使用cluster keyslot &lt; key &gt; 命令可以查看key属于哪个槽。</strong></p>
+<h3 id="toc_h3_16">3.3.2 判断槽</h3>
+<p><strong>找到槽之后，根据clusterState中保存的slots数组判断当前节点是否是管理该槽的。如果不是则向客户端返回Moved错误，指引客户端转向管理该槽的节点，然后重新发送命令。</strong></p>
+<h3 id="toc_h3_17">3.3.3 MOVED错误</h3>
+<p><strong>节点发现要处理的命令的key的槽不在自己的节点上，就会返回MOVED错误。</strong></p>
+<p><strong>格式：</strong></p>
+<p><strong>MOVED slot ip port</strong></p>
+<p><strong>slot是处理键的槽，ip，port是这个管理这个槽的节点。</strong></p>
+<p><strong>一个集群客户端通常会与集群中的多个节点创建套接字连接，而所谓的节点转向就是换一个套接字来发送命令。</strong></p>
+<p><strong>如果客户端尚未与想要转向的节点创键套接字连接，那么客户端会先根据MOVED错误提供的IP地址和端口号来连接节点，然后再进行转向，之后再重新发送命令。</strong></p>
+<h3 id="toc_h3_18">3.3.4 集群下的节点数据库</h3>
+<p><strong>集群下的节点和单机服务器在存储键值对，对键值对过期时间处理方面都相同。</strong></p>
+<p><strong>它们之间的一个区别就是集群下的节点只能使用一个数据库，而单机服务器没有这个限制。</strong></p>
+<p><strong>节点除了将键值对保存到数据库中之外，节点还会用clusterState结构中的slots_to_keys****跳跃表（有序的按分值排序，分值相同的按对象排序，对象不可以重复，分值可以重复）来保存槽和键之间的关系。</strong></p>
+<p><strong>slots_to_keys 跳跃表每个节点的分值（score）都是一个槽号，而每个节点的成员对象都是一个数据库键：</strong></p>
+<ol>
+<li><strong>每当节点往数据库中添加一个新的键值对时，节点就会将这个键以及键的槽号关联到slots_to_keys跳跃表。</strong></li>
+<li><strong>当节点删除数据库中某个键值对时，节点就会在slots_to_keys跳跃表解除被删除键与槽号的关联。</strong></li>
+</ol>
+<h2 id="toc_h2_19">3.4 集群重新分片</h2>
+<p><strong>Redis集群的重新分片操作可以将任意数量已经指派给某个节点(源节点)的槽改为指派给另一个节点(目标节点),并且相关槽所属的键值对也会从源节点被移动到目标节点。</strong></p>
+<p><strong>重新分片操作可以在线( online)进行，在重新分片的过程中，集群不需要下线，并且源节点和目标节点都可以继续处理命令请求。</strong></p>
+<h3 id="toc_h3_20">3.4.1 分片原理</h3>
+<p><strong>Redis集群的重新分片操作由redis的集群管理软件redis-trib负责执行的，redis提供了进行重新分片所需的所有命令，而redis-trib则通过向源节点和目标节点发送命令来进行重新分片操作。</strong></p>
+<p><strong>redis-trib对集群的单个槽slot进行重新分片的步骤如下：</strong></p>
+<ol>
+<li><strong>redis-trib对目标节点发送cluster setslot &lt; slot &gt; importing &lt;source_id&gt; 命令，让目标节点准备好从源节点导入属于槽slot的键值对。</strong></li>
+<li><strong>redis-trib对源节点发送cluster setslot &lt; slot &gt; migating &lt;target_id&gt; 命令，让源节点准备好将属于槽slot的键值对迁移至目标节点。</strong></li>
+<li><strong>redis-trib向源节点发送cluster getkeysinslot &lt; slot&gt; &lt; count&gt; 命令，获得最多count个属于槽slot的键值对的键名。</strong></li>
+<li><strong>对于步骤3获取的每个键名，redis-trib都向源节点发送一个migrate &lt;target_ip&gt; &lt;target_port&gt; &lt;key_name&gt; 0 &lt; timeout&gt;命令，将被选中的键原子地从源节点迁移至目标节点。</strong></li>
+<li><strong>重复执行步骤3和步骤4，直到源节点保存的所有属于槽slot的键值对都被迁移至目标节点为止。每次迁移键的过程如图所示。</strong></li>
+<li><strong>redis-trib向集群中任意一个节点发送cluster setslot &lt; slot&gt; node &lt;target_id&gt; 命令，将槽slot指派给目标节点，这一指派信息会通过消息发送至整个集群，最终集群中的所有节点都会知道槽slot已经指派给了目标节点。</strong></li>
+</ol>
+<p><img src="https://b3logfile.com/file/2021/11/image-09cbc4f4.png?imageView2/2/w/1280/format/jpg/interlace/1/q/100" alt="image.png"></p>
+<p><strong>如果分片涉及多个槽，那么redis-trib会对每一个给的的槽执行以上步骤。</strong></p>
+<p><img src="https://b3logfile.com/file/2021/11/image-4d80e923.png?imageView2/2/w/1280/format/jpg/interlace/1/q/100" alt="image.png"></p>
+<h3 id="toc_h3_21">3.4.2 cluster setslot importing 命令实现</h3>
+<p><strong>clusterState结构的importing_slots_from 数组记录了当前节点正在从其他节点导入的槽。</strong></p>
+<p><img src="https://b3logfile.com/file/2021/11/image-72cf483e.png?imageView2/2/w/1280/format/jpg/interlace/1/q/100" alt="image.png"></p>
+<p><strong>如果importing_solts_from[i] 的值不为null，而是指向一个clusterNode结构，那么表示当前节点正在从clusterNode所代表的节点导入槽i。</strong></p>
+<h3 id="toc_h3_22">3.4.3 cluster setslot migrating 命令实现</h3>
+<p><strong>clusterState 结构的migrating_slots_to数组记录了当前节点正在迁移至其他节点的槽：</strong></p>
+<p><img src="https://b3logfile.com/file/2021/11/image-eba8e1cf.png?imageView2/2/w/1280/format/jpg/interlace/1/q/100" alt="image.png"></p>
+<p><strong>如果migrating_slots_to[i]的值不为null，而是指向一个clusterNode结构，那么表示当前节点正在将槽i迁移至clusterNode所代表的节点。</strong></p>
+<h2 id="toc_h2_23">3.5 ASK错误</h2>
+<p><strong>在重新分片期间，源节点目标节点迁移一个槽的过程中，可能出现一中情况：属于被迁移槽的一部分键值对保存在源节点，一部分保存在目标节点中。</strong></p>
+<p><strong>当客户端向源节点发送一个与数据库键有关的命令，并且命令要处理的数据库键恰好就属于正在被迁移的槽时：</strong></p>
+<p><img src="https://b3logfile.com/file/2021/11/image-f5793294.png?imageView2/2/w/1280/format/jpg/interlace/1/q/100" alt="image.png"></p>
+<p><strong>如上图所示，当出现问题时，节点向客户端返回ASK错误，接到ASK错误的客户端会根据错误提供的IP地址和端口号，转向至正在导入槽的目标节点，然后首先向目标节点发送一个ASKING命令，之后再重新发送原本想要执行的命令。</strong></p>
+<h3 id="toc_h3_24">3.5.1 ASKING命令</h3>
+<p><strong>ASKING 命令唯一做的就是****打开发送改命令的客户端的REDIS_ASKING标识。</strong></p>
+<p><strong>为什么要首先发送一个ASKING命令，然后在发送想要执行的命令呢？</strong></p>
+<p><strong>在一般情况下，如果客户端向节点发送一个关于槽i的命令，而槽i又没有指派给这个节点的话，那么节点将向客户端返回一个MOVED错误（然后转向）。但是，如果节点的clusterState.importing_slots_from[i] 显示节点正在导入槽i，并且发送命令的客户端带有REDIS_ASKING标识，那么节点将破例执行这个关于槽i的命令一次。</strong></p>
+<p><img src="https://b3logfile.com/file/2021/11/image-89a46182.png?imageView2/2/w/1280/format/jpg/interlace/1/q/100" alt="image.png"></p>
+<h3 id="toc_h3_25">3.5.2 ASK错误和MOVED错误的区别</h3>
+<p><strong>ASK错误和MOVED错误都会导致客户端转向，它们区别在于：</strong></p>
+<ol>
+<li><strong>MOVED错误标识槽的负责权在另一个节点，客户端收到关于槽i的MOVED错误之后，直接连接的MOVED给定的节点，以后每次遇到关于槽i的命令请求时，都可以直接将该命令请求发送到MOVED错误指向的节点。</strong></li>
+<li><strong>与MOVED相反，ASK错误只是两个节点在迁移槽的过程中使用的是一种临时措施，在客户端收到关于槽i的ASK错误之后，客户端只会在接下来的一次命令请求中将关于槽i的命令请求发送至ASK错误所指示的节点，但这种转向不会对客户端今后发送关于槽i的命令请求产生任何影响，客户端仍然会将关于槽i的命令请求发送至目前负责处理槽i的节点，除非ASK错误再次出现。</strong></li>
+</ol>
+<h2 id="toc_h2_26">3.6 复制与故障转移</h2>
+<p><strong>Redis集群中的节点分为主节点( master)和从节点( slave),其中主节点用于处理槽，而从节点则用于复制某个主节点，并在被复制的主节点下线时，代替下线主节点继续处理命令请求。</strong></p>
+<h3 id="toc_h3_27">3.6.1 设置从节点</h3>
+<p><strong>向一个节点发送命令：</strong></p>
+<p><strong>cluster replicate &lt; node_id&gt;</strong></p>
+<p><strong>可以让接受命令的节点成为node_id所指定节点的从节点，并开始对主节点进行复制：</strong></p>
+<ol>
+<li><strong>接受到该命令的节点首先会在自己的clusterState.nodes字典中找到node_id所对应节点的clusterNode结构，并将自己的clusterState.myself.slaveof指针指向这个结构，以此来记录这个节点正在复制的主节点：</strong><img src="https://b3logfile.com/file/2021/11/image-fd1df2f1.png?imageView2/2/w/1280/format/jpg/interlace/1/q/100" alt="image.png"></li>
+<li><strong>节点会修改自己在clusterState.myself.flags中的属性，关闭原本的REDIS_NODE_MASTER标识，打开REDIS_NODE_SLAVE标识，表示这个节点已经从原来的主节点变成了从节点。</strong></li>
+<li><strong>最后，节点会调用复制代码，并根据clusterState.myself.slaveof指向的clusterNode结构所保存的IP地址和端口号，对主节点进行复制。节点的复制功能和单机redis服务器的复制功能使用了相同的代码，所以让从节点复制主节点相当于向从节点发送命令slaveof &lt; master_ip&gt; &lt;master_port&gt;。</strong></li>
+</ol>
+<p><strong>一个节点成为从节点，并开始复制某个主节点这一信息会通过消息发送给集群中的其他节点，最终集群中的所有节点都会知道某个从节点正在复制某个主节点。</strong></p>
+<p><strong>集群中所有节点都会在代表主节点的clusterNode结构的slaves属性和numslaves属性中记录正在复制这个主节点的从节点名单：</strong></p>
+<pre><code>struct clusterNode{
+    //正在复制这个主节点的从节点数量
+    int numslaves
+    //一个数组，每个数组项指向一个正在复制这个主节点的从节点的clusterNode结构
+    struct clusterNode **slaves;
+}
+</code></pre>
+<h3 id="toc_h3_28">3.6.2 故障检测</h3>
+<p><strong>集群中的每个节点都会定期地向集群中的其他节点发送PING消息，以此来检测对方是否在线，如果接收PING消息的节点没有在规定的时间内，向发送PING消息的节点返回PONG消息，那么发送PING消息的节点就会将接收PING消息的节点标记为疑似下线( probable fail, PFAIL )。</strong></p>
+<p><strong>集群中的各个节点会通过互相发送消息的方式来交换集群中各个节点的状态信息，节点的状态：在线，疑似下线（PFAIL），已下线（FAIL）。</strong></p>
+<p><strong>当一个主节点A通过消息得知主节点B认为主节点C进入了疑似下线状态时，主节点A会在自己的clusterState.nodes字典中找到主节点C所对应的clusterNode结构，并将主节点B的下线报告添加到cluster结构的fail_reports链表里面：</strong></p>
+<pre><code>struct clusterNode{
+    //一个链表记录了所有其他节点对该节点的下线报告
+    list *fail_reports;
+}
+</code></pre>
+<p><strong>下线报告由一个clusterNodeFailReport结构表示：</strong></p>
+<pre><code>struct clusterNodeFailReport{
+    //报告目标节点以及下线的节点
+    struct clusterNode *node;
+    //最后一次从node节点收到下线报告的时间
+    //程序使用这个时间戳来检查下线报告是否过期，与当前时间相差太大的下线报告会被删除
+    mstime_t time;
+}
+</code></pre>
+<p><strong>如果在一个集群里面，****半数以上</strong>负责处理槽的主节点都将某个主节点x报告为疑似下线，那么这个主节点x将被标记为已下线(FAIL),将主节点x标记为已下线的节点会向集群广播一条关于主节点x的FAIL消息，所有收到这条FAIL消息的节点都会立即将主节点x标记为已下线。</p>
+<h3 id="toc_h3_29">3.6.3 故障转移</h3>
+<p><strong>当一个从节点发现自己正在复制的主节点进人了已下线状态时，从节点将开始对下线主节点进行故障转移，以下是故障转移的执行步骤:</strong></p>
+<p><strong>1) 复制下线主节点的所有从节点里面，会有一个从节点被选中。</strong> <strong>2) 被选中的从节点会执行SLAVEOF no one命令，成为新的主节点。</strong> <strong>3) 新的主节点会撤销所有对已下线主节点的槽指派，并将这些槽全部指派给自己。</strong> <strong>4) 新的主节点向集群广播一条PONG消息,这条PONG消息可以让集群中的其他节点立即知道这个节点已经由从节点变成了主节点,并且这个主节点已经接管了原本由已下线节点负</strong> **   责处理的槽。** <strong>5) 新的主节点开始接收和自己负责处理的槽有关的命令请求，故障转移完成。</strong></p>
+<h3 id="toc_h3_30">3.6.4 选举新节点</h3>
+<p><strong>集群选举新的主节点的方法：</strong></p>
+<ol>
+<li><strong>集群的配置纪元是一个自增计数器，他的初始值为0。</strong></li>
+<li><strong>对集群里的某个节点开始一次故障转移操作时，集群配置纪元的值会被加一。</strong></li>
+<li><strong>对于每个配置纪元，集群里每个负责处理槽的主节点都有一次投票的机会，而第一个向主节点要求投票的从节点将获得主节点的投票。</strong></li>
+<li><strong>当从节点发现自己正在复制的主节点进入已下线状态时，从节点会向集群广播一条cluster_type_failover_auth_request消息，要求所有收到这条消息，并且具投票权的主节点向这个从节点投票。</strong></li>
+<li><strong>如果一个主节点具有投票权（它正在负责处理槽）并且这个节点没有投票给其他从节点，那么主节点将向要求投票的从节点返回一条clustermsg_type_failover_auth_ask消息，表示这个主节点支持从节点称为新的主节点。</strong></li>
+<li><strong>每个参与选举的从节点都会接收clustermsg_type_failover_auth_ack消息，根据收到了多少条这种消息，来统计自己获得了多少主节点的支持。</strong></li>
+<li><strong>如果集群中有N个具有投票权的主节点，那么当一个从节点收集到大于等于N/2+1张支持票时，这个从节点就会被当选为新的主节点。</strong></li>
+<li><strong>在每一个配置纪元中，具有投票权的主节点只能投一次票，那么具有超过一半票数的从节点只会有一个，确保了新的主节点只会有一个。</strong></li>
+<li><strong>如果在一个配置纪元里面没有从节点能收集到足够多的支持票，那么集群进入一个新的配置纪元，并再次进行选举，直到选出新的主节点为止。</strong></li>
+</ol>
+<p><strong>这种选举新主节点的方法和选举领头Sentinel的方法非常相似，两者都是基于Raft算法的领头选举方法实现的。</strong></p>
+<h2 id="toc_h2_31">3.7集群的通信机制</h2>
+<h3 id="toc_h3_32">3.7.1 两个端口</h3>
+<p><strong>在哨兵系统中，节点分为数据节点和哨兵节点：前者存储数据，后者实现额外的控制功能。在集群中，没有数据节点与非数据节点之分：所有的节点都存储数据，也都参与集群状态的维护。为此，集群中的每个节点，都提供了两个TCP端口：</strong></p>
+<ul>
+<li><strong>普通端口：即我们在前面指定的端口(7000等)。普通端口主要用于为客户端提供服务（与单机节点类似）；但在节点间数据迁移时也会使用。</strong></li>
+<li><strong>集群端口：端口号是普通端口+10000（10000是固定值，无法改变），如7000节点的集群端口为17000。集群端口只用于节点之间的通信，如搭建集群、增减节点、故障转移等操作时节点间的通信；不要使用客户端连接集群接口。为了保证集群可以正常工作，在配置防火墙时，要同时开启普通端口和集群端口。</strong></li>
+</ul>
+<h3 id="toc_h3_33">3.7.2 Gossip协议</h3>
+<p><strong>节点间通信，按照通信协议可以分为几种类型：单对单、广播、Gossip协议等。重点是广播和Gossip的对比。</strong></p>
+<p><strong>广播是指向集群内所有节点发送消息；优点是集群的收敛速度快(集群收敛是指集群内所有节点获得的集群信息是一致的)，缺点是每条消息都要发送给所有节点，CPU、带宽等消耗较大。</strong></p>
+<p><strong>Gossip协议的特点是：在节点数量有限的网络中，每个节点都“随机”的与部分节点通信（并不是真正的随机，而是根据特定的规则选择通信的节点），经过一番杂乱无章的通信，每个节点的状态很快会达到一致。Gossip协议的优点有负载(比广播)低、去中心化、容错性高(因为通信有冗余)等；缺点主要是集群的收敛速度慢。</strong></p>
+<h3 id="toc_h3_34">3.7.3 消息</h3>
+<p><strong>集群中的各个节点通过发送和接收消息来进行通信，发送消息的节点称为sender（发送者），接收消息的称为receiver（接收者）。</strong></p>
+<p><strong>节点发送的消息主要有五种：</strong></p>
+<ol>
+<li><strong>MEET消息：当发送者接到客户端发送的cluster命令时，发送者会向接收者发送MEET消息，请求接受者加入到发送者当前所处的集群里面。</strong></li>
+<li><strong>PING消息：集群里的每个节点默认每隔一秒钟就会从已知节点列表中随机选出五个节点，然后对这五个节点中最长时间没有发送过PING消息的节点发送PING消息，以此来检测被选中的节点是否在线。除此之外，如果节点A最后一次收到节点B发送的PONG消息的时间，距离当前时间已经超过了节点A的cluster-node-timeout选项设置时长的一半，那么节点A也会向节点B发送PING消息，这可以防止节点A因为长时间没有随机选中节点B作为PING消息的发送对象而导致对节点B的信息更新滞后。</strong></li>
+<li><strong>PONG消息：当接收者收到发送者发来的MEET消息或者PING消息时，为了向发送者确认这条MEET消息或者PING消息已到达，接收者会向发送者返回一条PONG消息。另外，一个节点也可以通过向集群广播自己的PONG消息来让集群中的其他节点立即刷新关于这个节点的认识，例如当一次故障转移操作成功执行之后，新的主节点会向集群广播一条PONG消息，以此来让集群中的其他节点立即知道这个节点已经变成了主节点，并且接管了已下线节点负责的槽。</strong></li>
+<li><strong>FAIL消息:当一个主节点A判断另-一个主节点B已经进人FAIL状态时，节点A会向集群广播一条关于节点B的FAIL消息，所有收到这条消息的节点都会立即将节点B标记为已下线。</strong></li>
+<li><strong>PUBLISH消息:当节点接收到-一个PUBLISH命令时，节点会执行这个命令，并向集群广播一条PUBLISH消息，所有接收到这条PUBLISH消息的节点都会执行相同的PUBLISH命令。</strong></li>
+</ol>
+<p><strong>所有的消息都由：消息头（header）+ 消息正文（data） 组成。</strong></p>
+<h1 id="toc_h1_35">4常用命令</h1>
+<p><strong>集群</strong> <strong>cluster info ：打印集群的信息</strong> <strong>cluster nodes ：列出集群当前已知的所有节点（ node），以及这些节点的相关信息。</strong> <strong>节点</strong> <strong>cluster meet <strong><ip></ip></strong> <strong><port></port></strong> ：将 ip 和 port 所指定的节点添加到集群当中，让它成为集群的一份子。</strong> <strong>cluster forget &lt;node_id&gt; ：从集群中移除 node_id 指定的节点。</strong> <strong>cluster replicate &lt;node_id&gt; ：将当前节点设置为 node_id 指定的节点的从节点。</strong> <strong>cluster saveconfig ：将节点的配置文件保存到硬盘里面。</strong> <strong>槽(slot)</strong></p>
+<p><strong>cluster addslots <strong><slot></slot></strong> [slot ...] ：将一个或多个槽（ slot）指派（ assign）给当前节点。</strong> <strong>cluster delslots <strong><slot></slot></strong> [slot ...] ：移除一个或多个槽对当前节点的指派。</strong> <strong>cluster flushslots ：移除指派给当前节点的所有槽，让当前节点变成一个没有指派任何槽的节点。</strong> <strong>cluster setslot <strong><slot></slot></strong> node &lt;node_id&gt; ：将槽 slot 指派给 node_id 指定的节点，如果槽已经指派给****另一个节点，那么先让另一个节点删除该槽&gt;，然后再进行指派。</strong></p>
+<p><strong>cluster setslot <strong><slot></slot></strong> migrating &lt;node_id&gt; ：将本节点的槽 slot 迁移到 node_id 指定的节点中。</strong> <strong>cluster setslot <strong><slot></slot></strong> importing &lt;node_id&gt; ：从 node_id 指定的节点中导入槽 slot 到本节点。</strong> <strong>cluster setslot <strong><slot></slot></strong> stable ：取消对槽 slot 的导入（ import）或者迁移（ migrate）。</strong> <strong>键</strong> <strong>cluster keyslot <strong><key></key></strong> ：计算键 key 应该被放置在哪个槽上。</strong> <strong>cluster countkeysinslot <strong><slot></slot></strong> ：返回槽 slot 目前包含的键值对数量。</strong> <strong>cluster getkeysinslot <strong><slot></slot></strong> <strong><count></count></strong> ：返回 count 个 slot 槽中的键</strong></p>
+<h1 id="toc_h1_36">5 其它内容</h1>
+<h2 id="toc_h2_37">5.1 集群的限制及应对方法</h2>
+<p><strong>由于集群中的数据分布在不同节点中，导致一些功能受限，包括：</strong></p>
+<p><strong>（1）key批量操作受限：例如mget、mset操作，只有当操作的key都位于一个槽时，才能进行。针对该问题，一种思路是在客户端记录槽与key的信息，每次针对特定槽执行mget/mset；另外一种思路是使用Hash Tag，将在下一小节介绍。</strong></p>
+<p><strong>（2）keys/flushall等操作：keys/flushall等操作可以在任一节点执行，但是结果只针对当前节点，例如keys操作只返回当前节点的所有键。针对该问题，可以在客户端使用cluster nodes获取所有节点信息，并对其中的所有主节点执行keys/flushall等操作。</strong></p>
+<p><strong>（3）事务/Lua脚本：集群支持事务及Lua脚本，但前提条件是所涉及的key必须在同一个节点。Hash Tag可以解决该问题。</strong></p>
+<p><strong>（4）数据库：单机Redis节点可以支持16个数据库，集群模式下只支持一个，即db0。</strong></p>
+<p><strong>（5）复制结构：只支持一层复制结构，不支持嵌套。</strong></p>
+<h2 id="toc_h2_38">5.2 Hash Tag</h2>
+<p>**Hash Tag原理是：**<strong>当一个key包含 {} 的时候，不对整个key做hash，而仅对 {} 包括的字符串做hash。</strong></p>
+<p><strong>Hash Tag可以让不同的key拥有相同的hash值，从而分配在同一个槽里；这样针对不同key的批量操作(mget/mset等)，以及事务、Lua脚本等都可以支持。不过Hash Tag可能会带来数据分配不均的问题，这时需要：(1)调整不同节点中槽的数量，使数据分布尽量均匀；(2)避免对热点数据使用Hash Tag，导致请求分布不均。</strong></p>
+<p><strong>下面是使用Hash Tag的一个例子；通过对product加Hash Tag，可以将所有产品信息放到同一个槽中，便于操作。</strong></p>
+<p><img src="https://b3logfile.com/file/2021/11/image-311a5faf.png?imageView2/2/w/1280/format/jpg/interlace/1/q/100" alt="image.png"></p>
+<h2 id="toc_h2_39">5.3 参数优化</h2>
+<h3 id="toc_h3_40">cluster_node_timeout</h3>
+<p><strong>cluster_node_timeout参数在前面已经初步介绍；它的默认值是15s，影响包括：</strong></p>
+<p><strong>（1）影响PING消息接收节点的选择：值越大对延迟容忍度越高，选择的接收节点越少，可以降低带宽，但会降低收敛速度；应根据带宽情况和应用要求进行调整。</strong></p>
+<p><strong>（2）影响故障转移的判定和时间：值越大，越不容易误判，但完成转移消耗时间越长；应根据网络状况和应用要求进行调整。</strong></p>
+<h3 id="toc_h3_41">cluster-require-full-coverage</h3>
+<p><strong>前面提到，只有当16384个槽全部分配完毕时，集群才能上线。这样做是为了保证集群的完整性，但同时也带来了新的问题：当主节点发生故障而故障转移尚未完成，原主节点中的槽不在任何节点中，此时会集群处于下线状态，无法响应客户端的请求。</strong></p>
+<p><strong>cluster-require-full-coverage参数可以改变这一设定：如果设置为no，则当槽没有完全分配时，集群仍可以上线。参数默认值为yes，如果应用对可用性要求较高，可以修改为no，但需要自己保证槽全部分配。</strong></p>
+<h1 id="toc_h1_42">6 参考文档</h1>
+<p><a href="https://www.cnblogs.com/xiaohanlin/p/10918202.html" target="_blank">集群相关命令1</a></p>
+<p><a href="https://www.cnblogs.com/gossip/p/5993922.html" target="_blank">集群相关命令2</a></p>
+<p><a href="https://blog.csdn.net/lingbomanbu_lyl/article/details/107999780" target="_blank">云服务器Redis集群部署及客户端通过公网IP连接问题</a></p>
+<p><a href="https://www.cnblogs.com/kismetv/p/9853040.html#t21" target="_blank">编程迷思---集群</a></p>
+<p><strong>《redis的设计与实现》</strong></p>
+                        <div>
+                            <hr>
+
+标题：Redis：集群cluster<br>
+作者：<a href="https://gyyspace.github.io" target="_blank">function001</a><br>
+地址：<a href="https://gyyspace.github.io/articles/2024/06/09/1717937447426.html" target="_blank">https://gyyspace.github.io/articles/2024/06/09/1717937447426.html</a><br>
+
+<!-- 签名档内可使用 HTML、JavaScript -->
+<br>
+                        </div>
+                </div>
+                <footer>
+                    <div class="post-tags">
+                            <a rel="tag" href="https://gyyspace.github.io/tags/Redis">
+                                Redis</a>
+                    </div>
+                    <div class="post-nav fn-clear">
+                            <div class="post-nav-prev post-nav-item fn-right">
+                                <a href="https://gyyspace.github.io/articles/2024/06/09/1717936928663.html" rel="prev"
+                                   title="Redis：哨兵sentinel">
+                                    Redis：哨兵sentinel >
+                                </a>
+                            </div>
+                    </div>
+                </footer>
+            </article>
+        </div>
+            <div id="gitalk-container"></div>
+            <div id="b3logsolocomments"></div>
+            <div id="vcomment" data-name="function001" data-postId="1717937447426"></div>
+            <div id="relevantArticles"></div>
+            <div id="randomArticles"></div>
+<div class="sidebar-toggle">
+    <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+    <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+    <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+</div>
+
+<aside class="sidebar">
+<ul class="article__toc">
+        <li class="toc__h1">
+            <a href="#toc_h1_0">1 概述</a>
+        </li>
+        <li class="toc__h1">
+            <a href="#toc_h1_1">2 部署集群</a>
+        </li>
+        <li class="toc__h2">
+            <a href="#toc_h2_2">2.1 redis命令搭建</a>
+        </li>
+        <li class="toc__h3">
+            <a href="#toc_h3_3">2.1.1 启动节点</a>
+        </li>
+        <li class="toc__h3">
+            <a href="#toc_h3_4">2.1.2 创建集群</a>
+        </li>
+        <li class="toc__h3">
+            <a href="#toc_h3_5">2.1.3 创建过程遇到的问题</a>
+        </li>
+        <li class="toc__h2">
+            <a href="#toc_h2_6">2.2 集群方案设计</a>
+        </li>
+        <li class="toc__h1">
+            <a href="#toc_h1_7">3 集群原理</a>
+        </li>
+        <li class="toc__h2">
+            <a href="#toc_h2_8">3.1 集群的数据结构</a>
+        </li>
+        <li class="toc__h2">
+            <a href="#toc_h2_9">3.2 cluster meet 命令实现</a>
+        </li>
+        <li class="toc__h2">
+            <a href="#toc_h2_10">3.2 集群的数据分区</a>
+        </li>
+        <li class="toc__h3">
+            <a href="#toc_h3_11">3.2.1 数据分区方案</a>
+        </li>
+        <li class="toc__h3">
+            <a href="#toc_h3_12">3.2.2 数据管理基本单位槽（slot）</a>
+        </li>
+        <li class="toc__h3">
+            <a href="#toc_h3_13">3.2.3 cluster addslots 命令实现</a>
+        </li>
+        <li class="toc__h2">
+            <a href="#toc_h2_14">3.3 集群中执行命令</a>
+        </li>
+        <li class="toc__h3">
+            <a href="#toc_h3_15">3.3.1 计算key属于哪个槽</a>
+        </li>
+        <li class="toc__h3">
+            <a href="#toc_h3_16">3.3.2 判断槽</a>
+        </li>
+        <li class="toc__h3">
+            <a href="#toc_h3_17">3.3.3 MOVED错误</a>
+        </li>
+        <li class="toc__h3">
+            <a href="#toc_h3_18">3.3.4 集群下的节点数据库</a>
+        </li>
+        <li class="toc__h2">
+            <a href="#toc_h2_19">3.4 集群重新分片</a>
+        </li>
+        <li class="toc__h3">
+            <a href="#toc_h3_20">3.4.1 分片原理</a>
+        </li>
+        <li class="toc__h3">
+            <a href="#toc_h3_21">3.4.2 cluster setslot importing 命令实现</a>
+        </li>
+        <li class="toc__h3">
+            <a href="#toc_h3_22">3.4.3 cluster setslot migrating 命令实现</a>
+        </li>
+        <li class="toc__h2">
+            <a href="#toc_h2_23">3.5 ASK错误</a>
+        </li>
+        <li class="toc__h3">
+            <a href="#toc_h3_24">3.5.1 ASKING命令</a>
+        </li>
+        <li class="toc__h3">
+            <a href="#toc_h3_25">3.5.2 ASK错误和MOVED错误的区别</a>
+        </li>
+        <li class="toc__h2">
+            <a href="#toc_h2_26">3.6 复制与故障转移</a>
+        </li>
+        <li class="toc__h3">
+            <a href="#toc_h3_27">3.6.1 设置从节点</a>
+        </li>
+        <li class="toc__h3">
+            <a href="#toc_h3_28">3.6.2 故障检测</a>
+        </li>
+        <li class="toc__h3">
+            <a href="#toc_h3_29">3.6.3 故障转移</a>
+        </li>
+        <li class="toc__h3">
+            <a href="#toc_h3_30">3.6.4 选举新节点</a>
+        </li>
+        <li class="toc__h2">
+            <a href="#toc_h2_31">3.7集群的通信机制</a>
+        </li>
+        <li class="toc__h3">
+            <a href="#toc_h3_32">3.7.1 两个端口</a>
+        </li>
+        <li class="toc__h3">
+            <a href="#toc_h3_33">3.7.2 Gossip协议</a>
+        </li>
+        <li class="toc__h3">
+            <a href="#toc_h3_34">3.7.3 消息</a>
+        </li>
+        <li class="toc__h1">
+            <a href="#toc_h1_35">4常用命令</a>
+        </li>
+        <li class="toc__h1">
+            <a href="#toc_h1_36">5 其它内容</a>
+        </li>
+        <li class="toc__h2">
+            <a href="#toc_h2_37">5.1 集群的限制及应对方法</a>
+        </li>
+        <li class="toc__h2">
+            <a href="#toc_h2_38">5.2 Hash Tag</a>
+        </li>
+        <li class="toc__h2">
+            <a href="#toc_h2_39">5.3 参数优化</a>
+        </li>
+        <li class="toc__h3">
+            <a href="#toc_h3_40">cluster_node_timeout</a>
+        </li>
+        <li class="toc__h3">
+            <a href="#toc_h3_41">cluster-require-full-coverage</a>
+        </li>
+        <li class="toc__h1">
+            <a href="#toc_h1_42">6 参考文档</a>
+        </li>
+</ul></aside>
+    </div>
+</main>
+<footer class="footer">
+    <div class="wrapper">
+        <div class="fn-clear">
+            <a href="https://gyyspace.github.io">echo洋</a>
+            
+            <div class="fn-right">
+            </div>
+        </div>
+        <div class="fn-clear">
+            &copy; 2024
+            <a href="https://gyyspace.github.io">echo洋</a>
+            
+        </div>
+    </div>
+</footer>
+<div class="back-to-top" onclick="Util.goTop()"></div>
+
+<script>
+  var Label = {
+    speech: true,
+    servePath: "https://gyyspace.github.io",
+    staticServePath: "https://gyyspace.github.io",
+    luteAvailable: false,
+    hljsStyle: 'github',
+    langLabel: "zh_CN",
+    version: "4.4.0",
+    staticSite: true,
+    showCodeBlockLn: false,
+    articleId: "1717937447426",
+  }
+</script>
+<script src="https://gyyspace.github.io/skins/next/js/common.min.js?1721540580809"></script>
+<script type="text/javascript">
+    Label.tocLabel = "目录"
+    Label.siteViewLabel = "站点概览"
+</script>
+
+<script type="text/javascript">
+    Util.addScript('https://gyyspace.github.io/js/page.min.js?1721540580809', 'soloPageScript')
+    var page = new Page({
+        "commentContentCannotEmptyLabel": "评论不能为空",
+        "oId": "1717937447426",
+        "blogHost": "https://gyyspace.github.io",
+        "randomArticles1Label": "随机阅读：",
+        "externalRelevantArticles1Label": "站外相关阅读："
+    });
+    $(document).ready(function () {
+        page.load();
+    page.tips.externalRelevantArticlesDisplayCount = "0";
+        page.loadRandomArticles();
+        page.loadRelevantArticles('1717937447426', '<h4>相关阅读：</h4>');
+    NexT.initArticle()
+    });
+</script>
+</body>
+</html>
+
+<!-- Generated by Latke (https://github.com/88250/latke) in 9ms, 2024/07/21 13:50:56 -->

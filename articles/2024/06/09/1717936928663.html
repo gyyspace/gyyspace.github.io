@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8"/><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"/><meta name="theme-color" content="#3b3e43"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"/><meta name="apple-mobile-web-app-status-bar-style" content="black"><meta name="format-detection" content="telephone=no"/><title>Redis：哨兵sentinel - echo洋</title><meta name="description" content="哨兵的核心功能是主节点的自动故障转移。下面是Redis官方文档对于哨兵功能的描述： 监控（Monitoring）：哨兵会不断地检查主节点和从节点是否运作正常。 自动故障转移（Automatic failover）：当主节点不能正常工作时，哨兵会开始自动故障转移操作，它会将失效主节点的其中一个从节点升级为新的主节点，并让其他从节点改为复制新的主节点。 配置提供者（Configuration provider）：客户端在初始化时，通过连接哨兵来获得当前Redis服务的主节点地址。 **通知（Notification）：哨兵可以将故障转移的结果发送给客户端。"/><meta property="og:description" content="哨兵的核心功能是主节点的自动故障转移。下面是Redis官方文档对于哨兵功能的描述： 监控（Monitoring）：哨兵会不断地检查主节点和从节点是否运作正常。 自动故障转移（Automatic failover）：当主节点不能正常工作时，哨兵会开始自动故障转移操作，它会将失效主节点的其中一个从节点升级为新的主节点，并让其他从节点改为复制新的主节点。 配置提供者（Configuration provider）：客户端在初始化时，通过连接哨兵来获得当前Redis服务的主节点地址。 **通知（Notification）：哨兵可以将故障转移的结果发送给客户端。"/>    <meta name="keywords" content="Solo,Java,博客,开源"/><link rel="dns-prefetch" href="https://gyyspace.github.io"/><link rel="dns-prefetch" href="https://cdn.jsdelivr.net"/><link rel="preconnect" href="https://gyyspace.github.io"><link rel="icon" type="image/png" href="https://b3log.org/images/brand/solo-128.png"/><link rel="apple-touch-icon" href="https://b3log.org/images/brand/solo-128.png"><link rel="shortcut icon" type="image/x-icon" href="https://b3log.org/images/brand/solo-128.png"><meta name="copyright" content="B3log"/><meta http-equiv="Window-target" content="_top"/><meta property="og:locale" content="zh_CN"/><meta property="og:title" content="Redis：哨兵sentinel - echo洋"/><meta property="og:site_name" content="echo洋"/><meta property="og:url"      content="https://gyyspace.github.io/articles/2024/06/09/1717936928663.html?"/><meta property="og:image" content="https://b3log.org/images/brand/solo-128.png"/><link rel="search" type="application/opensearchdescription+xml" title="Redis：哨兵sentinel - echo洋" href="/opensearch.xml"><link href="https://gyyspace.github.io/rss.xml" title="RSS" type="application/rss+xml" rel="alternate"/><link rel="manifest" href="https://gyyspace.github.io/manifest.json">        <link rel="canonical" href="https://gyyspace.github.io/articles/2024/06/09/1717936928663.html">        <link rel="stylesheet"
+              href="https://gyyspace.github.io/skins/next/css/base.css?1721540580809"/>
+            <link rel="prev" title="Redis：主从复制" href="https://gyyspace.github.io/articles/2024/06/09/1717936680892.html">
+            <link rel="next" title="Redis：集群cluster" href="https://gyyspace.github.io/articles/2024/06/09/1717937447426.html">
+    <script src="https://gyyspace.github.io/js/lib/vditor/dist/js/icons/ant.js?v=3.9.7" async="" id="vditorIconScript"></script></head>
+<body>
+<header class="header">
+    <div class="header-line"></div>
+    <div class="fn-clear wrapper">
+        <div class="logo-wrap">
+            <a href="https://gyyspace.github.io" rel="start">
+                <span class="logo-line-before"><i></i></span>
+                <span class="site-title">echo洋</span>
+                <span class="logo-line-after"><i></i></span>
+            </a>
+        </div>
+
+        <div class="site-nav-toggle fn-right"
+             onclick="$('.header-line').toggle();$('nav').children('.menu').slideToggle();">
+            <span class="btn-bar"></span>
+            <span class="btn-bar"></span>
+            <span class="btn-bar"></span>
+        </div>
+
+        <nav>
+            <ul class="menu">
+                    <li class="menu-item">
+                        <a href="/tags/Redis" target="_blank" rel="section">
+                            Redis 的设计与实现
+                        </a>
+                    </li>
+            </ul>
+
+        </nav>
+    </div>
+</header><main class="main">
+    <div class="wrapper">
+        <div class="content">
+            <article class="posts-expand">
+                <header class="post-header">
+                    <h2 class="post-title">
+                        Redis：哨兵sentinel
+                    </h2>
+                    <div class="post-meta">
+                            <span class="post-time">
+                                    更新于
+                                <time>
+                                    2024-06-09
+                                </time>
+                            </span>
+                        <span class="post-comments-count">
+                                &nbsp; | &nbsp;
+                                <a href="https://gyyspace.github.io/articles/2024/06/09/1717936928663.html#b3logsolocomments">
+                                    <span data-uvstatcmt="1717936928663">0</span> 条评论</a>
+                        </span>
+                        &nbsp; | &nbsp; 热度
+                        <span data-uvstaturl="https://gyyspace.github.io/articles/2024/06/09/1717936928663.html">0</span>°C
+                    </div>
+                </header>
+
+                <div class="post-body post-body--article vditor-reset">
+                    <p><img src="https://b3logfile.com/bing/20220720.jpg?imageView2/1/w/960/h/540/interlace/1/q/100" alt=""></p>
+<h1 id="toc_h1_0">1 概述</h1>
+<h2 id="toc_h2_1">1.1 作用</h2>
+<p><strong>从宏观角度回顾一下Redis实现高可用相关的技术。它们包括：持久化、复制、哨兵和集群，其主要作用和解决的问题是：</strong></p>
+<ul>
+<li><strong>持久化：持久化是最简单的高可用方法(有时甚至不被归为高可用的手段)，主要作用是数据备份，即将数据存储在硬盘，保证数据不会因进程退出而丢失。</strong></li>
+<li><strong>复制：复制是高可用Redis的基础，哨兵和集群都是在复制基础上实现高可用的。复制主要实现了数据的多机备份，以及对于读操作的负载均衡和简单的故障恢复。缺陷：故障恢复无法自动化；写操作无法负载均衡；存储能力受到单机的限制。</strong></li>
+<li><strong>哨兵：在复制的基础上，哨兵实现了自动化的故障恢复。缺陷：写操作无法负载均衡；存储能力受到单机的限制。</strong></li>
+<li><strong>集群：通过集群，Redis解决了写操作无法负载均衡，以及存储能力受到单机限制的问题，实现了较为完善的高可用方案。</strong></li>
+</ul>
+<p>**哨兵功能：**<strong>哨兵的核心功能是主节点的自动故障转移</strong>。下面是Redis官方文档对于哨兵功能的描述：</p>
+<ul>
+<li><strong>监控（Monitoring）：哨兵会不断地检查主节点和从节点是否运作正常。</strong></li>
+<li><strong>自动故障转移（Automatic failover）：当主节点不能正常工作时，哨兵会开始自动故障转移操作，它会将失效主节点的其中一个从节点升级为新的主节点，并让其他从节点改为复制新的主节点。</strong></li>
+<li><strong>配置提供者（Configuration provider）：客户端在初始化时，通过连接哨兵来获得当前Redis服务的主节点地址。</strong></li>
+<li><strong>通知（Notification）：哨兵可以将故障转移的结果发送给客户端。</strong></li>
+</ul>
+<p><strong>其中，监控和自动故障转移功能，使得哨兵可以及时发现主节点故障并完成转移；而配置提供者和通知功能，则需要在与客户端的交互中才能体现。</strong></p>
+<h2 id="toc_h2_2">1.2 架构</h2>
+<p><img src="https://b3logfile.com/file/2021/11/image-bbaf50a6.png?imageView2/2/w/1280/format/jpg/interlace/1/q/100" alt="image.png"></p>
+<p><strong>它由两部分组成，哨兵节点和数据节点：</strong></p>
+<ul>
+<li><strong>哨兵节点：哨兵系统由一个或多个哨兵节点组成，哨兵节点是特殊的redis节点，不存储数据。</strong></li>
+<li><strong>数据节点：主节点和从节点都是数据节点。</strong></li>
+</ul>
+<h1 id="toc_h1_3">2 部署</h1>
+<h2 id="toc_h2_4">2.1 部署主从节点</h2>
+<p><strong>在上一篇文章中已经写过部署主从节点，使用主从复制。</strong></p>
+<p><a href="https://www.gyyspace.top/articles/2021/11/16/1637042107512.html#toc_h2_1" target="_blank">redis主从节点部署</a></p>
+<h2 id="toc_h2_5">2.2 部署sentinel节点</h2>
+<p><strong>哨兵节点本质上是特殊的Redis节点。</strong></p>
+<p><strong>3个哨兵节点的配置几乎是完全一样的，主要区别在于端口号的不同（26379/26380/26381），下面以26379节点为例介绍节点的配置和启动方式；</strong></p>
+<pre><code>#sentinel-26379.conf
+port 26379
+daemonize yes
+logfile "26379.log"
+sentinel monitor mymaster 192.168.92.128 6379 2
+sentinel auth-pass mymaster 密码
+</code></pre>
+<p><strong>其中，sentinel monitor mymaster 192.168.92.128 6379 2 配置的含义是：该哨兵节点监控192.168.92.128:6379这个主节点，该主节点的名称是mymaster（自己配置的），最后的2的含义与主节点的故障判定有关：至少需要2个哨兵节点同意，才能判定主节点故障并进行故障转移。</strong></p>
+<p><strong>sentinel auth-pass mymaster 密码 配置的含义是：如果主节点有密码需要在此配置密码。</strong></p>
+<p><img src="https://b3logfile.com/file/2021/11/image-57942019.png?imageView2/2/w/1280/format/jpg/interlace/1/q/100" alt="image.png"></p>
+<p><strong>哨兵节点的启动有两种方式，二者作用是完全相同的：</strong></p>
+<pre><code>redis-sentinel sentinel-26379.conf
+redis-server sentinel-26379.conf --sentinel
+</code></pre>
+<p><strong>按照上述方式配置和启动之后，整个哨兵系统就启动完毕了。可以通过redis-cli连接哨兵节点进行验证，如下图所示：可以看出26379哨兵节点已经在监控mymaster主节点，并发现了其2个从节点和另外2个哨兵节点</strong></p>
+<p><img src="https://b3logfile.com/file/2021/11/image-994db456.png?imageView2/2/w/1280/format/jpg/interlace/1/q/100" alt="image.png"></p>
+<p><strong>此时在看sentinel的配置文件，以端口为26379的配置文件为例：</strong></p>
+<p><img src="https://b3logfile.com/file/2021/11/image-defe44e7.png?imageView2/2/w/1280/format/jpg/interlace/1/q/100" alt="image.png"></p>
+<p><strong>其中，dir只是显式声明了数据和日志所在的目录（在哨兵语境下只有日志）；</strong></p>
+<p><strong>known-slave和known-sentinel显示哨兵已经发现了从节点和其他哨兵；</strong></p>
+<p><strong>带有epoch的参数与配置纪元有关（配置纪元是一个从0开始的计数器，每进行一次领导者哨兵选举，都会+1；领导者哨兵选举是故障转移阶段的一个操作，在后文会介绍）。</strong></p>
+<h1 id="toc_h1_6">3 sentinel初始化</h1>
+<p><strong>启动一个sentinel 使用命令：</strong></p>
+<pre><code>redis-sentinel sentinel-26379.conf
+redis-server sentinel-26379.conf --sentinel
+//这两个命令的效果完成相同
+</code></pre>
+<p><strong>当一个Sentinel启动时，他需要执行以下步骤：</strong></p>
+<ol>
+<li><strong>初始化服务器</strong></li>
+<li><strong>将普通的redis服务器使用的代码替换成sentinel专用代码</strong></li>
+<li><strong>初始化Sentinel状态</strong></li>
+<li><strong>根据给定的配置文件，初始化Sentinel的监视器主服务器列表</strong></li>
+<li><strong>创建连向主服务器的网络连接。</strong></li>
+</ol>
+<h2 id="toc_h2_7">3.1 初始化服务器</h2>
+<p><strong>首先，因为Sentinel 本质上只是一个运行在特殊模式下的Redis服务器，所以启动Sentinel的第一步，就是初始化一个普通的Redis服务器。</strong></p>
+<p><strong>不过，因为Sentinel执行的工作和普通Redis服务器执行的工作不同，所以Sentinel的初始化过程和普通Redis服务器的初始化过程并不完全相同。</strong> <strong>例如，普通服务器在初始化时会通过载人RDB文件或者AOF文件来还原数据库状态，但是因为Sentinel并不使用数据库，所以初始化Sentinel时就不会载人RDB文件或者AOF文件。</strong> <strong>表16-1展示了Redis服务器在Sentinel模式下运行时，服务器各个主要功能的使用情况。</strong></p>
+<p><img src="https://b3logfile.com/file/2021/11/image-b605b329.png?imageView2/2/w/1280/format/jpg/interlace/1/q/100" alt="image.png"></p>
+<h2 id="toc_h2_8">3.2 使用sentinel专用代码</h2>
+<p><strong>启动Sentinel的第二个步骤就是将一部分普通的Redis服务器使用的代码替换成Sentinel专用代码。</strong></p>
+<p><strong>例如：普通Redis服务器使用redis.c/redisCommandTable作为服务器的命令表：</strong></p>
+<p><img src="https://b3logfile.com/file/2021/11/image-00a0e2f6.png?imageView2/2/w/1280/format/jpg/interlace/1/q/100" alt="image.png"></p>
+<p><strong>Sentinel则使用sentinel.c/sentinelcmds作为服务器的命令表，并且其中的INFO命令会使用Sentinel模式下的专用实现sentinel.c/sentinelInfoCommand函数而不是普通redis服务器使用的实现redis.c/infoCommand函数：</strong></p>
+<p><img src="https://b3logfile.com/file/2021/11/image-129ef7bb.png?imageView2/2/w/1280/format/jpg/interlace/1/q/100" alt="image.png"></p>
+<p><strong>这也说明了为什么在Sentinel模式下，Redis服务器不能执行set，eval等命令，因为命令表中没有载入这些命令。</strong></p>
+<h2 id="toc_h2_9">3.3 初始化Sentinel状态</h2>
+<p><strong>接下来，服务器会初始化sentinel.c/sentinelState结构（叫做，Sentinel状态），这个结构保存了服务器所有和Sentinel功能有关的状态。</strong></p>
+<h2 id="toc_h2_10">3.4 初始化Sentinel状态的master属性</h2>
+<p><strong>初始化Sentinel状态的masters属性。Sentinel状态中的masters字典记录了所有被Sentinel监视的主服务器的相关信息，其中:</strong></p>
+<p><strong>字典的键是被监视主服务器的名字。</strong> <strong>而字典的值则是被监视主服务器对应的sentinel. c/ sentinelRedisInstance结构。</strong></p>
+<p><strong>每个sentinelRedisInstance结构( 后面简称“实例结构”)代表一个被Sentinel监视</strong> <strong>的Redis服务器实例( instance),这个实例可以是主服务器、从服务器,或者另外一个Sentinel。</strong></p>
+<h2 id="toc_h2_11">3.5 创建连向主服务器的网络连接</h2>
+<p><strong>初始化Sentinel的最后一步是创建连向被监视服务器的网络连接，Sentinel将成为主服务器的客户端，他可以向主服务器发送命令，并从命令恢复中获取相关信息。</strong></p>
+<p><strong>创建两个连向主服务器的异步网络连接：</strong></p>
+<ol>
+<li><strong>一个是命令连接，用于向主服务器发送命令，并接受命令回复。</strong></li>
+<li><strong>一个是订阅连接，这个链接专门用于订阅主服务器的</strong><em>sentinel</em>:hello频道。</li>
+</ol>
+<p><strong>为什么有两个连接?</strong> <strong>在Redis目前的发布与订阅功能中，被发送的信息都不会保存在Redis服务器里面,如果在信息发送时，想要接收信息的客户端不在线或者断线，那么这个客户端就会丢失这条信息。因此，为了不丢失_ sentine1__ :he1lo 频道的任何信息，Sentinel 必须专门用一个订阅连接来接收该频道的信息。</strong></p>
+<p><strong>另一方面，除了订阅频道之外，Sentinel 还必须向主服务器发送命令，以此来与主服务器进行通信，所以Sentinel还必须向主服务器创建命令连接。</strong></p>
+<p><strong>因为Sentinel需要与多个实例创建多个网络连接，所以Sentinel 使用的是异步连接。</strong></p>
+<h1 id="toc_h1_12">4 基本原理</h1>
+<h2 id="toc_h2_13">4.1 发送info信息</h2>
+<h3 id="toc_h3_14">4.1.1 向主服务器发送</h3>
+<p><strong>Sentinel默认会以****每10秒一次的频率</strong>，通过命令连接向被监视的主服务器发送INFO命令，并通过分析INFO命令的回复来获取主服务器的当前信息。</p>
+<p><strong>通过分析主服务器返回的INFO命令回复，Sentinel可以获取两方面的信息：</strong></p>
+<ol>
+<li><strong>关于主服务器本身的信息，包括run_id域记录的服务器运行ID，以及role域记录的服务器角色</strong></li>
+<li><strong>关于主服务器下属的所有从服务器信息，每个从服务器都由一个“slave”字符串开头的行记录，每行的ip=域记录了从服务器的IP地址，而port=域记录从服务器端口，根据这些sentinel无须用户提供从服务器的地址信息，就可以自动发现从服务器。</strong></li>
+</ol>
+<h3 id="toc_h3_15">4.1.2 向从服务发送</h3>
+<p><strong>当Sentinel发现主服务器有新的从服务器出现时，Sentinel会为这个新的从服务器创建相应的实例结构（实例结构保存在主服务器的实例结构中），Sentinel还会创建连接到从服务器的命令连接和订阅连接。</strong></p>
+<p><img src="https://b3logfile.com/file/2021/11/image-7d2c0cb8.png?imageView2/2/w/1280/format/jpg/interlace/1/q/100" alt="image.png"></p>
+<p><strong>创建命令连接之后，Sentinel会和对主服务器一样，在默认的情况下，会以每10秒一次的频率发送INFO命令，获取类似以下信息：</strong></p>
+<p><img src="https://b3logfile.com/file/2021/11/image-99eb9f19.png?imageView2/2/w/1280/format/jpg/interlace/1/q/100" alt="image.png"></p>
+<p><strong>获取到信息，Sentinel会对保存的从服务器实例结构更新。</strong></p>
+<h2 id="toc_h2_16">4.2 发送publish信息</h2>
+<p><strong>在默认情况下，Sentinel会以****每两秒一次的频率</strong>，通过命令连接向所有被监视的主服务器和从服务器发送以下格式的命令：</p>
+<p><img src="https://b3logfile.com/file/2021/11/image-e0076748.png?imageView2/2/w/1280/format/jpg/interlace/1/q/100" alt="image.png"></p>
+<p><strong>这条命令向服务器的</strong><em>sentinel</em>:hello 频道发送了一条信息。信息中包括sentinel和主服务器的相关信息。</p>
+<h2 id="toc_h2_17">4.3 接收频道信息</h2>
+<p><strong>Sentinel对</strong><em>sentinel</em>:hello频道的订阅会一直持续到Sentinel与服务器的连接断开为止。</p>
+<p><strong>对于每一个Sentinel连接的服务器，Sentinel既可以通过命令连接向服务器的</strong><em>sentinel</em>:hello频道发送信息，又可以通过订阅连接从服务器的<em>sentinel</em>:hello频道接收信息。</p>
+<p><strong>对于监视同一个服务器的多个Sentinel来说，一个Sentinel发送的信息会被其他Sentinel（包括自己）接收到，这些信息可以用于更新其他Sentinel对发送信息Sentinel的认知，也会更新其他Sentinel对被监视器服务器的认知。</strong></p>
+<p><strong>Sentinel接收到自己的信息会不做处理，如果是其他Sentinel信息会对监视服务器的实例进行更新保存其他Sentinel的信息。</strong></p>
+<p><strong>当Sentinel通过频道信息发现一个新的Sentinel时，不仅会为新的Sentinel在监视服务器的实例结构的sentinels字典中创建相应的实例结构，还会创建一个连向新Sentinel的命令连接，而新的Sentinel也会同样创建连向这个Sentinel的命令连接，最终监视同一主服务器的多个Sentinel将形成相互连接的网络：</strong></p>
+<p><img src="https://b3logfile.com/file/2021/11/image-d0da770e.png?imageView2/2/w/1280/format/jpg/interlace/1/q/100" alt="image.png"></p>
+<p><strong>Sentinel之间不会创建订阅连接</strong></p>
+<p><strong>Sentinel在连接主服务器或者从服务器时，会同时创建命令连接和订阅连接，但是在连接其他Sentinel时，却只会创建命令连接，而不创建订阅连接。这是因为Sentinel需要通过接收主服务器或者从服务器发来的频道信息来发现未知的新Sentinel,所以才需要建立订阅连接，而相互已知的Sentinel只要使用命令连接来进行通信就足够了。</strong></p>
+<h2 id="toc_h2_18">4.4 检测服务器状态</h2>
+<h3 id="toc_h3_19">4.4.1 检测主观下线状态</h3>
+<p><strong>在默认情况下，Sentinel会以****每秒一次的频率</strong>向所有与它创建了命令连接的实例（包括主服务器，从服务器，其他Sentinel在内）发送PING命令，并通过实例返回的PING命令回复来判断实例是否在线。</p>
+<p><strong>实例对PING命令的回复可以分为以下两种情况：</strong></p>
+<ol>
+<li><strong>有效回复：实例返回+PONG，-LOADING，-MASTERDOWN三种回复的其中一种。</strong></li>
+<li><strong>无效回复：返回除以上三种之外的信息或者在指定时限中没有返回任何回复。</strong></li>
+</ol>
+<p><strong>Sentinel配置文件中的down-after-milliseconds选项指定了Sentinel判断实例进入主观下线所需的时间长度：如果一个实例在down-after-millsecods毫秒内，连续向Sentinel返回无效回复，那么Sentinel会修改这个实例所对应的实例结构，在结构的flags属性中打开SRI_S_DOWN标识，以此来表示这个实例已经进入主观下线状态。</strong></p>
+<p><strong>这个选项不仅作为监视的主服务器的判断主观下线状态，也是主服务器的从服务器，以及其他的Sentinel判断下线的状态。</strong></p>
+<h3 id="toc_h3_20">4.4.2 检查客观下线状态</h3>
+<p><strong>需要特别注意的是，客观下线是主节点才有的概念；如果从节点和哨兵节点发生故障，被哨兵主观下线后，不会再有后续的客观下线和故障转移操作。</strong></p>
+<p><strong>当Sentinel 将一个主服务器判断为主观下线之后，为了确认这个主服务器是否真的下线了，它会向同样监视这一主服务器的其他Sentinel进行询问，看它们是否也认为主服务器已经进入了下线状态(可以是主观下线或者客观下线)。当Sentinel从其他Sentinel那里接收到足够数量（这个数量是在Sentinel中配置的）的已下线判断之后，Sentinel 就会将从服务器判定为客观下线，并对主服务器执行故障转移操作。</strong></p>
+<h2 id="toc_h2_21">4.5 选举领头Sentinel</h2>
+<p><strong>当一个主服务器被判断为客观下线时，监视这个下线主服务器的各个Sentinel会进行协商，选举出一个领头的Sentinel，并由领头Sentinel对下线主服务器执行故障转移操作。</strong></p>
+<p><strong>在一次配置纪元中，发现主服务器客观下线的Sentinel会要求其他监视主服务器的Sentinel选举自己为局部领头Sentinel（向其他Sentinel发送信息，最先接收到哪个Sentinel的信息就选举哪个Sentinel为局部领头Sentinel），如果超过所有Sentinel数量的一半，那么就选举成功，配置纪元+1进行领头Sentinel故障转移，如果都没有超过一半，那么配置纪元+1，再次进行选择。</strong></p>
+<h2 id="toc_h2_22">4.6 故障转移</h2>
+<p><strong>在选举产生出领头Sentinel之后，领头Sentinel将对已下线的主服务器执行故障转移操</strong> <strong>作，该操作包含以下三个步骤:</strong></p>
+<p><strong>(1) 在已下线主服务器属下的所有从服务器里面，挑选出一个从服务器，并将其转换为</strong> <strong>主服务器。</strong></p>
+<p><strong>故障转移操作第一步 要做的就是在已下线主服务器属下的所有从服务器中，挑选出一个状态良好、数据完整的从服务器，然后向这个从服务器发送SLAVEOF no one命令，将这个从服务器转换为主服务器。</strong></p>
+<p><strong>补充：redis设计与实现</strong></p>
+<p><img src="https://b3logfile.com/file/2021/11/image-4fbfb068.png?imageView2/2/w/1280/format/jpg/interlace/1/q/100" alt="image.png"></p>
+<p><strong>（2）让已下线主服务器属下的所有从服务器改为复制新的主服务器。</strong></p>
+<p><strong>当新的主服务器出现之后，领头Sentinel下一步要做的就是，让已下线主服务器属下的所有从服务器去复制新的主服务器，这一动作可以通过向从服务器发送SLAVEOF命令来实现。</strong></p>
+<p><strong>（3）将已下线主服务器设置为新的主服务器的从服务器，当这个旧的主服务器重新上线</strong> <strong>时，它就会成为新的主服务器的从服务器。</strong></p>
+<p><strong>故障转移的最后就是，将已下线的主服务器设置为新的主服务器的从服务器。</strong></p>
+<h1 id="toc_h1_23">5 相关配置和实践建议</h1>
+<p><a href="https://www.cnblogs.com/kismetv/p/9609938.html#t42" target="_blank">搬运文档</a></p>
+<h2 id="toc_h2_24">5.1 相关配置</h2>
+<p><strong>与哨兵相关的几个配置。</strong></p>
+<p><strong>（1） sentinel monitor {masterName} {masterIp} {masterPort} {quorum}</strong></p>
+<p><strong>sentinel monitor是哨兵最核心的配置，在前文讲述部署哨兵节点时已说明，其中：masterName指定了主节点名称，masterIp和masterPort指定了主节点地址，quorum是判断主节点客观下线的哨兵数量阈值：当判定主节点下线的哨兵数量达到quorum时，对主节点进行客观下线。建议取值为哨兵数量的一半加1。</strong></p>
+<p><strong>（2） sentinel down-after-milliseconds {masterName} {time}</strong></p>
+<p><strong>sentinel down-after-milliseconds与主观下线的判断有关：哨兵使用ping命令对其他节点进行心跳检测，如果其他节点超过down-after-milliseconds配置的时间没有回复，哨兵就会将其进行主观下线。该配置对主节点、从节点和哨兵节点的主观下线判定都有效。</strong></p>
+<p><strong>down-after-milliseconds的默认值是30000，即30s；可以根据不同的网络环境和应用要求来调整：值越大，对主观下线的判定会越宽松，好处是误判的可能性小，坏处是故障发现和故障转移的时间变长，客户端等待的时间也会变长。例如，如果应用对可用性要求较高，则可以将值适当调小，当故障发生时尽快完成转移；如果网络环境相对较差，可以适当提高该阈值，避免频繁误判。</strong></p>
+<p><strong>（3） sentinel parallel-syncs {masterName} {number}</strong></p>
+<p><strong>sentinel parallel-syncs与故障转移之后从节点的复制有关：它规定了每次向新的主节点发起复制操作的从节点个数。例如，假设主节点切换完成之后，有3个从节点要向新的主节点发起复制；如果parallel-syncs=1，则从节点会一个一个开始复制；如果parallel-syncs=3，则3个从节点会一起开始复制。</strong></p>
+<p><strong>parallel-syncs取值越大，从节点完成复制的时间越快，但是对主节点的网络负载、硬盘负载造成的压力也越大；应根据实际情况设置。例如，如果主节点的负载较低，而从节点对服务可用的要求较高，可以适量增加parallel-syncs取值。parallel-syncs的默认值是1。</strong></p>
+<p><strong>（4） sentinel failover-timeout {masterName} {time}</strong></p>
+<p><strong>sentinel failover-timeout与故障转移超时的判断有关，但是该参数不是用来判断整个故障转移阶段的超时，而是其几个子阶段的超时，例如如果主节点晋升从节点时间超过timeout，或从节点向新的主节点发起复制操作的时间(不包括复制数据的时间)超过timeout，都会导致故障转移超时失败。</strong></p>
+<p><strong>failover-timeout的默认值是180000，即180s；如果超时，则下一次该值会变为原来的2倍。</strong></p>
+<h2 id="toc_h2_25">5.2 实践建议</h2>
+<p><strong>（1）哨兵节点的数量应不止一个，一方面增加哨兵节点的冗余，避免哨兵本身成为高可用的瓶颈；另一方面减少对下线的误判。此外，这些不同的哨兵节点应部署在不同的物理机上。</strong></p>
+<p><strong>（2）哨兵节点的数量应该是奇数，便于哨兵通过投票做出“决策”：领导者选举的决策、客观下线的决策等。</strong></p>
+<p><strong>（3）各个哨兵节点的配置应一致，包括硬件、参数等；此外，所有节点都应该使用ntp或类似服务，保证时间准确、一致。</strong></p>
+<p><strong>（4）哨兵的配置提供者和通知客户端功能，需要客户端的支持才能实现，如前文所说的Jedis；如果开发者使用的库未提供相应支持，则可能需要开发者自己实现。</strong></p>
+<p><strong>（5）当哨兵系统中的节点在docker（或其他可能进行端口映射的软件）中部署时，应特别注意端口映射可能会导致哨兵系统无法正常工作，因为哨兵的工作基于与其他节点的通信，而docker的端口映射可能导致哨兵无法连接到其他节点。例如，哨兵之间互相发现，依赖于它们对外宣称的IP和port，如果某个哨兵A部署在做了端口映射的docker中，那么其他哨兵使用A宣称的port无法连接到A。</strong></p>
+<h1 id="toc_h1_26">6 总结</h1>
+<p><strong>在主从复制的基础上，哨兵引入了主节点的自动故障转移，进一步提高了Redis的高可用性；但是哨兵的缺陷同样很明显：哨兵无法对从节点进行自动故障转移，在读写分离场景下，从节点故障会导致读服务不可用，需要我们对从节点做额外的监控、切换操作。</strong></p>
+<p><strong>此外，哨兵仍然没有解决写操作无法负载均衡、及存储能力受到单机限制的问题；这些问题的解决需要使用集群。</strong></p>
+<h1 id="toc_h1_27">7 参考文档</h1>
+<p><a href="https://www.cnblogs.com/kismetv/p/9609938.html" target="_blank">https://www.cnblogs.com/kismetv/p/9609938.html</a></p>
+<p><strong>redis的设计与实现</strong></p>
+                        <div>
+                            <hr>
+
+标题：Redis：哨兵sentinel<br>
+作者：<a href="https://gyyspace.github.io" target="_blank">function001</a><br>
+地址：<a href="https://gyyspace.github.io/articles/2024/06/09/1717936928663.html" target="_blank">https://gyyspace.github.io/articles/2024/06/09/1717936928663.html</a><br>
+
+<!-- 签名档内可使用 HTML、JavaScript -->
+<br>
+                        </div>
+                </div>
+                <footer>
+                    <div class="post-tags">
+                            <a rel="tag" href="https://gyyspace.github.io/tags/Redis">
+                                Redis</a>
+                    </div>
+                    <div class="post-nav fn-clear">
+                            <div class="post-nav-prev post-nav-item fn-right">
+                                <a href="https://gyyspace.github.io/articles/2024/06/09/1717936680892.html" rel="prev"
+                                   title="Redis：主从复制">
+                                    Redis：主从复制 >
+                                </a>
+                            </div>
+                            <div class="post-nav-next post-nav-item fn-left">
+                                <a href="https://gyyspace.github.io/articles/2024/06/09/1717937447426.html" rel="next" title="Redis：集群cluster">
+                                    < Redis：集群cluster
+                                </a>
+                            </div>
+                    </div>
+                </footer>
+            </article>
+        </div>
+            <div id="gitalk-container"></div>
+            <div id="b3logsolocomments"></div>
+            <div id="vcomment" data-name="function001" data-postId="1717936928663"></div>
+            <div id="relevantArticles"></div>
+            <div id="randomArticles"></div>
+<div class="sidebar-toggle">
+    <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+    <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+    <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+</div>
+
+<aside class="sidebar">
+<ul class="article__toc">
+        <li class="toc__h1">
+            <a href="#toc_h1_0">1 概述</a>
+        </li>
+        <li class="toc__h2">
+            <a href="#toc_h2_1">1.1 作用</a>
+        </li>
+        <li class="toc__h2">
+            <a href="#toc_h2_2">1.2 架构</a>
+        </li>
+        <li class="toc__h1">
+            <a href="#toc_h1_3">2 部署</a>
+        </li>
+        <li class="toc__h2">
+            <a href="#toc_h2_4">2.1 部署主从节点</a>
+        </li>
+        <li class="toc__h2">
+            <a href="#toc_h2_5">2.2 部署sentinel节点</a>
+        </li>
+        <li class="toc__h1">
+            <a href="#toc_h1_6">3 sentinel初始化</a>
+        </li>
+        <li class="toc__h2">
+            <a href="#toc_h2_7">3.1 初始化服务器</a>
+        </li>
+        <li class="toc__h2">
+            <a href="#toc_h2_8">3.2 使用sentinel专用代码</a>
+        </li>
+        <li class="toc__h2">
+            <a href="#toc_h2_9">3.3 初始化Sentinel状态</a>
+        </li>
+        <li class="toc__h2">
+            <a href="#toc_h2_10">3.4 初始化Sentinel状态的master属性</a>
+        </li>
+        <li class="toc__h2">
+            <a href="#toc_h2_11">3.5 创建连向主服务器的网络连接</a>
+        </li>
+        <li class="toc__h1">
+            <a href="#toc_h1_12">4 基本原理</a>
+        </li>
+        <li class="toc__h2">
+            <a href="#toc_h2_13">4.1 发送info信息</a>
+        </li>
+        <li class="toc__h3">
+            <a href="#toc_h3_14">4.1.1 向主服务器发送</a>
+        </li>
+        <li class="toc__h3">
+            <a href="#toc_h3_15">4.1.2 向从服务发送</a>
+        </li>
+        <li class="toc__h2">
+            <a href="#toc_h2_16">4.2 发送publish信息</a>
+        </li>
+        <li class="toc__h2">
+            <a href="#toc_h2_17">4.3 接收频道信息</a>
+        </li>
+        <li class="toc__h2">
+            <a href="#toc_h2_18">4.4 检测服务器状态</a>
+        </li>
+        <li class="toc__h3">
+            <a href="#toc_h3_19">4.4.1 检测主观下线状态</a>
+        </li>
+        <li class="toc__h3">
+            <a href="#toc_h3_20">4.4.2 检查客观下线状态</a>
+        </li>
+        <li class="toc__h2">
+            <a href="#toc_h2_21">4.5 选举领头Sentinel</a>
+        </li>
+        <li class="toc__h2">
+            <a href="#toc_h2_22">4.6 故障转移</a>
+        </li>
+        <li class="toc__h1">
+            <a href="#toc_h1_23">5 相关配置和实践建议</a>
+        </li>
+        <li class="toc__h2">
+            <a href="#toc_h2_24">5.1 相关配置</a>
+        </li>
+        <li class="toc__h2">
+            <a href="#toc_h2_25">5.2 实践建议</a>
+        </li>
+        <li class="toc__h1">
+            <a href="#toc_h1_26">6 总结</a>
+        </li>
+        <li class="toc__h1">
+            <a href="#toc_h1_27">7 参考文档</a>
+        </li>
+</ul></aside>
+    </div>
+</main>
+<footer class="footer">
+    <div class="wrapper">
+        <div class="fn-clear">
+            <a href="https://gyyspace.github.io">echo洋</a>
+            
+            <div class="fn-right">
+            </div>
+        </div>
+        <div class="fn-clear">
+            &copy; 2024
+            <a href="https://gyyspace.github.io">echo洋</a>
+            
+        </div>
+    </div>
+</footer>
+<div class="back-to-top" onclick="Util.goTop()"></div>
+
+<script>
+  var Label = {
+    speech: true,
+    servePath: "https://gyyspace.github.io",
+    staticServePath: "https://gyyspace.github.io",
+    luteAvailable: false,
+    hljsStyle: 'github',
+    langLabel: "zh_CN",
+    version: "4.4.0",
+    staticSite: true,
+    showCodeBlockLn: false,
+    articleId: "1717936928663",
+  }
+</script>
+<script src="https://gyyspace.github.io/skins/next/js/common.min.js?1721540580809"></script>
+<script type="text/javascript">
+    Label.tocLabel = "目录"
+    Label.siteViewLabel = "站点概览"
+</script>
+
+<script type="text/javascript">
+    Util.addScript('https://gyyspace.github.io/js/page.min.js?1721540580809', 'soloPageScript')
+    var page = new Page({
+        "commentContentCannotEmptyLabel": "评论不能为空",
+        "oId": "1717936928663",
+        "blogHost": "https://gyyspace.github.io",
+        "randomArticles1Label": "随机阅读：",
+        "externalRelevantArticles1Label": "站外相关阅读："
+    });
+    $(document).ready(function () {
+        page.load();
+    page.tips.externalRelevantArticlesDisplayCount = "0";
+        page.loadRandomArticles();
+        page.loadRelevantArticles('1717936928663', '<h4>相关阅读：</h4>');
+    NexT.initArticle()
+    });
+</script>
+</body>
+</html>
+
+<!-- Generated by Latke (https://github.com/88250/latke) in 6ms, 2024/07/21 13:50:56 -->
