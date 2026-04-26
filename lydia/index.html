@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>生日快乐 ❤️</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background: #ffeff5;
+            font-family: "Microsoft YaHei", sans-serif;
+            text-align: center;
+            padding: 60px 20px;
+            overflow-x: hidden;
+            position: relative;
+        }
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow-x: hidden;
+            touch-action: manipulation;
+        }
+
+        .title {
+            font-size: 42px;
+            color: #ff5e84;
+            margin-bottom: 10px;
+            animation: fadeIn 2s;
+            white-space: nowrap;
+        }
+
+        /* 轮播图容器 */
+        .carousel {
+            width: 260px;
+            height: 260px;
+            position: relative;
+            margin: 10px auto;
+            border-radius: 50%;
+            border: 6px solid #ffbcd9;
+            box-shadow: 0 0 25px rgba(255, 188, 217, 0.9);
+            overflow: hidden;
+            animation: up 2s ease-out;
+        }
+        .carousel img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0;
+            transition: opacity 1.5s ease-in-out;
+        }
+        .carousel img.active {
+            opacity: 1;
+        }
+
+        .content {
+            font-size: 22px;
+            color: #444;
+            line-height: 1.8;
+            margin: 20px auto;
+            max-width: 600px;
+            animation: up 2.5s ease-out;
+        }
+
+        .heart {
+            position: fixed;
+            color: #ff5e84;
+            font-size: 22px;
+            pointer-events: none;
+            animation: fall linear infinite;
+        }
+
+        #fireworks {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 9;
+        }
+
+        .timeline {
+            max-width: 600px;
+            margin: 50px auto;
+            text-align: left;
+            border-left: 3px solid #ff8bb3;
+            padding-left: 25px;
+        }
+        .time-item {
+            margin: 25px 0;
+            position: relative;
+        }
+        .time-item::before {
+            content: '';
+            width: 14px;
+            height: 14px;
+            background: #ff5e84;
+            border-radius: 50%;
+            position: absolute;
+            left: -34px;
+            top: 5px;
+        }
+        .time-date {
+            font-size: 18px;
+            color: #ff4470;
+            font-weight: bold;
+        }
+        .time-text {
+            font-size: 20px;
+            color: #555;
+            margin-top: 5px;
+        }
+
+        .surprise {
+            position: fixed;
+            bottom: 120px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 24px;
+            color: #ff4470;
+            background: rgba(255,255,255,0.9);
+            padding: 12px 25px;
+            border-radius: 50px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            opacity: 0;
+            transition: 0.5s;
+            z-index: 99;
+            pointer-events: none;
+            white-space: nowrap;
+        }
+        .surprise.show {
+            opacity: 1;
+            bottom: 150px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes up {
+            from { transform: translateY(40px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        @keyframes fall {
+            0% {
+                transform: translateY(-10vh) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) rotate(720deg);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<audio id="bgMusic" loop>
+    <source src="./img/11.mp3
+" type="audio/mpeg">
+</audio>
+
+<canvas id="fireworks"></canvas>
+
+<div class="title">宝宝，生日快乐 🎂</div>
+
+<!-- 6张照片轮播 -->
+<div class="carousel">
+    <img src="./img/1.jpg" class="active" alt="照片1">
+    <img src="./img/13.jpg" alt="照片13">
+<img src="./img/5.jpg" alt="照片5">
+<img src="./img/22.jpg" alt="照片22">
+<img src="./img/8.jpg" alt="照片8">
+<img src="./img/17.jpg" alt="照片17">
+<img src="./img/3.jpg" alt="照片3">
+<img src="./img/25.jpg" alt="照片25">
+<img src="./img/11.jpg" alt="照片11">
+<img src="./img/19.jpg" alt="照片19">
+<img src="./img/2.jpg" alt="照片2">
+<img src="./img/26.jpg" alt="照片26">
+<img src="./img/9.jpg" alt="照片9">
+<img src="./img/15.jpg" alt="照片15">
+<img src="./img/7.jpg" alt="照片7">
+<img src="./img/21.jpg" alt="照片21">
+<img src="./img/16.jpg" alt="照片16">
+<img src="./img/4.jpg" alt="照片4">
+<img src="./img/24.jpg" alt="照片24">
+<img src="./img/12.jpg" alt="照片12">
+<img src="./img/20.jpg" alt="照片20">
+<img src="./img/18.jpg" alt="照片18">
+<img src="./img/6.jpg" alt="照片6">
+<img src="./img/23.jpg" alt="照片23">
+<img src="./img/10.jpg" alt="照片10">
+<img src="./img/14.jpg" alt="照片14">
+</div>
+
+<div class="content">
+    这是我陪你过的第 2 个生日<br>
+    从相遇的那天起<br>
+    我的生活全部因你而温柔<br>
+    未来的每一天、每一年<br>
+    我都会一直在你身边<br>
+    永远爱你，只爱你 ❤️
+</div>
+
+<div class="timeline">
+    <div class="time-item">
+        <div class="time-date">2025.03.06</div>
+        <div class="time-text">我们相遇 ✨</div>
+    </div>
+    <div class="time-item">
+        <div class="time-date">2025.03.29</div>
+        <div class="time-text">我们第一次见面 💞</div>
+    </div>
+    <div class="time-item">
+        <div class="time-date">2025.05.01</div>
+        <div class="time-text">我们第一次一起去爬山 🚶‍♀️🚶‍♂️</div>
+    </div>
+    <div class="time-item">
+        <div class="time-date">2026.01.07</div>
+        <div class="time-text">开启相处最久的美好时光 🏠</div>
+    </div>
+    <div class="time-item">
+        <div class="time-date">2026.02.12</div>
+        <div class="time-text">第一次见家长，正式走进彼此生活 👨‍👩‍👧‍👦</div>
+    </div>
+    <div class="time-item">
+        <div class="time-date">今天</div>
+        <div class="time-text">祝你生日快乐，我会爱你一辈子 🎉</div>
+    </div>
+</div>
+
+<div class="surprise" id="surpriseBox"></div>
+
+<script>
+    const bgMusic = document.getElementById('bgMusic');
+    let musicPlayed = false;
+
+    function playMusic() {
+        if (!musicPlayed) {
+            bgMusic.play().catch(err => {});
+            musicPlayed = true;
+        }
+    }
+
+    document.addEventListener('touchstart', playMusic);
+    document.addEventListener('click', playMusic);
+
+    // 爱心飘落
+    function createHeart() {
+        const heart = document.createElement('div');
+        heart.className = 'heart';
+        heart.textContent = '❤️';
+        heart.style.left = Math.random() * 100 + 'vw';
+        heart.style.top = '0px';
+        heart.style.animationDuration = (Math.random() * 3 + 4) + 's';
+        document.body.appendChild(heart);
+        setTimeout(() => {
+            heart.remove();
+        }, 7000);
+    }
+    setInterval(createHeart, 280);
+
+    // 烟花特效
+    const canvas = document.getElementById('fireworks');
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    class Firework {
+        constructor() {
+            this.x = Math.random() * canvas.width;
+            this.y = canvas.height;
+            this.speed = 6;
+            this.angle = -90 / 180 * Math.PI;
+            this.particles = [];
+            this.alive = true;
+        }
+        move() {
+            this.x += Math.cos(this.angle) * this.speed;
+            this.y += Math.sin(this.angle) * this.speed;
+            if (this.speed > 0) this.speed -= 0.1;
+            else this.explode();
+        }
+        explode() {
+            for (let i=0; i<100; i++) {
+                this.particles.push({
+                    x: this.x, y: this.y,
+                    speed: Math.random() * 4 + 2,
+                    angle: Math.random() * Math.PI * 2,
+                    alpha: 1, color: '#ff5e84'
+                });
+            }
+            this.alive = false;
+        }
+        draw() {
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, 3, 0, Math.PI*2);
+            ctx.fillStyle = '#ff5e84';
+            ctx.fill();
+        }
+    }
+
+    let fireworks = [];
+    setInterval(() => {
+        fireworks.push(new Firework());
+    }, 1200);
+
+    function renderFireworks() {
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+        fireworks = fireworks.filter(f => f.alive || f.particles.length);
+        fireworks.forEach(f => {
+            if (f.alive) { f.move(); f.draw(); }
+            else {
+                f.particles = f.particles.filter(p => p.alpha > 0);
+                f.particles.forEach(p => {
+                    p.x += Math.cos(p.angle) * p.speed;
+                    p.y += Math.sin(p.angle) * p.speed;
+                    p.alpha -= 0.015;
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, 2, 0, Math.PI*2);
+                    ctx.fillStyle = p.color + Math.floor(p.alpha*255).toString(16).padStart(2,'0');
+                    ctx.fill();
+                });
+            }
+        });
+        requestAnimationFrame(renderFireworks);
+    }
+    renderFireworks();
+
+    // 6张照片轮播
+    const imgs = document.querySelectorAll('.carousel img');
+    let index = 0;
+    function changeImg() {
+        imgs.forEach(img => img.classList.remove('active'));
+        index = (index + 1) % imgs.length;
+        imgs[index].classList.add('active');
+    }
+    setInterval(changeImg, 2500);
+
+    // 点击惊喜语录
+    const texts = [
+        "宝宝，生日快乐，我永远偏爱你 ❤️",
+        "你是我这辈子最想珍惜的人",
+        "和你在一起，每一天都很幸福",
+        "我爱你，不止今天，是每一天 ✨",
+        "往后余生，三餐四季，全都是你",
+        "你负责开心，我负责爱你",
+        "永远做我的小朋友，我宠你一辈子 🎂",
+        "见家长不是结束，是我们幸福的开始"
+    ];
+    const surprise = document.getElementById('surpriseBox');
+    document.addEventListener('click', () => {
+        surprise.classList.remove('show');
+        setTimeout(() => {
+            surprise.innerText = texts[Math.floor(Math.random()*texts.length)];
+            surprise.classList.add('show');
+        }, 100);
+        setTimeout(() => surprise.classList.remove('show'), 2500);
+    });
+</script>
+
+</body>
+</html>
